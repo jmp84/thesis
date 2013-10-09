@@ -1,4 +1,31 @@
 \chapter{Hierarchical Rule Extraction from Alignment Posterior Probabilities}
 
-% This chapter is an extension of the EMNLP paper
-% Basically the same as 1st year report.
+\section{Introduction and Motivation}
+
+Word alignment models are used to generate alignment links between
+the source and the target sentences in the training data. These
+alignment links then provide constraints to extract translation
+rules. Thus statistics provided by the word alignment models are
+not used by translation models further down the pipeline.
+Our goal is tighter coupling between the alignment models and the
+translation models.
+
+The word-to-word HMM alignment model provides alignment links
+posterior probabilities as well as phrase pair posterior
+probabilities. Conceptually, we want to extract all possible phrase pairs given
+a sentence pair and select only the ones that verify certain statistical
+criteria related to link and phrase pair posterior probabilities. For
+example, we can select phrase pairs that contain a link with a high posterior.
+Or we can select phrase pairs that contain a link with a high posterior
+and that have a high phrase pair posterior. These criteria allow us
+to have control over the richness of the grammar. The probabilities
+also allow us to give more fine-grained estimates of the translation
+models.
+
+How evaluation will be done.
+
+Description of sections.
+
+\section{Related Work}
+
+
