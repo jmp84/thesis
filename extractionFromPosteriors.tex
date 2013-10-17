@@ -1,6 +1,8 @@
 \chapter{Hierarchical Rule Extraction from Alignment Posterior Probabilities}
+\label{chap:extractionFromPosterior}
 
 \section{Introduction and Motivation}
+\label{sec:intro}
 
 Word alignment models are used to generate alignment links between
 the source and the target sentences in the training data. These
@@ -29,3 +31,50 @@ can be regenerated. Second, we measure translation quality.
 Description of sections.
 
 \section{Related Work}
+
+  The limitations of extracting translation rules from Viterbi alignments has been addressed previously.
+  For instance Venugopal et al. \shortcite{venugopal-zollmann-smith-vogel:2008:AMTA} extract rules
+  from $n$-best lists of alignments and $n$-best lists of parses for a syntax-augmented hierarchical system. They
+  approximate the posterior probability of an alignment (note that this is an alignment posterior, not a link posterior) by
+  normalising the $n$-best list of alignments and similarly for the parses. Rules are then extracted from the cross product
+  of $n$-best alignments and $n$-best parses and given a count defined in terms of the approximate posteriors.
+  Alignment $n$-best lists are also used in Liu et al. \shortcite{liu-xia-xiao-liu:2009:EMNLP} to create a structure called weighted alignment
+  matrices that approximates link posterior probabilities, from which phrases are extracted
+  for a phrase-based system. Therefore, their work is very similar to ours, however we do not use approximations for link posterior probabilities.
+
+  Link posterior probabilities without approximation have also been used. Kumar et al. \shortcite{kumar-och-macherey:2007:EMNLP} replace 
+  the Viterbi
+  decision by the maximum a posteriori decision in order to combine word alignments with a bridge language--for example, Spanish is a bridge
+  language between Arabic and English if Arabic-English word alignments are derived using Arabic-Spanish and
+  Spanish-English word alignments. Deng and Byrne \shortcite{deng-and-byrne:2008:ASLP}
+  first extract phrases using Viterbi alignments and, if test source phrases are not extracted, they extract additional phrase pairs
+  according to their posterior probability. Our definition of phrase pair posterior probabilities and the way
+  to compute them are directly
+  inspired by their work.
+
+  We also note approaches to tighter coupling between
+  hierarchical grammars and alignments or even direct modelling of 
+  phrase alignment. Marcu and Wong \shortcite{marcu-wong:2002:EMNLP} introduce a joint phrase-based model
+  that does not make use of alignments. DeNero and Klein \shortcite{denero-klein:2008:ACL} prove
+  that phrase alignment is an NP-complete problem. Saers
+  and Wu \shortcite{saers-wu:2009:SSST} report improvement on a phrase-based
+  system where word alignment has been trained with
+  an inversion transduction grammar rather than
+  IBM models. Pauls et al. \shortcite{pauls-klein-chiang-knight:2010:NAACL} also use an inversion transduction grammar
+  to directly align phrases to nodes in a string-to-tree
+  model. Bayesian methods have been recently developed
+  to induce a grammar directly from an unaligned
+  parallel corpus \cite{blunsom-cohn-osborne:2008:NIPS,blunsom-cohn-dyer-osborne:2009:ACL}.
+  Finally, Cmejrek et al. \shortcite{Cmejrek2009}
+  extract rules directly from bilingual chart parses of
+  the parallel corpus without using word alignments.
+  We take a different approach in that we aim to start
+  with very strong alignment models and use them to
+  guide grammar extraction.
+
+  Finally, another possible direction for better estimation of a translation model
+  is smoothing, which is not incompatible with the approach taken here. Foster and
+  colleagues \cite{foster-kuhn-johnson:2006:EMNLP} conduct an extensive series of
+  experiments that either replace the relative frequency estimated phrase table by
+  a smoothed phrase table or add the smoothed phrase table as a feature and
+  observe improvement in translation quality.

@@ -11,6 +11,9 @@ check:
 
 paper:
 	pdflatex $(DOCUMENT).tex
+	bibtex $(DOCUMENT)
+	pdflatex $(DOCUMENT).tex
+	pdflatex $(DOCUMENT).tex
 
 clean:
 	rm -f *.bbl *.blg *.log *.aux *.toc *~
