@@ -1,7 +1,63 @@
-\documentclass[12pt]{book}
+\documentclass[oneside, 12pt]{book}
 
 % TODO make a separate preamble
-\newcommand{\shortcite}[1]{\cite{#1}}
+\usepackage{color}
+\usepackage{graphicx}
+\usepackage{rotating}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{fixltx2e}
+\usepackage{varwidth}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage[round]{natbib}
+\usepackage[dvipdfm,a4paper,pagebackref,hyperindex=true]{hyperref}
+
+\def \RT [#1][#2][#3]{#1$\rightarrow${\tt $\langle$}#2,#3{\tt $\rangle$}}
+\def \SR [#1]{ {\tt $\langle$}#1}
+\def \TR [#1]{ #1{\tt $\rangle$}}
+
+\makeatletter
+\renewcommand{\ALG@beginalgorithmic}{\footnotesize}
+\makeatother
+
+\MakeRobust{\Call}
+
+\renewcommand{\eqref}[1]{Equation~(\ref{#1})}
+
+\newcommand{\secref}[1]{Section~(\ref{#1})}
+
+% Links in pdf
+\definecolor{linkcol}{rgb}{0,0,0.4} 
+\definecolor{citecol}{rgb}{0.5,0,0} 
+
+\hypersetup
+{
+%bookmarks=true,
+bookmarksopen=true,
+pdftitle="Refinements in Hierarchical Phrase-Based Translation",
+pdfauthor="Juan Pino", 
+pdfsubject="Hierarchical phrase-based translation and some enhancements", %subject of the document
+%pdftoolbar=false, % toolbar active
+pdfmenubar=true, %menubar shown
+pdfhighlight=/O, %effect of clicking on a link
+colorlinks=true, %couleurs sur les liens hypertextes
+pdfpagemode=None, %aucun mode de page
+pdfpagelayout=SinglePage, %ouverture en simple page
+pdffitwindow=true, %pages ouvertes entierement dans toute la fenetre
+linkcolor=linkcol, %couleur des liens hypertextes internes
+citecolor=citecol, %couleur des liens pour les citations
+urlcolor=linkcol %couleur des liens pour les url
+}
+
+\def\chapterautorefname{Chapter}
+\def\sectionautorefname{Section}
+\def\subsectionautorefname{Section}
+\def\subsubsectionautorefname{Section}
+\def\paragraphautorefname{Section}
+\def\algorithmautorefname{Algorithm}
+
+\includeonly{extractionFromPosteriors}
 
 \begin{document}
 
@@ -45,7 +101,7 @@
 \include{gyro}
 
 
-\bibliographystyle{plain}
+\bibliographystyle{plainnat}
 \bibliography{thesis}
 
 \end{document}

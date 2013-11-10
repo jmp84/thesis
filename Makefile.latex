@@ -1,0 +1,23 @@
+DOCUMENT=thesis
+#OPEN=acroread
+OPEN=evince
+
+all: check paper open
+
+open:
+	#$(OPEN) $(DOCUMENT).pdf &
+	#cp $(DOCUMENT).pdf ~/PublicWebPages/mytmp/
+	scp $(DOCUMENT).pdf juan@86.9.202.234:/tmp/
+
+check:
+	./spellcheck.sh
+
+paper:
+	latex $(DOCUMENT).tex
+	bibtex $(DOCUMENT)
+	latex $(DOCUMENT).tex
+	latex $(DOCUMENT).tex
+	dvipdfm -p a4 -o $(DOCUMENT).pdf $(DOCUMENT).dvi
+
+clean:
+	rm -f *.bbl *.blg *.log *.aux *.toc *~

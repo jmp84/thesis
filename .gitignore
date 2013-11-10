@@ -2,3 +2,8 @@
 *.aux
 *.log
 *.dvi
+*.bak
+*.bbl
+*.blg
+*.brf
+*.out

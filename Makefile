@@ -16,4 +16,4 @@ paper:
 	pdflatex $(DOCUMENT).tex
 
 clean:
-	rm -f *.bbl *.blg *.log *.aux *.toc *~
+	rm -f *.bbl *.blg *.log *.aux *.toc *.bak *~
