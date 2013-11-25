@@ -5,9 +5,8 @@ OPEN=evince
 all: check paper open
 
 open:
-	#$(OPEN) $(DOCUMENT).pdf &
+	$(OPEN) $(DOCUMENT).pdf &
 	#cp $(DOCUMENT).pdf ~/PublicWebPages/mytmp/
-	scp $(DOCUMENT).pdf juan@86.9.202.234:/tmp/
 
 check:
 	./spellcheck.sh

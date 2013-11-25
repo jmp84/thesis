@@ -1,7 +1,7 @@
 \documentclass[oneside, 12pt]{book}
 
 % TODO make a separate preamble
-\usepackage{color}
+\usepackage[table]{xcolor}
 \usepackage{graphicx}
 \usepackage{rotating}
 \usepackage{algorithm}
@@ -11,7 +11,12 @@
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage[round]{natbib}
+\def\pgfsysdriver{pgfsys-dvipdfm.def}
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows, positioning}
 \usepackage[dvipdfm,a4paper,pagebackref,hyperindex=true]{hyperref}
+\usepackage[all]{hypcap}
+\usepackage{footnotebackref}
 
 \def \RT [#1][#2][#3]{#1$\rightarrow${\tt $\langle$}#2,#3{\tt $\rangle$}}
 \def \SR [#1]{ {\tt $\langle$}#1}
@@ -57,7 +62,8 @@ urlcolor=linkcol %couleur des liens pour les url
 \def\paragraphautorefname{Section}
 \def\algorithmautorefname{Algorithm}
 
-\includeonly{extractionFromPosteriors}
+%\includeonly{extractionFromPosteriors}
+\includeonly{hadoopExtraction}
 
 \begin{document}
 
@@ -93,6 +99,8 @@ urlcolor=linkcol %couleur des liens pour les url
 \include{introduction}
 % background chapter
 \include{statisticalMachineTranslation}
+% hadoop/hfile extraction
+\include{hadoopExtraction}
 % rule extraction from alignment posterior probabilities
 \include{extractionFromPosteriors}
 % system development for machine translation
