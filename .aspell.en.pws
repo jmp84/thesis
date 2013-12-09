@@ -1,10 +1,12 @@
-personal_ws-1.1 en 294 
+personal_ws-1.1 en 325 
 lopez
 nocc
 wmtdata
+dempster
 hierHiFST
 BLEU
 noindent
+englishDot
 JobInputOutput
 COA
 manku
@@ -13,15 +15,18 @@ EMNLP
 sourcePhrase
 wong
 chiang
+bijective
 kumar
 HLTACL
 GoBack
+argmax
 iglesias
 rankingCountingHierarchicalPhrasePairPosterior
 macherey
 normalize
 favors
 blablaline
+gesehen
 levenberg
 venkatasubramanian
 colorlinks
@@ -36,16 +41,20 @@ schroeder
 gentzsch
 SSST
 wallach
+argmin
+wordalignedSentencePairMistake
 patternconfig
-Rabiner
+rabiner
 toi
 gao
 TargetConstraint
+JRSS
 HiFST
 gdf
 hildebrand
 leung
 patterson
+matrixLinkPosterior
 alignmentConstraintsLinkHierarchical
 trg
 saers
@@ -64,6 +73,7 @@ linkposHMMNumerator
 linkcolor
 newswire
 ASLP
+maximization
 EACL
 MTTK
 pgfsys
@@ -84,6 +94,7 @@ przywara
 ghemawat
 deng
 Hadoop
+extractionFromPosteriorsGrammarDefinition
 eqnarray
 xia
 extractionFromPosteriorsLink
@@ -105,8 +116,10 @@ dvipdfm
 hsieh
 HMM
 Yonggang's
+consistencyConstraint
 initialize
 modifiedForwardRecursion
+definitionAndNotation
 ExtractRules
 EAMT
 color
@@ -122,6 +135,7 @@ rulePlusFeatures
 filesystem
 citecolor
 pino
+viterbiCriterion
 cordova
 HDFS
 vogel
@@ -157,6 +171,7 @@ transduction
 tillmann
 SSTable
 optimization
+realize
 xshift
 ganitkevitch
 HBase
@@ -175,11 +190,15 @@ yshift
 eq
 tilda
 liu
+extractionFromPosteriorRelated
 et
+normalized
 toolkits
 rescorer
+linksWithHighPosterior
 daumeiii
 haddow
+langmead
 rulePlusFeature
 posteriori
 LOF
@@ -188,6 +207,7 @@ ji
 AlignConstraint
 pdfpagemode
 normalizes
+hirarchical
 iInsideOutsideHierarchical
 bannard
 ney
@@ -195,7 +215,9 @@ federmann
 Salut
 dellapietra
 NAACL
+rubin
 CUEDbiblio
+germanDot
 koehn
 underperform
 rulesused
@@ -207,6 +229,7 @@ Google
 nw
 ngrams
 manber
+linkPosteriorHMM
 resnik
 pdfpagelayout
 lookups
@@ -215,9 +238,10 @@ klein
 extractionFromPosteriorsExtractionDisjoint
 optimizing
 rulesPlusS
-HIER
+hier
 rulesPlusT
 Xeon
+hypothesize
 heafield
 forwardRecursion
 backoff
@@ -229,11 +253,13 @@ eidelman
 ACM
 rulextract
 ruleXtract
+IEEE
 cdec
 generalRuleXtract
 modifiedForwardConstraintsHierarchical
 urlcolor
 substring
+vo
 nonterminal
 hennessy
 secref
@@ -241,6 +267,7 @@ gobioff
 wu
 AFP
 wX
+mapCriterion
 relatedwork
 xiao
 xu
@@ -260,8 +287,10 @@ generalRuleXtractSpecializedHierarchical
 mont
 NIST
 ruleAllFeatures
+hopkins
 weese
 setiawan
+extractionFromPosteriorsViterbi
 alg
 monz
 rewriteModifiedForwardProbability
@@ -290,6 +319,8 @@ sep
 TODO
 gray
 InputSampler
+generalize
+extractionFromPosteriorsExtraction
 Gigaword
 pdfsubject
 soricut

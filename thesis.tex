@@ -11,6 +11,7 @@
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage[round]{natbib}
+\usepackage{bm}
 \def\pgfsysdriver{pgfsys-dvipdfm.def}
 \usepackage{tikz}
 \usetikzlibrary{shapes,arrows, positioning}
@@ -22,9 +23,9 @@
 \def \SR [#1]{ {\tt $\langle$}#1}
 \def \TR [#1]{ #1{\tt $\rangle$}}
 
-\makeatletter
-\renewcommand{\ALG@beginalgorithmic}{\footnotesize}
-\makeatother
+%\makeatletter
+%\renewcommand{\ALG@beginalgorithmic}{\footnotesize}
+%\makeatother
 
 \MakeRobust{\Call}
 
@@ -62,8 +63,11 @@ urlcolor=linkcol %couleur des liens pour les url
 \def\paragraphautorefname{Section}
 \def\algorithmautorefname{Algorithm}
 
-%\includeonly{extractionFromPosteriors}
-\includeonly{hadoopExtraction}
+\DeclareMathOperator*{\argmin}{argmin}
+\DeclareMathOperator*{\argmax}{argmax}
+
+\includeonly{extractionFromPosteriors}
+%\includeonly{hadoopExtraction}
 
 \begin{document}
 
