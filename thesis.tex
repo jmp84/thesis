@@ -11,6 +11,7 @@
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage[round]{natbib}
+\usepackage{bm}
 \def\pgfsysdriver{pgfsys-dvipdfm.def}
 \usepackage{tikz}
 \usetikzlibrary{shapes,arrows, positioning}
@@ -62,8 +63,13 @@ urlcolor=linkcol %couleur des liens pour les url
 \def\paragraphautorefname{Section}
 \def\algorithmautorefname{Algorithm}
 
+\DeclareMathOperator*{\argmin}{argmin}
+\DeclareMathOperator*{\argmax}{argmax}
+
 %\includeonly{extractionFromPosteriors}
-\includeonly{hadoopExtraction}
+%\includeonly{hadoopExtraction}
+%\includeonly{gyroRegeneration,gyroTranslation}
+\includeonly{gyroRegeneration}
 
 \begin{document}
 
@@ -105,9 +111,10 @@ urlcolor=linkcol %couleur des liens pour les url
 \include{extractionFromPosteriors}
 % system development for machine translation
 \include{systemDevelopment}
-% generation applied to machine translation
-\include{gyro}
-
+% generation: string regeneration
+\include{gyroRegeneration}
+% generation: applied to machine translation
+\include{gyroTranslation}
 
 \bibliographystyle{plainnat}
 \bibliography{thesis}

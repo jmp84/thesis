@@ -1,0 +1,626 @@
+\chapter{String Regeneration with the NgramGen Decoder}
+
+%TODO normalize ngram n-gram $n$-gram etc.
+
+Machine translation output often lacks
+fluency~\citep{knight:2007:TALK}.
+In this chapter, we tackle a related problem which
+is string regeneration: given a sentence where the
+word order has been scrambled, can we recover the
+original sentence ?
+
+\section{Introduction}
+
+Word ordering is a fundamental problem in many natural language
+processing applications. In machine translation, because
+source language and target language have a different word
+ordering, a machine translation system needs to model word
+reordering. In natural language generation tasks, such
+as paraphrasing or summarisation, word ordering
+is also critical at the surface realisation step.
+Word ordering is also one possible type of grammatical
+error, especially for foreign language
+learners~\citep{yu-chen:2012:COLING}.
+
+In this chapter, we tackle the word ordering problem in
+isolation through the task of
+string regeneration~\citep{wan-dras-dale-paris:2009:EACL}.
+Given an input sentence where the word order has
+been scrambled, the string regeneration task is to recover
+the original sentence. This task can be seen as one of the
+steps in surface realisation for language generation where
+the input is a list of content words and function words and
+the output a grammatical sentence.
+
+We use a simple but extensible approach, inspired from
+stack-based decoding for phrase-based translation.
+Given a bag of word as input, we use $n$-gram rules
+extracted from a large monolingual corpus and concatenate
+these $n$-grams to form hypotheses. The hypotheses are scored
+with a linear model. One of the critical features in this system
+is the language model. Arbitrary features can be added to the
+system, demonstrating its flexibility.
+% TODO
+%In addition, we present
+%an alternative version that incorporates a dependency language
+%model~\citep{shen-xu-weischedel:2008:ACL,shen-xu-weischedel:2010:CL}.
+
+\section{Related Work}
+
+\citet{brown-cocke-dellapietra-dellapietra-jelinek-lafferty-mercer-roossin:1990:CL}
+introduce the string regeneration task, or \emph{bag of word translation}
+to demonstrate the effectiveness
+of $n$-gram language models. With a 3-gram language model, they recover
+63\% of sentences with less than 11 words with brute force search
+over all permutations.
+%TODO compare our system to this performance
+
+String regeneration has recently gained interest as
+a standalone
+task~\citep{wan-dras-dale-paris:2009:EACL,he-wang-guo-liu:2009:ACLIJCNLP,zhang-clark:2011:EMNLP,zhang-blackwood-clark:2012:EACL2012,zhang:2013:IJCAI}.
+String regeneration serves as a proxy to measure the grammaticality of a
+natural language generation system output and is a simplified version
+of the \emph{linguistic realisation} task in natural language
+generation~\citep{reiter:1997:JNLE}.
+\citet{wan-dras-dale-paris:2009:EACL} use the minimum spanning tree algorithm
+to find an optimal tree given a bag of words.
+\citet{he-wang-guo-liu:2009:ACLIJCNLP} use a log-linear model to map
+dependency relations into surface strings. They achieve a BLEU
+score of 88.74\% using the Chinese Dependency Treebank.
+CCG grammars~\citep{zhang-clark:2011:EMNLP} have also been used
+for the string realisation task. These grammars have also
+been combined with large language
+models~\citep{zhang-blackwood-clark:2012:EACL2012}.
+Dependency-based language model have also been used for the
+string realisation task~\citep{guo-wang-vanGenabith:2011:JNLE}.
+The works described so far are instances of \emph{tree linearization}: given
+a set of unordered dependency, reconstruct a dependency tree which gives
+the word ordering~\citep{belz-bohnet-mille-wanner-white:2012:INLG}.
+\citet{zhang:2013:IJCAI} extends this task to partial tree linearization: the
+input is a set of possibly missing POS tags and possibly missing unordered
+dependencies. This last work achieves the best performance on string regeneration
+on the Penn Tree Bank so far.
+
+In this chapter, we restrict the input to be a bag of words without any additional
+information. To our knowledge, our method achieves state-of-the-art performance
+on this task.
+
+% TODO MAYBE THIS
+% Towards Developing Generation Algorithms for Text-to-Text Applications
+
+\section{Model}
+
+Similarly to phrase-based and hierarchical phrase-based translation, we
+use a linear model:
+%
+\begin{equation}
+  \hat{\bm{e}} = \argmax_{\bm{e}} \bm{\lambda} \cdot \bm{\Phi(\bm{e})}
+  \label{eq:gyroModel}
+\end{equation}
+%
+where $\bm{\lambda}$ is a weight vector and $\bm{\Phi}(\bm{e})$ is
+a feature vector. $\bm{\Phi}(\bm{e})$ contains a language model
+$g(\bm{e})$ and local features $\bm{\varphi}(\bm{e})$. Similarly,
+$\bm{\lambda}$ has a weight $\lambda_g$ for the language model
+and weights $\bm{\lambda_{\varphi}}$ for local features. A hypothesis
+is decomposed into phrases $\bm{e}_1^I$. We can then rewrite
+\autoref{eq:gyroModel} into \autoref{eq:gyroModel2}:
+%
+\begin{equation}
+  \begin{split}
+    \hat{\bm{e}} &= \argmax_{\bm{e} = \bm{e}_1^I} \lambda_{g} g(\bm{e}) + \bm{\lambda_{\varphi}} \cdot \bm{\varphi}(\bm{e}) \\
+                 &= \argmax_{\bm{e} = \bm{e}_1^I} \lambda_{g} g(\bm{e}) + \bm{\lambda_{\varphi}} \cdot \sum_{i = 1}^I \bm{\varphi}(\bm{e}_i) \\
+  \end{split}
+  \label{eq:gyroModel2}
+\end{equation}
+%
+In this chapter, we will only experiment with the language model feature.
+
+\section{Decoder}
+
+In this section, we present our NgramGen decoder, which reorders
+an input bag of word using techniques inspired from phrase-based
+SMT~\citep{koehn:2010:book}.
+
+\subsection{Input}
+
+The input to the decoder consists of:
+%
+\begin{itemize}
+  \item A bag of words $\bm{w}$, represented as a vector.
+  \item A set of $n$-grams with coverage information. The vocabulary
+    of the $n$-grams must be included in the vocabulary of the input
+    bag of words. For a given $n$-gram, its coverage is a bit vector
+    that indicates what positions the $n$-gram covers in the input.
+    In case of repeated words, an $n$-gram can have several possible
+    coverages. The input $n$-grams and coverages are represented as
+    an associative array datastructure and denoted $\mathcal{N}$.
+  \item A $n$-gram language model $\mathcal{G}$. The $n$-gram
+    language model is
+    used as a feature to measure the fluency of the output.
+\end{itemize}
+
+\subsection{Algorithm}
+
+Our algorithm is analogous to stack based decoding
+for phrase-based translation~\citep{koehn:2010:book}.
+We construct hypotheses left to right.
+We use a data structure $M$ similar to a matrix, that we represent
+with a vector of columns. $M_i$ represents the $i$-th column.
+These columns are the analog of stacks
+in stack based decoding for phrase-based translation. Zero-based
+column indices represent how many words in the input have
+been covered. For an input of size $|\bm{w}|$, there are
+$|\bm{w}| + 1$ columns indexed from $0$ to $|\bm{w}|$.
+Each column contains a set of \emph{states}.
+A \emph{state} contains the information necessary to
+extend a partial hypothesis and represents a set of
+partial hypotheses that can be \emph{recombined}~\citep{koehn:2010:book}.
+The states are sorted by their \emph{score}.
+For a given state, its score is the best model score of any of the partial
+hypotheses that the state represents.
+
+The decoding algorithm is presented in \autoref{alg:gyroDecoder}.
+%
+\begin{figure}
+  \begin{algorithmic}[1]
+    \Function{Decode}{$\bm{w}, \mathcal{N}, \mathcal{G}$}
+      \State{\Call{Initialize}{$M$}} \hypertarget{alg:line:initM}{} \label{alg:line:initM}
+      \For{$0 \leq i < |\bm{w}|$} \hypertarget{alg:line:loopCoverage}{} \label{alg:line:loopCoverage}
+        \For{$\text{state } s \in M_i$} \hypertarget{alg:line:loopState}{} \label{alg:line:loopState}
+          \For{$\text{ngram } r \in \mathcal{N}$} \hypertarget{alg:line:loopNgram}{} \label{alg:line:loopNgram}
+            \If{\Call{CanApply}{$s, r$}} \hypertarget{alg:line:canApply}{} \label{alg:line:canApply}
+              \State{\Call{Extend}{$s, r$}} \hypertarget{alg:line:extend}{} \label{alg:line:extend}
+            \EndIf
+          \EndFor
+        \EndFor
+      \EndFor
+    \EndFunction
+  \end{algorithmic}
+  \caption{NgramGen decoding algorithm.}
+  \label{alg:gyroDecoder}
+\end{figure}
+%
+We first initialize the matrix $M$ to be an vector of empty
+columns of size $|\bm{w}| + 1$ (\hyperlink{alg:line:initM}{line \ref{alg:line:initM}}).
+The first column is filled with an initial state representing an empty hypothesis.
+Then, we loop over the column indices
+(\hyperlink{alg:line:initM}{line \ref{alg:line:loopCoverage}}), the states in each
+column (\hyperlink{alg:line:loopState}{line \ref{alg:line:loopState}}) and the
+$n$-gram rules (\hyperlink{alg:line:loopNgram}{line \ref{alg:line:loopNgram}}).
+In each case, we attempt to extend a state with an $n$-gram rule. We first test
+if the $n$-gram rule $r$ is applicable to state $s$
+(\hyperlink{alg:line:canApply}{line \ref{alg:line:canApply}}). If this
+is the case, we extend the state $s$ with the rule $r$
+(\hyperlink{alg:line:extend}{line \ref{alg:line:extend}}).
+
+We will now describe the last two operations, \textsc{CanApply}
+and \textsc{Extend} but before that, we need to describe what kind
+of information a state contains.
+
+\subsection{State Definition}
+
+We mentioned earlier that a state contains enough information
+in order to extend a hypothesis and that a state represents
+all hypotheses that can be recombined. A state therefore
+contains the following information:
+%
+\begin{itemize}
+  \item Coverage: the coverage is a bit vector that indicates
+    which words in the input have been covered.
+  \item History: the history for an $n$-gram language model
+    is simply the last $n-1$ word in a partial hypothesis.
+    This allows to compute the language model correctly.
+\end{itemize}
+
+\subsection{\textsc{CanApply} Operation}
+\label{sec:canApply}
+
+Given a state $s$ with coverage $c(s)$ and an $n$-gram rule $r$ with
+coverage $c(r)$, rule $r$ can be applied to state $s$ iff $c(s)$ and
+$c(r)$ are disjoint. We will see in \autoref{sec:overlap}
+that this constrain can be relaxed if we allow for overlapping
+$n$-grams.
+
+\subsection{\textsc{Extend} Operation}
+
+Given a state $s$ with coverage $c(s)$ and and $n$-gram rule $r$
+with coverage $c(r)$ that can be applied to $s$, we extend
+$s$ with $r$ into a new state $s'$ as follows:
+%
+\begin{itemize}
+  \item The coverage $c(s')$ of $s'$ is the bitwise disjunction
+    of $c(s)$ and $c(r)$:
+%
+\begin{equation}
+  c(s') = c(s) \mid c(r)
+\end{equation}
+%
+  \item The new partial score $\text{sc}(s')$ for $s'$ is defined in terms
+    of the partial score $\text{sc}(s)$ for $s$, the history $h(s)$ and the rule $r$:
+%
+\begin{equation}
+  \text{sc}(s') = \text{sc}(s) + \lambda_g g(r | h(s)) + \bm{\lambda_{\varphi}} \cdot \bm{\varphi(r)}
+\end{equation}
+%
+  \item If $s'$ already exist in the column corresponding to its coverage, then
+    the score of the existing state is updated if $\text{sc}(s')$ is better than
+    the existing score. Otherwise, $s'$ is simply added to the column corresponding
+    to its coverage.
+\end{itemize}
+
+\subsection{Pruning}
+
+We support histogram pruning and threshold pruning~\citep{koehn:2010:book}.
+After each extension, if we add a new state, we enforce that the column where
+a state was added satisfies the pruning constraints.
+
+\subsection{FST Building}
+
+We mentioned earlier that a state represents partial hypotheses that can
+be recombined. However, since we do not keep back pointer between states,
+we cannot recover hypotheses directly from the matrix $M$.
+Instead, we build an FST that contains all hypotheses. For each extension,
+an arc is added to the output FST. We make use of the OpenFst
+toolkit~\citep{allauzen-riley-schalkwyk-skut-mohri:2007:CIAA}.
+This allows us to rescore the output using tools already integrated
+with OpenFst~\citep{blackwood:2010:PHD}.
+
+\subsection{Example}
+
+We demonstrate how our algorithm works with an example.
+Our input consists of a bag of words \emph{do you do},
+a bigram language model and monolingual rules with
+their coverage of the input bag of words. We use the
+rules listed in \autoref{tab:monolingualRules}.
+%
+\begin{table}
+  \begin{center}
+  \begin{tabular}{l|l}
+    N-gram & Coverage \\
+    \hline
+    \emph{do} & 100 \\
+    \emph{do} & 001 \\
+    \emph{you do} & 011 \\
+    \emph{you do} & 110 \\
+    \emph{do you} & 110 \\
+    \emph{do you} & 011 \\
+  \end{tabular}
+  \caption{Input monolingual n-gram rules with their coverage.}
+  \label{tab:monolingualRules}
+  \end{center}
+\end{table}
+%
+After running our algorithm without pruning, we obtain the data structure
+represented in \autoref{fig:exampleAlgoGyro}.
+%
+% TODO expand a bit the comments
+\begin{figure}
+  \scriptsize
+  \tikzstyle{State} = [circle, draw, text width = 1.5cm, align = center]
+  \tikzstyle{line} = [draw, -latex']
+
+  \begin{center}
+    \begin{tikzpicture}
+      % Place nodes
+      \node [State] (init) {000, </s>};
+      \node [State, above right = 1cm and 1cm of init] (do) {100, do};
+      \node [State, right = 2cm of init] (youdo) {011, do};
+      \node [State, below right = 1cm and 2.53cm of init] (doyou) {110, you};
+      \node [State, right = 2.5cm of do] (dodoyou) {111, you};
+      \node [State, right = 1cm of youdo] (doyoudo) {111, do};
+      % Draw edges
+      \path [line] (init) -- node[above, sloped]{do} (do);
+      \path [line] (init) -- node[above, sloped]{you do} (youdo);
+      \path [line] (init) -- node[above, sloped]{do you} (doyou);
+      \path [line] (do) -- node[above, sloped]{do you} (dodoyou);
+      \path [line] (do) -- node[above, sloped]{you do} (doyoudo);
+      \path [line] (youdo) -- node[above, sloped]{do} (doyoudo);
+      \path [line] (doyou) -- node[above, sloped]{do} (doyoudo);
+    \end{tikzpicture}
+  \end{center}
+  \caption{todo}
+  \label{fig:exampleAlgoGyro}
+\end{figure}
+
+\section{Experiments}
+
+In this section, we will present various
+string regeneration experiments.  We first present
+a baseline without restriction on the input length.
+Then, for more rapid experimentation, we conduct
+experiments with an input split into chunks of maximum length.
+We then show the effect of pruning, $n$-gram rule
+length, the use of overlap between rules and finally
+the benefits of applying rescoring to our first
+pass decoder.
+
+\subsection{Experimental Setup}
+
+We run string regeneration experiments on various
+data sets. We use the following data sets:
+%
+\begin{itemize}
+  \item MT08-nw: the first English reference for the newswire portion of the
+    Arabic-English translation task for the NIST Open Machine Translation 2008
+    Evaluation.\footnote{\url{http://www.itl.nist.gov/iad/mig/tests/mt/2008}}
+    This data set is used as a tuning set for MT09-nw.
+  \item MT09-nw: the first English reference for the newswire portion of the
+    Arabic-English translation task for the NIST Open Machine Translation 2009
+    Evaluation.\footnote{\url{http://www.itl.nist.gov/iad/mig/tests/mt/2009}}.
+    This data set is used as a testing set and parameters tuned on MT08-nw are used.
+  \item WSJ22: Section 22 from the Penn Treebank. This data set is used
+    as a tuning set for WSJ23.
+  \item WSJ23: Section 23 from the Penn Treebank. This data set is used as a
+    testing set and parameters tuned on WSJ22 are used.
+\end{itemize}
+%
+The test sets are first tokenized and lowercased.
+Then, $n$-gram rules up to length 5 relevant to the processed test sets
+are extracted from a large monolingual text collection.
+For MT08-nw and MT09-nw, we use all available monolingual data
+for the NIST Open Machine Translation 2012
+Evaluation.\footnote{\url{http://www.nist.gov/itl/iad/mig/openmt12.cfm}}.
+This consists of approximately 10.6 billion words.
+For WSJ22 and WSJ23, we use all available monolingual data for the WMT13
+evaluation.\footnote{\url{http://statmt.org/wmt13/translation-task.html}}.
+This consists of approximately 7.8 billion words.
+For MT08-nw and MT09-nw, we estimate a modified Kneser-Ney 4-gram language model
+on approximately 1.3 billion words of English text, including
+the AFP and Xinhua portions of the GigaWord corpus
+version 4 and the English side of various Arabic-English
+parallel corpora used in MT evaluations. For WSJ22 and WSJ23, we
+estimate a modified Kneser-Ney 4-gram language model on all available
+monolingual data for the WMT13 evaluation.
+
+\subsection{Baseline}
+\label{sec:gyroBaseline}
+
+We first run a baseline on our various test sets with the NgramGen decoder.
+Results are reported in \autoref{tab:gyroBaseline}. No restrictions on the
+input length are imposed. We use a length dependent histogram pruning of
+$\frac{11000}{\text{length(input)}}$. This setting allows the decoding to terminate
+while using all the memory available on the machines.
+%
+\begin{table}
+  \begin{center}
+  \begin{tabular}{l|l}
+    Test Set & BLEU \\
+    \hline
+    MT08-nw & RUNS \\
+    MT09-nw & RUNS \\
+    WSJ22 & 44.01 \\
+    WSJ23 & RUNS \\
+  \end{tabular}
+  \caption{Baseline for the NgramGen Decoder. There are no limits on the input length. Pruning setting are set so that decoding is possible using
+  all the memory available on the machines. Performance is measured with case insensitive BLEU.}
+  \label{tab:gyroBaseline}
+  \end{center}
+\end{table}
+%
+We also compare the performance obtained by the NgramGen decoder with previous
+work on the data set WSJ23 in \autoref{tab:gyroComparedPreviousWork}. We can
+see that our method, without using any additional information apart from the
+input bag-of-word achieves state-of-the-art performance.
+%
+\begin{table}
+\begin{center}
+  \begin{tabular}{l|l|l}
+    Work & BLEU & Remark \\
+    \hline
+    Wan et al. EACL'09 & 33.7 & POS tag info\\
+    Zhang and Clark EMNLP'11 & 40.1 & POS tag info \\
+    Zhang et al. EACL'12 & 43.8 & POS tag info \\
+    Zhang IJCAI'13 & 44.7 & Base phrase info \\
+    This work & RUNS & No additional info
+  \end{tabular}
+\end{center}
+\caption{Comparing the NgramGen decoder performance with previous work
+  on the WSJ23 data set.}
+\label{tab:gyroComparedPreviousWork}
+\end{table}
+
+\subsection{Sentence Splitting}
+
+Running our decoder without limiting the length of the input
+as in \autoref{sec:gyroBaseline} can be time and memory consuming.
+For more rapid experimentation, we only reorder chunks of a limited
+size in the
+input. The input is divided each time a punctuation sign such
+as a comma or a semi-colon is observed or after having seen a maximum
+number of tokens. We also use a histogram pruning of 1000 states
+regardless of the input length.
+With this restriction, we obtain the results reported
+in \autoref{tab:gyroBaselineChopping}. We will use this baseline
+for more rapid experimentation and further analysis. Specifically,
+we will conduct experiments with a relatively short maximum chunk
+length of 11 and a more realistic maximum chunk length of 20.
+
+\begin{table}
+  \begin{center}
+  \begin{tabular}{l|l}
+    Maximum Chunk Length & MT08-nw BLEU \\
+    \hline
+    7 & 82.83 \\
+    9 & 78.53 \\
+    11 & 74.86 \\
+    13 & 71.75 \\
+    15 & 68.95 \\
+    20 & 64.36 \\
+  \end{tabular}
+  \caption{NgramGen decoder baseline with restrictions on the input length.}
+  \label{tab:gyroBaselineChopping}
+  \end{center}
+\end{table}
+
+\subsection{Pruning}
+
+In this section, we observe the effect of histogram pruning for
+a maximum input length of 11 and 20 in \autoref{tab:gyroPruning}.
+In both these settings,
+increasing the maximum stack size increases performance, but
+more so with maximum input length of 20 since the search space
+is much larger in that case.
+%
+\begin{table}
+  \begin{center}
+  \begin{tabular}{l|l|l|l}
+    Pruning & Max Input Length & MT08-nw BLEU \\
+    \hline
+    500  & 11 & 74.67 \\
+    1000 & 11 & 74.86 \\
+    1500 & 11 & 74.98 \\
+    2000 & 11 & 75.02 \\
+    3000 & 11 & 75.09 \\
+    4000 & 11 & 75.08 \\
+    5000 & 11 & 75.06 \\
+    6000 & 11 & 75.12 \\
+    7000 & 11 & 75.15 \\
+    8000 & 11 & 75.15 \\
+    9000 & 11 & 75.14 \\
+    10000 & 11 & 75.14 \\
+    \hline
+    500  & 20 & 64.21 \\
+    1000 & 20 & 64.36 \\
+    1500 & 20 & 64.85 \\
+    2000 & 20 & 64.94 \\
+    3000 & 20 & 65.17 \\
+    4000 & 20 & 65.33 \\
+    5000 & 20 & 65.39 \\
+    6000 & 20 & RUNS \\
+    7000 & 20 & RUNS \\
+    8000 & 20 & RUNS \\
+    9000 & 20 & RUNS \\
+    10000 & 20 & RUNS \\
+  \end{tabular}
+  \caption{Effect of histogram pruning on performance with a maximum input length
+  of 11 and 20.}
+  \label{tab:gyroPruning}
+  \end{center}
+\end{table}
+
+\subsection{Impact of Rules}
+
+In this section, we observe the impact of using all rules from unigrams
+up to 5-grams or only using rules with specific lengths. Results
+are reported in \autoref{tab:gyroVaryNgramLength}.
+We can see that for a relatively short maximum of 11 on the input length,
+using more $n$-gram orders is always better whereas when we use
+a more realistic maximum input length of 20, using more $n$-gram orders
+can hurt performance. However, in both cases, it is always beneficial
+to not only use unigrams.
+%
+\begin{table}
+  \begin{center}
+  \begin{tabular}{l|l|l}
+    Rule Configuration & Max Input Length & MT08-nw BLEU \\
+    \hline
+    All rules & 11 & 74.86 \\
+    1g/4g/5g & 11 & 74.85 \\
+    1g/5g & 11 & 74.82 \\
+    1g only & 11 & 74.13 \\
+    \hline
+    All rules & 20 & 64.36 \\
+    1g/4g/5g & 20 & 64.42 \\
+    1g/5g & 20 & 64.74 \\
+    1g only & 20 & 63.36 \\
+  \end{tabular}
+  \caption{Effect of using $n$-gram rules with various length.}
+  \label{tab:gyroVaryNgramLength}
+  \end{center}
+\end{table}
+
+\subsection{Overlap}
+\label{sec:overlap}
+
+We saw in \autoref{sec:canApply} that when we extend
+a state with a rule, the state coverage and the rule
+coverage have to be disjoint. In this section, we relax
+this constraint to allow for a coverage intersection
+of a maximum length. Results are presented in
+\autoref{tab:overlap}. Overall, we can see
+that allowing for overlap has no impact on performance.
+We do not use this decoder capability in future experiments.
+% TODO look at effect when no unigrams are used
+
+\begin{table}
+  \begin{center}
+  \begin{tabular}{l|l|l|l}
+    Overlap & Max Chop &  Configurations & MT08-nw BLEU \\
+    \hline
+    No overlap & 11 & All & 74.86 \\
+    1          & 11 & All & 74.87 \\
+    2          & 11 & All & 74.85 \\
+    \hline
+    No overlap & 11 & 1g/5g & 74.82 \\
+    1          & 11 & 1g/5g & 74.81 \\
+    2          & 11 & 1g/5g & 74.80 \\
+    \hline
+    No overlap & 20 & All & 64.36 \\
+    1          & 20 & All & 64.39 \\
+    2          & 20 & All & 64.28 \\
+    \hline
+    No overlap & 20 & 1g/5g & 64.74 \\
+    1          & 20 & 1g/5g & 64.72 \\
+    2          & 20 & 1g/5g & 64.63 \\
+  \end{tabular}
+  \caption{Effect of allowing for overlapping rules.}
+  \label{tab:overlap}
+  \end{center}
+\end{table}
+
+\subsection{Rescoring}
+
+Because our decoder outputs a lattice of hypotheses, this
+allows us to apply various lattice rescoring
+techniques~\citep{blackwood:2010:PHD}.
+We demonstrate in \autoref{tab:gyroRescoring}
+that those rescoring techniques are also effective in the
+string regeneration task setting.
+%
+\begin{table}
+  \begin{center}
+  \begin{tabular}{l|l|l|l|l}
+    Config & MT08-nw & MT09-nw & WSJ22 & WSJ23 \\
+    \hline
+    1st Pass & 64.36 & 60.91 & 62.76 & 64.39 \\
+    5g       & 66.11 & 63.26 & 63.18 & 65.04 \\
+    LMBR     & 67.37 & 64.53 & 64.28 & 65.85 \\
+  \end{tabular}
+  \caption{Effect of lattice rescoring on the first pass lattices obtained
+  by the NgramGen decoder.}
+  \label{tab:gyroRescoring}
+  \end{center}
+\end{table}
+
+\section{Conclusion}
+
+In this chapter, we have presented a novel approach to the string regeneration
+task, inspired from phrase-based SMT. Our decoder NgramGen achieves state-of-the-art
+performance on string regeneration from a simple bag of word on the Penn Treebank
+Section 23 data set.
+
+In this following chapter, we will explore potential application of our decoder
+to word reordering in machine translation.
+
+%TODO dep lm
+% TODO      \item analysis of when the input is lost
+% TODO for translation column about translation results + oracle for 1-best or 10-best. show get same score with combination or biased lm.
+
+%There is a separate report on all experiments (attached).
+%Here are possible experiments:
+%
+%\begin{itemize}
+%  \item investigate various pruning thresholds and see impact on BLEU. Show oracle scores as well. Maybe compare to the FST-based Gyro software.
+%  \item investigate how useful are longer n-gram rules. For example, see the impact of using only unigram rules.
+%  \item investigate if it is useful to use overlap in decoding (overlap means that we can cover a input position more than once).
+%  \item show gains from rescoring: 5g rescoring, LMBR rescoring and combination with MT hypothesis space.
+%\end{itemize}
+
+%\section{String Regeneration Experiments with Dependency LM}
+
+%\begin{itemize}
+%  \item Rescoring with dependency LM: gyro generates and n-best list which can be rescored with dependency LMs.
+%  \item What happens if we only rescore with left LM, right LM or head LM.
+%  \item Compare rescoring with dependency LM directly integrated into Gyro.
+%\end{itemize}
