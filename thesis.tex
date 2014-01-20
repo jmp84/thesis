@@ -66,8 +66,12 @@ urlcolor=linkcol %couleur des liens pour les url
 \DeclareMathOperator*{\argmin}{argmin}
 \DeclareMathOperator*{\argmax}{argmax}
 
-\includeonly{extractionFromPosteriors}
+%\includeonly{extractionFromPosteriors}
 %\includeonly{hadoopExtraction}
+%\includeonly{extractionFromPosteriors}
+%\includeonly{hadoopExtraction}
+%\includeonly{gyroRegeneration,gyroTranslation}
+\includeonly{gyroRegeneration}
 
 \begin{document}
 
@@ -109,9 +113,10 @@ urlcolor=linkcol %couleur des liens pour les url
 \include{extractionFromPosteriors}
 % system development for machine translation
 \include{systemDevelopment}
-% generation applied to machine translation
-\include{gyro}
-
+% generation: string regeneration
+\include{gyroRegeneration}
+% generation: applied to machine translation
+\include{gyroTranslation}
 
 \bibliographystyle{plainnat}
 \bibliography{thesis}

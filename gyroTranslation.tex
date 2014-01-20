@@ -1,0 +1,23 @@
+\chapter{String Regeneration Applied to Machine Translation}
+
+\section{Introduction}
+
+The previous chapter says that if we have a bag of word of high
+quality, then we can produce high quality translation output.
+
+\section{Experiments}
+
+\begin{itemize}
+  \item Experiment with bag of word made of 1-best translation. Show oracle scores.
+  \item Experiment with bag of word made of 1-best to 10-best translation. Show oracle scores.
+  \item Error analysis: show how often at what stage the input is lost. Conclusion: the
+    decoder needs to be biased towards the input.
+  \item Experiments on biasing the decoder towards the input: build language models
+    based on the MT output or based on the MT posteriors.
+  \item System combination experiments.
+  \item Syntactic n-grams experiments: use the syntactic n-grams to enrich the
+    bag of words and use the dependencies in conjunction with the dependency LM.
+  \item Use gyro together with confidence regions: the confidence regions can be used
+    for chopping and constraints. 
+  \item Use gyro together with position specific posteriors (TBA).
+\end{itemize}
