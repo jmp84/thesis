@@ -1,28 +1,68 @@
-\chapter{String Regeneration with the NgramGen Decoder}
+\chapter{String Regeneration as Phrase-Based Translation}
 
 %TODO normalize ngram n-gram $n$-gram etc.
+%TODO shorter name for the chapter
+%TODO make subsubsection numbered
+%TODO discuss look ahead
 
-Machine translation output often lacks
-fluency~\citep{knight:2007:TALK}.
-In this chapter, we tackle a related problem which
-is string regeneration: given a sentence where the
-word order has been scrambled, can we recover the
-original sentence ?
+Machine translation output was originally evaluated in terms
+of \emph{adequacy}, or how well the meaning of the source
+text is preserved in the translated text, and \emph{fluency},
+or how well formed is the
+translation~\citep{white-oconnell-carlson:1993:HLT}.
+There is increasing concern that translation output
+often lacks fluency~\citep{knight:2007:TALK}.
+In this chapter, we study the related problem of
+string regeneration: given a sentence where the
+word order has been scrambled, how difficult is it
+to recover the original sentence ? Our approach
+is inspired by phrase-based translation techniques and
+achieves state-of-the-art performance on the string regeneration
+task.
+
+% TODO: in section blabla
 
 \section{Introduction}
 
+Before the widespread use of automatic metrics such as
+BLEU~\citep{papineni-roukos-ward-zhu:2002:ACL} or
+METEOR~\citep{banerjee-lavie:2005:MTSumm}, machine translation
+systems were originally evaluated in terms of \emph{adequacy}
+and \emph{fluency}~\citep{white-oconnell-carlson:1993:HLT}.
+\emph{Adequacy} measures how well the meaning of the
+source text is preserved in the translation output while \emph{fluency}
+measures how well formed is the translation output.
+
+There is increasing concern that translation output
+often lacks fluency~\citep{knight:2007:TALK}.
+Current popular automatic metrics for translation can be gamed in the
+sense that it is possible to obtain a high score according to these
+metric with an output that lacks fluency.
+One reason is that these
+metrics measure local matches between translation output and
+references without ensuring that the overall structure of the output
+is sound. This may have led research on translation to neglect fluency.
+
+Even so, obtaining a fluent translation output is difficult.
+One of the reasons for lack of fluency is word ordering.
 Word ordering is a fundamental problem in many natural language
-processing applications. In machine translation, because
+processing applications.
+In machine translation, because
 source language and target language have a different word
 ordering, a machine translation system needs to model word
-reordering. In natural language generation tasks, such
+reordering. In some language pairs such as French-English, the
+source language gives good cues to the target word order, however,
+in other language pairs such as Chinese-English or Japanese-English,
+the word order can be very different in the source and
+the target language. In natural language generation tasks, such
 as paraphrasing or summarisation, word ordering
-is also critical at the surface realisation step.
+is also critical at the surface realisation
+step~\citep{reiter-dale:1997:JNLE}.
 Word ordering is also one possible type of grammatical
 error, especially for foreign language
 learners~\citep{yu-chen:2012:COLING}.
 
-In this chapter, we tackle the word ordering problem in
+In this chapter, we address the word ordering problem in
 isolation through the task of
 string regeneration~\citep{wan-dras-dale-paris:2009:EACL}.
 Given an input sentence where the word order has
@@ -30,14 +70,17 @@ been scrambled, the string regeneration task is to recover
 the original sentence. This task can be seen as one of the
 steps in surface realisation for language generation where
 the input is a list of content words and function words and
-the output a grammatical sentence.
+the output a grammatical sentence. It also allows us to study
+the realization task independently of the translation task.
 
 We use a simple but extensible approach, inspired from
 stack-based decoding for phrase-based translation.
 Given a bag of word as input, we use $n$-gram rules
 extracted from a large monolingual corpus and concatenate
 these $n$-grams to form hypotheses. The hypotheses are scored
-with a linear model. One of the critical features in this system
+with a linear model in the same manner as translation
+hypotheses in phrase-based translation~\citep{och-ney:2002:ACL}.
+One of the critical features in this system
 is the language model. Arbitrary features can be added to the
 system, demonstrating its flexibility.
 % TODO
@@ -45,23 +88,50 @@ system, demonstrating its flexibility.
 %an alternative version that incorporates a dependency language
 %model~\citep{shen-xu-weischedel:2008:ACL,shen-xu-weischedel:2010:CL}.
 
-\section{Related Work}
+Our strategy achieves state-of-the-art in the string regeneration
+task. We also study various capabilities of our decoder, such as
+splitting the input into chunks, pruning, length of rules, rule overlap
+and rescoring. % TODO expand on this
+% TODO read gyro paper eacl
+
+\section{Background}
 
 \citet{brown-cocke-dellapietra-dellapietra-jelinek-lafferty-mercer-roossin:1990:CL}
 introduce the string regeneration task, or \emph{bag of word translation}
 to demonstrate the effectiveness
 of $n$-gram language models. With a 3-gram language model, they recover
 63\% of sentences with less than 11 words with brute force search
-over all permutations.
+over all permutations. For comparison, our system is able to recover
+60\% of the tokenized and lowercased sentences with less than 11 words
+on Section 23 of the Penn Treebank.
 %TODO compare our system to this performance
+%TODO update this performance with a better system or with rescored system
+%TODO maybe: run regeneration with base noun phrase together
+%TODO run gyro with unigrams only for the baseline and try to beat it
 
 String regeneration has recently gained interest as
 a standalone
 task~\citep{wan-dras-dale-paris:2009:EACL,he-wang-guo-liu:2009:ACLIJCNLP,zhang-clark:2011:EMNLP,zhang-blackwood-clark:2012:EACL2012,zhang:2013:IJCAI}.
+%
+%wan et al:
+%find the best dep tree
+%related work: statistical surface realisation Langkilde and Knight
+%text to text generation TODO check for papers with that title
+%use string regeneration as surrogate for grammaticality test
+%content selection is abstracted out
+%training on the ptb
+%base noun phrase are kept together !!!!!!!!
+%string regeneration: generation component of MT, paraphrase generation, summarisation
+%debunk claim that lm performs bad: try to get score with unigrams only
+%use chu liu edmond algo: get a dep tree.
+%now need to get right ordering for example for all left children
+%use language model. this is an example of tree linearization
+%
+%
 String regeneration serves as a proxy to measure the grammaticality of a
 natural language generation system output and is a simplified version
 of the \emph{linguistic realisation} task in natural language
-generation~\citep{reiter:1997:JNLE}.
+generation~\citep{reiter-dale:1997:JNLE}.
 \citet{wan-dras-dale-paris:2009:EACL} use the minimum spanning tree algorithm
 to find an optimal tree given a bag of words.
 \citet{he-wang-guo-liu:2009:ACLIJCNLP} use a log-linear model to map
@@ -87,22 +157,35 @@ on this task.
 
 % TODO MAYBE THIS
 % Towards Developing Generation Algorithms for Text-to-Text Applications
+% TODO also review Adria's paper
 
-\section{Model}
+\section{Phrase-Based Translation Model for String Regeneration}
 
-Similarly to phrase-based and hierarchical phrase-based translation, we
-use a linear model:
+In the previous section, we have reviewed various strategies for string
+regeneration. We now describe our original method, which is inspired from
+phrase-based translation techniques~\citep{koehn:2010:book}. As described
+in (TODO refer to background), we employ a feature based linear model as our
+objective function:
 %
 \begin{equation}
   \hat{\bm{e}} = \argmax_{\bm{e}} \bm{\lambda} \cdot \bm{\Phi(\bm{e})}
   \label{eq:gyroModel}
 \end{equation}
 %
-where $\bm{\lambda}$ is a weight vector and $\bm{\Phi}(\bm{e})$ is
-a feature vector. $\bm{\Phi}(\bm{e})$ contains a language model
-$g(\bm{e})$ and local features $\bm{\varphi}(\bm{e})$. Similarly,
-$\bm{\lambda}$ has a weight $\lambda_g$ for the language model
-and weights $\bm{\lambda_{\varphi}}$ for local features. A hypothesis
+where:
+%
+\begin{itemize}
+  \item $\hat{\bm{e}}$ is the best possible hypothesis according to the model.
+  \item $\bm{e}$ is a possible hypothesis.
+  \item $\bm{\lambda}$ is a feature weight vector.
+  \item $\bm{\Phi}(\bm{e})$ is a feature vector for the hypothesis $\bm{e}$.
+\end{itemize}
+%
+$\bm{\Phi}(\bm{e})$ contains a language model
+$g(\bm{e})$ and local features $\bm{\varphi}(\bm{e})$ (see TODO refer
+to background). Similarly, $\bm{\lambda}$ has a weight $\lambda_g$ for the language model
+and weights $\bm{\lambda_{\varphi}}$ for local features. As in phrase-based
+translation, a hypothesis
 is decomposed into phrases $\bm{e}_1^I$. We can then rewrite
 \autoref{eq:gyroModel} into \autoref{eq:gyroModel2}:
 %
@@ -115,47 +198,152 @@ is decomposed into phrases $\bm{e}_1^I$. We can then rewrite
 \end{equation}
 %
 In this chapter, we will only experiment with the language model feature.
+%TODO maybe add experiments with additional features
+Our decoder algorithm described subsequently in
+\autoref{sec:gyroDecoderAlgorithm} generates hypotheses left to right
+by concatenating phrases $e_1$, ..., $e_I$. For a phrase index $j \in [1, I]$,
+we define the partial model score $\text{sc}(e_1^j)$ of partial hypothesis $e_1^j$ as:
+%
+\begin{equation}
+  \text{sc}(e_1^j) = \lambda_g g(e_1^j) + \bm{\lambda_{\varphi}} \cdot \sum_{i = 1}^j \bm{\varphi}(\bm{e}_i) \\
+\end{equation}
 
-\section{Decoder}
+\section{Phrase-Based Translation Rules for String Regeneration}
+
+In the previous section, we introduced our model for string regeneration.
+We assumed that a hypothesis could be segmented into phrases. We will
+now describe how to obtain these phrases.
+
+\subsection{Rule Extraction}
+
+We first compile a large monolingual corpus. Text is tokenized
+and lowercased. We then employ the MapReduce
+framework (see TODO refer to background) in order to extract
+$n$-grams together with their occurrence counts in the corpus.
+
+The input key to the \emph{map} function is irrelevant.
+The input value to the \emph{map} function is a line of text.
+The \emph{map} function simply extract all $n$-grams from the
+input line of text and outputs these $n$-grams with a count of
+one. The input to the \emph{reduce} function is an $n$-gram
+and a series of constant values equal to one.
+The \emph{reduce} function simply sums the counts of one
+and output the $n$-gram with its total count. This MapReduce
+job is analogous to the canonical word count example except
+that here $n$-grams of higher order than unigrams are considered.
+For experiments, we extract $n$-grams from order 1 to 5.
+
+\subsection{Rule Filtering}
+\label{sec:ngramRuleFiltering}
+
+Once we have extracted all $n$-grams from a monolingual corpus, we
+would like to retrieve the $n$-grams relevant to a test set
+that we which to experiment on.
+
+Contrary to the process described in \autoref{sec:rulextract}, we
+do not generate queries and then seek those queries in an HFile.
+This is because the number of possible queries is too large
+to fit in memory. For a sentence of length $N$ with words distinct
+from each other, the number of possible relevant 5-grams is
+$N \times (N - 1) \times (N - 2) \times (N - 3) \times (N - 4)$.
+For sentence of length 100, this would correspond to approximately
+9B queries.
+
+We take the alternative approach of scanning the set of $n$-grams
+and retaining the relevant ones. For this, we again use a MapReduce
+job. The input key to the \emph{map} function is an $n$-gram and
+the input value is a count. For each test sentence, the \emph{map}
+function checks if the $n$-gram vocabulary is included in the
+vocabulary of that sentence and if so, it generates all possible
+coverages of this $n$-gram for that sentence. The \emph{map}
+output key is the $n$-gram together with a sentence id. The \emph{map}
+output value is a coverage and a count. The \emph{reduce} function
+simply removes duplicates in the list of coverages. % TODO explain why
+%TODO explain coverage.
+
+\section{Decoder Algorithm}
+\label{sec:gyroDecoderAlgorithm}
 
 In this section, we present our NgramGen decoder, which reorders
 an input bag of word using techniques inspired from phrase-based
-SMT~\citep{koehn:2010:book}.
+SMT~\citep{koehn:2010:book}, and which we review in (TODO refer to
+background).
 
 \subsection{Input}
 
 The input to the decoder consists of:
 %
 \begin{itemize}
-  \item A bag of words $\bm{w}$, represented as a vector.
-  \item A set of $n$-grams with coverage information. The vocabulary
-    of the $n$-grams must be included in the vocabulary of the input
-    bag of words. For a given $n$-gram, its coverage is a bit vector
-    that indicates what positions the $n$-gram covers in the input.
+  \item A bag of words or multiset $\bm{w}$, represented as a vector.
+    For example, we could have $\bm{w} = [\text{do, you, do}]$
+  \item A set of $n$-grams, where the
+    vocabulary of each $n$-gram is a subset of the vocabulary of the
+    input bag of words. Each $n$-gram is also associated with
+    one or more coverages as computed in \autoref{sec:ngramRuleFiltering}.
+    For a given $n$-gram, its coverage is a bit vector
+    that indicates what positions the $n$-gram covers in the input bag of words.
     In case of repeated words, an $n$-gram can have several possible
-    coverages. The input $n$-grams and coverages are represented as
-    an associative array datastructure and denoted $\mathcal{N}$.
+    coverages. For example, with the input bag of words
+    $[\text{do, you, do}]$, the $n$-gram $[\text{do, you}]$ has
+    two possible coverages: 110 and 011.
+    The input $n$-grams and coverages are represented as
+    an associative array datastructure. We denote this
+    input by $\mathcal{N}$. Note that it would be possible for the decoder
+    to compute possible coverages on the fly, however we choose to precompute those
+    at the filtering step described in \autoref{sec:ngramRuleFiltering}.
   \item A $n$-gram language model $\mathcal{G}$. The $n$-gram
-    language model is
-    used as a feature to measure the fluency of the output.
+    language model is used as a feature in the model to
+    encourage fluent output.
 \end{itemize}
+%
+We will now describe how hypotheses are generated by de decoder
+from the input.
 
 \subsection{Algorithm}
 
-Our algorithm is analogous to stack based decoding
-for phrase-based translation~\citep{koehn:2010:book}.
-We construct hypotheses left to right.
-We use a data structure $M$ similar to a matrix, that we represent
-with a vector of columns. $M_i$ represents the $i$-th column.
-These columns are the analog of stacks
-in stack based decoding for phrase-based translation. Zero-based
-column indices represent how many words in the input have
-been covered. For an input of size $|\bm{w}|$, there are
-$|\bm{w}| + 1$ columns indexed from $0$ to $|\bm{w}|$.
-Each column contains a set of \emph{states}.
-A \emph{state} contains the information necessary to
+Our algorithm is inspired from stack based decoding for phrase-based
+translation~\citep{koehn:2010:book}. We first give an overview
+before outlining the algorithm details.
+
+\subsubsection{Overview}
+\label{sec:gyroAlgorithmOverview}
+
+In order to represent partial hypotheses, we use a vector
+of \emph{columns}. Each column contains a set of
+\emph{states}. Each state encodes a set of partial hypotheses.
+All states in a column represent hypotheses that cover
+the same number of words in the input.
+
+We start to build hypotheses from an initial state that
+represents the empty hypothesis. This initial state
+is located in the first column, which represents the
+hypotheses that have not covered any word in the input.
+The empty hypothesis is then extended with the input
+$n$-gram rules and their coverage. New states are created
+to take into account these extensions. Then, partial
+hypotheses represented by these states are iteratively
+extended until hypotheses that cover the entire input
+are produced.
+
+\subsubsection{Algorithm Details}
+
+As mentioned in \ref{sec:gyroAlgorithmOverview}, we represent
+partial hypotheses with a vector of columns, that we denote
+$M$. For an input $\bm{w}$ of size $|\bm{w}|$, $M$ has a size
+of $|\bm{w}| + 1$. Elements of $M$ are denoted $M_0$, ..., $M_{|\bm{w}|}$.
+The $i$-th column $M_i$ represents hypotheses that have covered
+$i$ words in the input. The columns $M_i$ are the analog of stacks
+in stack based decoding for phrase-based translation.
+
+Each column contains a set of states that encode a set of partial
+hypothesis. A state contains the information necessary to
 extend a partial hypothesis and represents a set of
 partial hypotheses that can be \emph{recombined}~\citep{koehn:2010:book}.
+This means that if two partial hypotheses $h_1$ and $h_2$
+are represented by a state $s$ and $h_1$ has a higher model score than
+$h_2$, then if $h_1$ and $h_2$ are extended with the same rules, then
+the extension of $h_1$ will have a higher score than the extension $h_2$.
+
 The states are sorted by their \emph{score}.
 For a given state, its score is the best model score of any of the partial
 hypotheses that the state represents.
@@ -177,7 +365,10 @@ The decoding algorithm is presented in \autoref{alg:gyroDecoder}.
       \EndFor
     \EndFunction
   \end{algorithmic}
-  \caption{NgramGen decoding algorithm.}
+  \caption{NgramGen decoding algorithm. The input is a bag of words $\bm{w}$,
+  a set $\mathcal{N}$ of $n$-gram rules with their coverage and a language model
+  $\mathcal{G}$. The column vector $M$ is first initialized with a state representing
+  the empty hypothesis. Then, the initial state is iteratively extended.}
   \label{alg:gyroDecoder}
 \end{figure}
 %
@@ -198,23 +389,23 @@ We will now describe the last two operations, \textsc{CanApply}
 and \textsc{Extend} but before that, we need to describe what kind
 of information a state contains.
 
-\subsection{State Definition}
-
-We mentioned earlier that a state contains enough information
-in order to extend a hypothesis and that a state represents
+\paragraph{State Definition} The states
+contain enough information
+in order to extend a hypothesis and represent
 all hypotheses that can be recombined. A state therefore
 contains the following information:
 %
 \begin{itemize}
   \item Coverage: the coverage is a bit vector that indicates
     which words in the input have been covered.
-  \item History: the history for an $n$-gram language model
-    is simply the last $n-1$ word in a partial hypothesis.
-    This allows to compute the language model correctly.
+  \item History: in order to compute the $n$-gram language model
+    score correctly when extending a partial hypothesis, we
+    store the last $n-1$ words of the partial hypothesis we want
+    to extend. The definition of history is therefore the same
+    as the definition of history for an $n$-gram language model.
 \end{itemize}
 
-\subsection{\textsc{CanApply} Operation}
-\label{sec:canApply}
+\paragraph{\textsc{CanApply} Operation}
 
 Given a state $s$ with coverage $c(s)$ and an $n$-gram rule $r$ with
 coverage $c(r)$, rule $r$ can be applied to state $s$ iff $c(s)$ and
@@ -222,14 +413,14 @@ $c(r)$ are disjoint. We will see in \autoref{sec:overlap}
 that this constrain can be relaxed if we allow for overlapping
 $n$-grams.
 
-\subsection{\textsc{Extend} Operation}
+\paragraph{\textsc{Extend} Operation}
 
 Given a state $s$ with coverage $c(s)$ and and $n$-gram rule $r$
 with coverage $c(r)$ that can be applied to $s$, we extend
 $s$ with $r$ into a new state $s'$ as follows:
 %
 \begin{itemize}
-  \item The coverage $c(s')$ of $s'$ is the bitwise disjunction
+  \item The coverage $c(s')$ of $s'$ is the bitwise OR
     of $c(s)$ and $c(r)$:
 %
 \begin{equation}
@@ -248,31 +439,58 @@ $s$ with $r$ into a new state $s'$ as follows:
     the existing score. Otherwise, $s'$ is simply added to the column corresponding
     to its coverage.
 \end{itemize}
+%
 
-\subsection{Pruning}
-
+\paragraph{Pruning}
+Our algorithm does not solve the issue that the search space for an input
+of size $N$ with distinct words has a size $N!$. We therefore need pruning
+in search.
 We support histogram pruning and threshold pruning~\citep{koehn:2010:book}.
 After each extension, if we add a new state, we enforce that the column where
-a state was added satisfies the pruning constraints.
+a state was added satisfies the pruning constraints. This means that for
+histogram pruning with $m$ the maximum number of states per column, if we
+add a new state to a column that has $m$ state, then the state with the lowest
+score is removed from that column.
+
+For threshold pruning with a threshold $t$, the situation is
+slightly more complex. When we want to add a state with score $s$ to a column where the best score
+is $b$, we consider three cases:
+%
+\begin{itemize}
+  \item $s \leq b$ and $s \geq b - t$: the state is added to the column.
+  \item $s \leq b$ and $s < b - t$: the state is not added to the column.
+  \item $s > b$: the state is added to the column and all states in that
+    column with a score less than $s - t$ are removed from the column.
+\end{itemize}
 
 \subsection{FST Building}
 
 We mentioned earlier that a state represents partial hypotheses that can
 be recombined. However, since we do not keep back pointer between states,
-we cannot recover hypotheses directly from the matrix $M$.
+we cannot recover hypotheses directly from the column vector $M$.
 Instead, we build an FST that contains all hypotheses. For each extension,
 an arc is added to the output FST. We make use of the OpenFst
 toolkit~\citep{allauzen-riley-schalkwyk-skut-mohri:2007:CIAA}.
 This allows us to rescore the output using tools already integrated
 with OpenFst~\citep{blackwood:2010:PHD}.
 
+Another advantage is that hypotheses are not actually recombined
+and all hypotheses are stored in the FST. This allows hypotheses
+that would be discarded in traditional stack based decoding
+to remain and get a chance to get a better score in rescoring.
+
 \subsection{Example}
 
-We demonstrate how our algorithm works with an example.
-Our input consists of a bag of words \emph{do you do},
-a bigram language model and monolingual rules with
-their coverage of the input bag of words. We use the
-rules listed in \autoref{tab:monolingualRules}.
+We now demonstrate how our algorithm works with an example.
+Our input consists of:
+%
+\begin{itemize}
+  \item a bag of words: $[\text{do, you, do}]$. Note that the word \emph{do} is repeated.
+  \item a bigram language model. Thus the history for each state will consist of the
+    last word of the partial hypothesis.
+  \item monolingual $n$-gram rules with their coverage of the input bag of word. We
+    use the rules listed in \autoref{tab:monolingualRules}.
+\end{itemize}
 %
 \begin{table}
   \begin{center}
@@ -294,7 +512,6 @@ rules listed in \autoref{tab:monolingualRules}.
 After running our algorithm without pruning, we obtain the data structure
 represented in \autoref{fig:exampleAlgoGyro}.
 %
-% TODO expand a bit the comments
 \begin{figure}
   \scriptsize
   \tikzstyle{State} = [circle, draw, text width = 1.5cm, align = center]
@@ -303,7 +520,7 @@ represented in \autoref{fig:exampleAlgoGyro}.
   \begin{center}
     \begin{tikzpicture}
       % Place nodes
-      \node [State] (init) {000, </s>};
+      \node [State] (init) {000, $<$/s$>$};
       \node [State, above right = 1cm and 1cm of init] (do) {100, do};
       \node [State, right = 2cm of init] (youdo) {011, do};
       \node [State, below right = 1cm and 2.53cm of init] (doyou) {110, you};
@@ -322,6 +539,13 @@ represented in \autoref{fig:exampleAlgoGyro}.
   \caption{todo}
   \label{fig:exampleAlgoGyro}
 \end{figure}
+%
+We can see that the same state \{111, do\} is reused for
+the two hypotheses \emph{do you do}, \emph{you do do}, because
+these hypotheses have the same coverage and the same history.
+We also note that the hypothesis \emph{do you do} is repeated.
+This is not an issue as we use an operation of determinization
+on the resulting FST.
 
 \section{Experiments}
 
@@ -356,11 +580,11 @@ data sets. We use the following data sets:
 \end{itemize}
 %
 The test sets are first tokenized and lowercased.
-Then, $n$-gram rules up to length 5 relevant to the processed test sets
+Then, $n$-gram rules up to length 5 for each of the processed test sets
 are extracted from a large monolingual text collection.
 For MT08-nw and MT09-nw, we use all available monolingual data
 for the NIST Open Machine Translation 2012
-Evaluation.\footnote{\url{http://www.nist.gov/itl/iad/mig/openmt12.cfm}}.
+Evaluation.\footnote{\url{http://www.nist.gov/itl/iad/mig/openmt12.cfm}}
 This consists of approximately 10.6 billion words.
 For WSJ22 and WSJ23, we use all available monolingual data for the WMT13
 evaluation.\footnote{\url{http://statmt.org/wmt13/translation-task.html}}.
@@ -390,7 +614,7 @@ while using all the memory available on the machines.
     MT08-nw & RUNS \\
     MT09-nw & RUNS \\
     WSJ22 & 44.01 \\
-    WSJ23 & RUNS \\
+    WSJ23 & 45.48 \\
   \end{tabular}
   \caption{Baseline for the NgramGen Decoder. There are no limits on the input length. Pruning setting are set so that decoding is possible using
   all the memory available on the machines. Performance is measured with case insensitive BLEU.}
@@ -408,11 +632,11 @@ input bag-of-word achieves state-of-the-art performance.
   \begin{tabular}{l|l|l}
     Work & BLEU & Remark \\
     \hline
-    Wan et al. EACL'09 & 33.7 & POS tag info\\
+    Wan et al. EACL'09 & 33.7 & POS tag info + base noun phrase\\
     Zhang and Clark EMNLP'11 & 40.1 & POS tag info \\
     Zhang et al. EACL'12 & 43.8 & POS tag info \\
     Zhang IJCAI'13 & 44.7 & Base phrase info \\
-    This work & RUNS & No additional info
+    This work & 45.48 & No additional info
   \end{tabular}
 \end{center}
 \caption{Comparing the NgramGen decoder performance with previous work
@@ -422,6 +646,8 @@ input bag-of-word achieves state-of-the-art performance.
 
 \subsection{Sentence Splitting}
 
+%TODO remark about the fact that when input is translation output,
+%sentence splitting is not cheating
 Running our decoder without limiting the length of the input
 as in \autoref{sec:gyroBaseline} can be time and memory consuming.
 For more rapid experimentation, we only reorder chunks of a limited
