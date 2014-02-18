@@ -12,6 +12,7 @@
 \usepackage{amsfonts}
 \usepackage[round]{natbib}
 \usepackage{bm}
+\usepackage[utf8]{inputenc}
 \def\pgfsysdriver{pgfsys-dvipdfm.def}
 \usepackage{tikz}
 \usetikzlibrary{shapes,arrows, positioning}
@@ -19,6 +20,7 @@
 \usepackage[all]{hypcap}
 \usepackage{footnotebackref}
 
+\newcommand{\red}[1]{\textcolor{red}{#1}}
 \def \RT [#1][#2][#3]{#1$\rightarrow${\tt $\langle$}#2,#3{\tt $\rangle$}}
 \def \SR [#1]{ {\tt $\langle$}#1}
 \def \TR [#1]{ #1{\tt $\rangle$}}
@@ -67,11 +69,12 @@ urlcolor=linkcol %couleur des liens pour les url
 \DeclareMathOperator*{\argmax}{argmax}
 
 %\includeonly{extractionFromPosteriors}
+\includeonly{statisticalMachineTranslation}
 %\includeonly{hadoopExtraction}
 %\includeonly{extractionFromPosteriors}
 %\includeonly{hadoopExtraction}
 %\includeonly{gyroRegeneration,gyroTranslation}
-\includeonly{gyroRegeneration}
+%\includeonly{gyroRegeneration}
 
 \begin{document}
 
