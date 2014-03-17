@@ -6,13 +6,226 @@
 % It should also describe what level of quality it can
 % currently achieve. Mention the term ``gist''.
 
+Machine translation is the process of translation from input
+speech or text in a natural language into another natural language
+by some kind of automatic system.
+Real world examples include online services such as
+Google Translate\footnote{\url{https://translate.google.com}},
+Bing Translate\footnote{\url{https://www.bing.com/translator}},
+SDL\footnote{\url{http://www.freetranslation.com/}},
+PROMT\footnote{\url{http://www.online-translator.com}}, etc.
+Interacting with any online automatic translation service with
+the expectation of a high quality translation can be a frustrating
+experience. Indeed, variations
+in word order and syntax and the use of real world knowledge
+for puns or idioms make translation a very challenging task.
+
+\subsection{Challenges for Translation}
+
+In order to illustrate the difficulties that arise in
+translation, we present several examples that
+make translation challenging for humans, and \emph{a fortiori} for
+computers. In some languages, some concepts are common enough
+to be designated by one word, but in another language, it will
+take an entire sentence to describe that concept. For example, the
+word \emph{sobremesa} in Spanish can be translated into English
+as \emph{the time spent after a meal, talking to the people with whom the meal was shared}.\footnote{\url{http://blog.maptia.com/posts/untranslatable-words-from-other-cultures}}
+In this situation, a human translator is left with the choice of
+keeping the translation short but inexact or long but cumbersome.
+For a computer, or rather a statistical model, such a situation will represent
+an outlier in terms of the ratio of words that are translation of each other.
+Self-referential sentences can also present challenges for translation.
+For example, the sentence \emph{This sentence has five words}\footnote{Example courtesy of Prof. Bill Byrne.}
+has at least two acceptable translation into Russian from the syntactic and
+semantic point of view: \emph{В этом предложении пять слов} and
+\emph{Это предложение состоит из пяти слов}. However, the second translation
+has six words and therefore cannot be accepted.
+Another challenge for translation is word ordering. The first sentence
+of the novel \emph{The Metamorphosis} by Franz Kafka reads % TODO use quote env
+\emph{Als Gregor Samsa eines Morgens aus unruhigen Träumen erwachte, fand er sich in seinem Bett zu einem ungeheuren Ungeziefer verwandelt.}.
+One possible English translation is \emph{As Gregor Samsa awoke one morning from uneasy dreams, he found himself transformed in his bed into a gigantic insect-like creature.}.
+In German, the words for transformed (verwandelt) and insect (Ungeziefer) come right at the end
+of the sentence and create an effect of surprise for the reader. In English, however, the verb transformed
+comes into the middle of the sentence and the effect of surprise is not
+as great. This example demonstrates how variations in word ordering between languages
+make translation challenging. Computer have the additional challenge that the word
+ordering they produce should be grammatical.
+
+\subsection{Machine Translation Current Quality}
+
+Even though machine translation is a challenging task, it is
+still useful in a number of situations. For example, machine
+translation can be used to obtain the gist of a document
+in a foreign language. Machine translation can also be
+used for post-editing: a document in a foreign language
+is first automatically translated and then the translation
+is corrected by a human translators. This is precisely
+the approach taken by translation companies such
+as \url{https://www.unbabel.com}.
+% TODO expand the number of useful applications
+
+Machine translation has therefore gotten to the point
+where it is actually useful for practical applications, but
+how far are we from perfect translation ?
+We give indications in terms of the BLEU
+metric~\citep{papineni-roukos-ward-zhu:2002:ACL},
+which we will define in \autoref{sec:optimization}.
+For now, we simply need to know that BLEU measures how well
+a translation hypothesis resembles a set of human translation
+references. The Cambridge University Engineering Department (CUED)
+participated in the NIST Open Machine Translation 2012
+Evaluation.\footnote{\url{http://www.nist.gov/itl/iad/mig/openmt12.cfm}}
+We ran this system on the newswire portion of the
+NIST Open Machine Translation 2008 Evaluation test set (MT08).
+For this test set, 4 references are available. We measure
+the case insensitive BLEU score of the CUED system against
+the 4 references and against subsets of 3 references. Similarly,
+we measure the case insensitive BLEU score of each reference
+against the other references. On average, CUED obtains a
+BLEU score of 35.39 against 3 references. On average, human
+references obtain a BLEU score 46.45 against the other
+references. We can draw two conclusions from these observations.
+First, this is evidence that many possible translations are
+acceptable and this is why even humans cannot obtain a BLEU
+score close to 100\%. Second, because the automatic
+system performance is only approximately 10 BLEU points below
+human performance, we can conclude that the quality of
+automatic translation is very high. Manual inspection of the
+system output confirms this.
+%
+\begin{table}
+  \begin{center}
+    \begin{tabular}{l|lllll}
+      System & 1-2-3-4 & 2-3-4 & 1-3-4 & 1-2-4 & 1-2-3 \\
+      \hline
+      CUED   & 38.95 & 34.80 & 35.60 & 35.87 & 35.28 \\
+      \hline
+      Reference 1 & -- & 46.19 & -- & -- & -- \\
+      Reference 2 & -- & -- & 47.27 & -- & -- \\
+      Reference 3 & -- & -- & -- & 45.43 & -- \\
+      Reference 4 & -- & -- & -- & -- & 46.90
+    \end{tabular}
+    \caption{BLEU score obtained by the Cambridge University Engineering Department
+    system and by human translators on the MT08 test set. 4 references are
+    provided. The BLEU score is measured against various subset of references: all
+    references (1-2-3-4), all but the first (2-3-4), etc. The BLEU score for
+    a human reference when the set of reference contains the human reference is
+    not computed and is simply 100.}
+  \end{center}
+\end{table}
+
+\section{Statistical Machine Translation}
+
+The current dominant approach to machine translation
+is a statistical approach. Given an input in a natural
+language, a statistical model of translation will attempt
+to predict the best translation according to a statistical
+criterion. The training data for such a model consists
+of a \emph{parallel corpus}, which is a set of sentence
+pairs in two different natural language that are
+translation of each other and a monolingual corpus
+which is a set of sentences in the language we would like
+to translate into. The widespread availability of
+machine translation and the development of automatic techniques
+to extract parallel corpora automatically increase the
+risk of having automatically translated output of poor
+quality present in the training data. These concerns have
+been acknowledged and addressed by a watermarking
+algorithm~\citep{venugopal-uszkoreit-talbot-och-ganitkevitch:2011:EMNLP}.
+
+Typically, state-of-the-art SMT systems are organized into
+a pipeline of deterministic or statistical modules, as shown
+in \autoref{fig:mtPipeline}. The parallel data is preprocessed and
+word aligned. A translation grammar is then extracted and estimated
+from the word alignments. The monolingual data is also preprocessed
+and one or various language models are estimated from this data.
+The language models and the translation grammar are used by
+the translation decoder for translation. In order to optimize
+the SMT model parameters, alternating decoding and tuning steps
+are carried out. Typically, a decoder can output a best possible
+translation, or an $n$-best list of translations or even a lattice
+of translations. In the latter case, optional rescoring steps
+can be carried out in order to include models that are too complex
+or not robust enough to be included in first pass decoding.
+
+\begin{figure}
+  \tikzstyle{TranslationModule} = [rectangle, draw, rounded corners,
+    align = center, text width = 4cm]
+  \tikzstyle{line} = [draw, very thick, color=black!50, -latex']
+
+  \begin{center}
+    \begin{tikzpicture}[node distance = 1.5cm]
+      % Place nodes
+      \node [TranslationModule] (parallelData) {Parallel Data};
+      \node [TranslationModule, below of=parallelData] (preprocessing) {Preprocessing};
+      \node [TranslationModule, below of=preprocessing] (wordalignment) {Word Alignment};
+      \node [TranslationModule, below of=wordalignment] (rulextraction) {Grammar Extraction};
+      \node [TranslationModule, right = 3cm of parallelData] (monolingualData) {Monolingual Data};
+      \node [TranslationModule, below = 1.57cm of monolingualData] (preprocessing2) {Preprocessing};
+      \node [TranslationModule, below = 1.57cm of preprocessing2] (languageModel) {Language Modelling};
+      \node (emptyMiddleGrammarLm) at ($(rulextraction)!0.5!(languageModel)$) {};
+      \node [TranslationModule, below of = emptyMiddleGrammarLm] (decoding) {Decoding};
+      \node [TranslationModule, below of=decoding] (tuning) {Tuning};
+      \node [TranslationModule, below of=tuning] (rescoring) {Rescoring};
+      % Draw edges
+      \path [line] (parallelData) -- (preprocessing);
+      \path [line] (preprocessing) -- (wordalignment);
+      \path [line] (wordalignment) -- (rulextraction);
+      \path [line] (monolingualData) -- (preprocessing2);
+      \path [line] (preprocessing2) -- (languageModel);
+      \path [line] (rulextraction) -- (decoding);
+      \path [line] (languageModel) -- (decoding);
+      \path [line] (decoding) edge [bend right] (tuning);
+      \path [line] (tuning) edge [bend right] (decoding);
+      \path [line] (tuning) -- (rescoring);
+      % Circle important modules
+      %\node [ellipse, draw=red, fit= (wordalignment)] {};
+      %\node [ellipse, draw=red, fit= (rulextraction)] {};
+    \end{tikzpicture}
+    \caption{Machine Translation Pipeline}
+    \label{fig:mtPipeline}
+  \end{center}
+\end{figure}
+
 \section{Contributions}
 
-% extraction from alignment posterior probabilities
-% lessons learned from large scale MT evaluations
-% rule extraction and retrieval with the Hadoop/HBase framework
-% string regeneration and application to MT
+The contributions of this thesis are outlined as follows:
+%
+\begin{itemize}
+  \item We propose a novel approach to grammar extraction
+    and estimation. Our approach ties the models of word
+    alignment and grammar extraction and estimation more
+    closely. It results into a more robust extraction and estimation
+    of translation grammars and leads to improvements in
+    translation quality.
+  \item We implement a system that
+    allows the efficient extraction
+    and filtering of very large grammars.
+    This method has been in continued use at
+    CUED and was employed for submissions to
+    various machine translation evaluations.
+  \item We designed and implemented a system
+    for string regeneration, inspired from
+    phrase-based SMT techniques. We obtain
+    state-of-the-art results in the string
+    regeneration task and demonstrate potential
+    applications to machine translation.
+\end{itemize}
 
 \section{Organisation of the thesis}
 
-% simply describes the chapters
+We now describe the thesis organisation.
+In \autoref{chap:smt}, we review statistical
+machine translation background: all components
+of the machine translation pipeline presented in \autoref{fig:mtPipeline}
+are reviewed in detail.
+In \autoref{chap:hfile}, we present our system for efficient
+extraction and retrieval from very large translation grammars.
+In \autoref{chap:extractionFromPosteriors}, we
+present our novel grammar extraction procedure that makes use of
+posterior probabilities from word alignment models.
+In \autoref{chap:gyro}, we introduce our phrase-based decoder
+for string regeneration. Finally, we give some advice
+about what decisions to make in terms of language modelling
+and grammar design to obtain the best possible systems
+for translation in \autoref{chap:wmt}.
