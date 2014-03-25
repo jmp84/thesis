@@ -1,4 +1,4 @@
-personal_ws-1.1 en 640 
+personal_ws-1.1 en 665 
 TotalOrderPartitioner
 mille
 secref
@@ -23,6 +23,7 @@ rulextraction
 cordova
 PROMT
 gytoFutureCost
+arg
 uninterpolated
 backwardRecursion
 languageModel
@@ -35,6 +36,7 @@ hierarchicalPhraseBasedTranslation
 transduction
 riley
 chu
+plamada
 clark
 partitioner
 dep
@@ -92,6 +94,7 @@ gdf
 Xinhua
 biometrika
 StatisticalMachineTranslationWordAlignment
+hierruleextract
 IEEE
 modifiedForwardConstraints
 maxnontermlen
@@ -116,6 +119,7 @@ tromble
 Acknowledgments
 doddington
 deplm
+tgere
 dellapietra
 kneser
 extractionFromPosteriorsViterbi
@@ -127,6 +131,7 @@ nist
 mont
 deneefe
 lavie
+yamada
 Hadoop
 parallelizing
 exps
@@ -138,6 +143,7 @@ extractionFromPosteriorsLink
 extractionFromPosteriors
 customize
 gyroModel
+jahr
 iff
 TargetConstraints
 przywara
@@ -163,6 +169,7 @@ pdfauthor
 xshift
 modifiedForwardRecursion
 BLEU
+chavez
 fikes
 SRILM
 guo
@@ -196,6 +203,7 @@ yshift
 macherey
 optimization
 gesehen
+Germann's
 les
 loopCoverage
 HLTR
@@ -225,6 +233,7 @@ HFile
 hfile
 lll
 ASLP
+gyroTrans
 EACL
 wallach
 pdfsubject
@@ -270,6 +279,7 @@ relatedwork
 EAMT
 myers
 diag
+Hansard
 symmetrised
 resnik
 parallelStatsWMT
@@ -278,6 +288,7 @@ pauls
 backwardForward
 monolingualStats
 lmInterpolationBestStrategy
+franz
 Viterbi
 goyal
 symmetrise
@@ -333,9 +344,11 @@ Config
 eines
 dipl
 GZip
+sgiwm
 extractionFromPosteriorsExtractionDisjoint
 sep
 codec
+rmb
 datastructure
 generalRuleXtractSpecializedHierarchical
 rulesPlusOther
@@ -350,6 +363,7 @@ maximization
 gyroBiasedLm
 filesystem
 MapReduce
+goodQualityOutput
 soricut
 naaclhlt
 InputSampler
@@ -392,6 +406,7 @@ pdfpagemode
 toi
 dataset
 uszkoreit
+germann
 tilda
 vaches
 domainAdaptationMT
@@ -415,6 +430,7 @@ Xeon
 Salut
 colorlinks
 bijective
+saintamand
 phrasePairPosteriorDefinition
 Langkilde
 lmSizes
@@ -429,6 +445,7 @@ blunsom
 rubin
 OpenFst
 multiset
+Unbabel
 lllll
 extractionFromPosteriorsExtractionGeneralApproach
 iInsideOutsideHierarchical
@@ -443,13 +460,15 @@ xia
 definitionD
 rulesPlusT
 shaoshu
+venezuelan
 ExperimentalSetup
 SBLEU
 viterbiCriterion
-summarize
-dempster
 palida
 pálida
+dempster
+venezuela's
+summarize
 summarized
 YAY
 pdftitle
@@ -461,13 +480,14 @@ xin
 wmt
 generalRuleXtractSpecialized
 degispert
+abbas
 consistencyConstraint
 sbVSkn
 dras
 AlignConstraint
 bohnet
-GigaWord
 Gigaword
+GigaWord
 gyroTransConfidenceRegions
 schroeder
 dorr
@@ -491,6 +511,8 @@ BP
 parker
 banga
 emptyMiddleGrammarLm
+NAAC
+renminbi
 rescore
 zhu
 nonterminals
@@ -512,7 +534,9 @@ HiFST
 hifst
 venkatasubramanian
 mikolov
+criticized
 tardes
+goodQualitySentences
 alignmentConsistentDefinitionHierarchical
 ji
 bitwise
@@ -608,6 +632,7 @@ argmin
 schalkwyk
 extractionFromPosteriorsExtraction
 zu
+humanAndSystemBLEU
 phrasePairPosteriorModel
 guojia
 Giga
