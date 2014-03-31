@@ -13,16 +13,19 @@
 \usepackage[round]{natbib}
 \usepackage{bm}
 \usepackage[utf8]{inputenc}
+\usepackage[T1,T2A]{fontenc} % T2A is for Russian
 \def\pgfsysdriver{pgfsys-dvipdfm.def}
 \usepackage{tikz}
-\usetikzlibrary{shapes,arrows, positioning}
+\usetikzlibrary{calc,fit,shapes,arrows,positioning,automata}
 \usepackage[dvipdfm,a4paper,pagebackref,hyperindex=true]{hyperref}
 \usepackage[all]{hypcap}
 \usepackage{footnotebackref}
 
+\newcommand{\red}[1]{\textcolor{red}{#1}}
 \def \RT [#1][#2][#3]{#1$\rightarrow${\tt $\langle$}#2,#3{\tt $\rangle$}}
 \def \SR [#1]{ {\tt $\langle$}#1}
 \def \TR [#1]{ #1{\tt $\rangle$}}
+\def \RU [#1][#2]{ {\tt $\langle$}#1,#2{\tt $\rangle$}}
 
 %\makeatletter
 %\renewcommand{\ALG@beginalgorithmic}{\footnotesize}
@@ -67,14 +70,20 @@ urlcolor=linkcol %couleur des liens pour les url
 \DeclareMathOperator*{\argmin}{argmin}
 \DeclareMathOperator*{\argmax}{argmax}
 
+\includeonly{introduction}
 %\includeonly{extractionFromPosteriors}
-\includeonly{hadoopExtraction}
+%\includeonly{statisticalMachineTranslation}
+%\includeonly{hadoopExtraction}
 %\includeonly{extractionFromPosteriors}
 %\includeonly{hadoopExtraction}
 %\includeonly{gyroRegeneration,gyroTranslation}
 %\includeonly{gyroRegeneration}
+%\includeonly{systemDevelopment}
+%\includeonly{gyroTranslation}
 
 \begin{document}
+
+\frontmatter
 
 % Matt's version
 % title
@@ -103,6 +112,21 @@ urlcolor=linkcol %couleur des liens pour les url
 % list of tables
 % chapters
 % bibliography
+
+% title page
+\include{titlepage}
+% declaration
+\include{declaration}
+% acknowledgments
+\include{acknowledgments} %TODO check orthography
+% abstract
+\include{abstract}
+
+\tableofcontents
+\listoffigures
+\listoftables
+
+\mainmatter
 
 % introduction
 \include{introduction}

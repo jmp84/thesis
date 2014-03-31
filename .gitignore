@@ -7,3 +7,6 @@
 *.blg
 *.brf
 *.out
+*.lof
+*.lot
+*.toc

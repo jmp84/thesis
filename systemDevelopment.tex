@@ -1,24 +1,546 @@
-\chapter{System Development for Machine Translation}
+\chapter{Refinements in System Development for Machine Translation}
+\chaptermark{System Development in MT}
+\label{chap:wmt}
 
-% This chapter is about the tricks I learned when developing
-% systems for WMT.
+% TODO check bib through online tool
 
-\section{Domain Adaptation}
+In this chapter, we present language model and grammar refinements
+techniques that give improvements in translation. These techniques
+may be used in order to build the best possible system for a
+translation evaluation or to customize a translation system
+for a client in the industry setting.
 
-\subsection{Domain Adaptation with Language Modelling}
+Experiments are based on a system submitted to the WMT13
+Russian-English translation shared
+task~\citep{pino-waite-xiao-degispert-flego-byrne:2013:WMT}.
+We briefly summarize the system building in
+\autoref{sec:wmt13ExperimentalSetup}.
+In \autoref{sec:domainAdaptationMT}, we review domain adaptation
+techniques for machine translation. In \autoref{sec:domainAdaptationLM},
+we show how to adapt a language model to obtain better performance
+on a specific domain such as newswire text.
+In \autoref{sec:domainAdaptationGrammar}, we show how additional
+features related to specific domains may help in translation.
+Finally, in \autoref{sec:bestPossibleRescoring} and \autoref{sec:sbVSkn}, we investigate
+the best possible strategy for combining first pass translation
+and language model rescoring in terms of language model
+training data size, $n$-gram language model order and
+language model smoothing.
 
-% This compares the use of an interpolated language model
-% vs an uninterpolated language model trained on the same
-% data.
+\section{Experimental Setup}
+\label{sec:wmt13ExperimentalSetup}
 
-\subsection{Domain Adaptation with Provenance Features}
+The experiments reported in this chapter are based
+on the system submitted to the WMT13 Russian-English translation shared
+task~\citep{pino-waite-xiao-degispert-flego-byrne:2013:WMT}.
+In this section, we summarize the system building.
 
-% This compares the use of no features, provenance features
-% and provenance feature union
+We use all the Russian-English parallel data available in the constraint track.
+We filter out non Russian-English sentence pairs with the
+\emph{language-detection} library.\footnote{http://code.google.com/p/language-detection/}
+A sentence pair is filtered out if the language detector detects a different language with probability
+more than 0.999995 in either the source or the target.
+This discards 78543 sentence pairs. In addition, sentence pairs where the source sentence has no Russian character, defined by the
+Perl regular expression [{\textbackslash}x{0400}-{\textbackslash}x{04ff}], are discarded.
+This further discards 19000 sentence pairs.
+
+The Russian side of the parallel corpus is tokenised with the
+Stanford CoreNLP toolkit.\footnote{http://nlp.stanford.edu/software/corenlp.shtml}
+The English side of the parallel corpus is tokenised with a standard English tokeniser.
+Both sides of the parallel corpus are then lowercased, so mixed case is restored in post-processing.
+Corpus statistics after filtering are summarised in
+\autoref{tab:parallelStatsWMT13}.
+%
+\begin{table}[htbp]
+\begin{center}
+\begin{tabular}{*{3}{|r}|}
+\hline
+Lang & \# Tokens & \# Types \\
+\hline
+\hline
+%Russian & CoreNLP & 2445919 & 47426938 & 1191325 \\
+RU & 47.4M & 1.2M \\
+\hline
+%English & Aachen & 2445919 & 50419263 & 711001 \\
+EN & 50.4M & 0.7M \\
+\hline
+\end{tabular}
+\end{center}
+\caption{Russian-English parallel corpus statistics.}
+\label{tab:parallelStatsWMT13}
+\end{table}
+%
+Parallel data is aligned using the MTTK
+toolkit~\citep{deng-and-byrne:2008:ASLP}.
+We train a word-to-phrase HMM model with a maximum phrase length of 4 in both
+source-to-target and target-to-source directions. The final alignments are obtained
+by taking the union of alignments obtained in both directions.
+A synchronous context-free grammar~\citep{chiang:2007:CL}
+is extracted from the alignments. The constraints
+are set as in the original publication with the following exceptions:
+%
+\begin{itemize}
+  \item phrase-based rule maximum number of source words: 9
+  \item maximum number of source element (terminal or nonterminal): 5
+  \item maximum span for nonterminals: 10
+\end{itemize}
+%
+Maximum likelihood estimates for the translation probabilities are computed using
+MapReduce as described in \autoref{chap:hfile}.
+We are using shallow-$1$ hierarchical grammars~\cite{degispert-iglesias-blackwood-banga-byrne:2010:CL} in our 
+experiments. This model is constrained enough that the decoder can build exact search spaces,
+i.e. there is no pruning in search that may lead to spurious undergeneration errors.
+
+For first-pass decoding, we use HiFST as described in \autoref{sec:hifst}. First-pass
+decoding is followed by a large 5-gram language model rescoring step
+as described in \autoref{sec:rescoring}.
+
+\section{Domain Adaptation for Machine Translation}
+\label{sec:domainAdaptationMT}
+
+Let us first formalize the problem of domain adapatation.
+In a standard multi-class classification problem, we are
+given a training set
+$\{(x_i, y_i) \in \mathcal{X} \times \mathcal{Y}, i \in [1, N]\}$
+where $\mathcal{X}$ is a set of instances to be labelled and
+$\mathcal{Y}$ is a finite set of labels. Machine translation
+can be seen as a multi-class classification problem where $\mathcal{X}$
+is the set of source sentences and $\mathcal{Y}$ is the set of
+target sentences. The multi-class classification learning problem
+is to find a function $f : \mathcal{X} \rightarrow \mathcal{Y}$
+that minimizes the number of prediction errors.
+
+A \emph{domain} is a particular distribution $\mathcal{D}$
+over $\mathcal{X}$. For example, $\mathcal{D}$ can be such that
+source sentences in $\mathcal{X}$ drawn from $\mathcal{D}$ are in the newswire
+domain. For domain adaptation, we assume a out-of-domain distribution
+$\mathcal{D}_O$ and a in-domain distribution $\mathcal{D}_I$.
+A model is trained on
+a sample drawn from $\mathcal{D}_O$ but the model performance
+is evaluated on a sample drawn from $\mathcal{D}_I$.
+\emph{Domain adaptation} consists in altering the training procedure
+by using information from domain
+$\mathcal{D}_I$ in order to achieve better performance on $\mathcal{D}_I$.
+The out-of-domain and in-domain distributions are also called
+source domain and target domain respectively.
+
+In machine translation, we can distinguish two types of domain
+adaptation problem: \emph{cross-domain} adaptation and \emph{dynamic}
+adaptation~\citep{foster-kuhn:2007:WMT}. In cross-domain adaptation,
+a small amount of in-domain training data is available while
+in dynamic adaptation, no in-domain training data is available.
+Dynamic adaptation may be important for online translation systems for example.
+Our concern is cross-domain adaptation, where at least an in-domain
+development set is available for parameter tuning.
+
+%notes on Experiments in Domain Adaptation for Statistical Machine Translation by Keohn and Schroeder
+%large europarl // data, small newscommentary // data, test set in news domain
+%baseline: concatenate the parallel corpora
+%in domain data to train language model
+%interpolated language model: train 2 lms: one in out of domain, one in in domain
+%grid search on interpolation weights
+%use the 2 lms as separate features
+\citet{koehn-schroeder:2007:WMT} explore various techniques for
+machine translation domain adaptation. They use the
+Europarl~\citep{koehn:2005:MTSummit} as out-of-domain
+training data and a news commentary parallel
+corpus\footnote{\url{http://statmt.org/wmt07/shared-task.html}}
+for in-domain training data. Training the language model
+on in-domain training data gives an improvement of 0.8 BLEU
+with respect to the baseline. Training two separated language models
+on the in-domain and out-of-domain training data and interpolating
+them with weights set to minimize perplexity on the tuning set
+gives an improvement of 0.4 BLEU. Using these two language models
+as separate features to be optimized by MERT~\citep{och:2003:ACL}
+gives an improvement of 0.6 BLEU. Finally, using two separate
+translation models trained on the in-domain and out-of-domain
+data and tuning the weights with MERT gives an improvement
+of 0.9 BLEU. These results are reported on the tuning set only.
+In this chapter, we explore very similar techniques.
+
+%notes on Domain Adaptation for Statistical Machine Translation with Monolingual Resources by Bertoldi and Federico
+%exploit monolingual in domain data (src or trg)
+%adapt sp-en system from UN to Europarl
+%distinguish cross-domain and dynamic adaptation
+%large in-domain monolingual data
+%use directly to adapt lm
+%generate synthetic // corpus and adapt translation and reordering model
+%generate synthetic // data directly with alignment given by decoder
+%phrase table is the union and the translation features are smoothed by some
+%lexical prob in case one phrase is not extracted from one of the // corpora
+
+% TODO add this
+%\citet{bertoldi-federico:2009:WMT} show how to exploit
+%a monolingual corpus for machine translation domain
+%adaptation. An in-domain monolingual corpus is available
+%either on the source or target side. A source side
+%monolingual corpus is automatically translated with
+%an out-of-domain baseline system. The two resulting
+%phrase tables are merged and the translation features
+%for phrase pairs not extracted from one of the corpus
+%are smoothed with a lexical feature. The language model
+%is trained on the target side of the synthetic corpus.
+%This strategy gives a gain of 1 BLEU. Using in-domain
+%monolingual data on the target side is much more effective.
+%Simply training the language model on this data gives
+%a gain of 5.2 BLEU. Creating a synthetic parallel corpus
+%and merging the phrase tables as just described gives
+%an additional 0.3 BLEU.
+
+% notes on Discriminative Instance Weighting for Domain Adaptation
+% in Statistical Machine Translation by foster goutte kuhn
+%baseline adaptation technique
+%obvious: use mert tune set in domain
+%more difficult: how to adapt lm and s2t and t2s
+%no adaptation of alignment
+%concatenate in and out training data
+%train two models and interpolate. one way to do this
+%is two use them as separate features in mert. drawback is
+%that mert becomes unstable
+%log linear combination not good because multiplies prob (?)
+%use linear intepolation instead
+%optimization on in domain dev set for LM
+%for TM not so straightforward
+%hat{alpha} = argmax_alpha sum_s,t ptilda(s,t) log sum_i alpha_i p_i(s | t)
+%ptilda(s,t): joint empirical distrib on in domain dev set using normal
+%rule extraction
+%alternative: use MAP (see paper for formula)
+%sentence selection: filter out-of-domain training to match
+%input source sentences
+%sentence selection crude. matsoukas et al use sentence pair weighting.
+%extension: learn weights on phrase pairs
+%model
+%p(s|t) = alpha_t p_I(s | t) + (1 - alpha_t) p_o(s | t)
+%p_I: s2t as usual computed on the in domain corpus
+%p_o: instance weighted model computed on the out of domain corpus
+
+
+
+%papers to review:
+%eck et al 2004
+%hildebrand et al 2005 (similar to eck et al 2004)
+%foster and kuhn 2007
+%finch sumita 2008
+%civera and juan 2007
+%ueffing et al 2007
+%schwenk 2008
+% daume 2007, daume marcu 2007
+% matsoukas et al 2009
+
+\section{Language Model Adaptation for Machine Translation}
+\label{sec:domainAdaptationLM}
+
+In this section, we contrast two simple language model adaptations
+techniques for machine translation. Experiments are carried out
+on the Russian-English translation shared task for
+WMT13\footnote{\url{http://statmt.org/wmt13/translation-task.html}}.
+The translation system is described in a separate
+publication~\citep{pino-waite-xiao-degispert-flego-byrne:2013:WMT}
+and summarised in \autoref{sec:wmt13ExperimentalSetup}.
+In this section, contrary to the system submitted to the WMT13
+shared task, we do not use any provenance features.
+
+We used the KenLM toolkit~\citep{heafield-pouzyrevsky-clark-koehn:2013:ACL} to
+estimate separate 4-gram LMs with modified Kneser-Ney
+smoothing~\citep{kneser-ney:1995:ICASSP,chen-goodman:1998:harvard}, for each of the
+corpora listed in \autoref{tab:monolingualStats}. The component models were then
+interpolated with the SRILM toolkit~\citep{stolcke:2002:SLP} to form a single LM.
+The interpolation weights were optimised for perplexity on the \emph{news-test2008},
+\emph{newstest2009} and \emph{newssyscomb2009} development sets, using
+the \emph{compute-best-mix} tool, which is part of the SRILM toolkit.
+The weights reflect
+both the size of the component models and the genre of the corpus the component models
+are trained on, e.g. weights are larger for larger corpora in the news genre.
+We also train a modified Kneser-Ney smoothed 4-gram LM using
+all concatenated data from \autoref{tab:monolingualStats}.
+%
+\begin{table}[htbp]
+\begin{center}
+\begin{tabular}{|l|r|}
+\hline
+Corpus & \# Tokens \\
+\hline
+EU + NC + UN + CzEng + Yx & 652.5M \\
+Giga + CC + Wiki & 654.1M \\
+News Crawl & 1594.3M \\
+afp & 874.1M \\
+apw & 1429.3M \\
+cna + wpb & 66.4M \\
+ltw & 326.5M \\
+nyt & 1744.3M \\
+xin & 425.3M \\
+\hline
+Total & 7766.9M \\
+\hline
+\end{tabular}
+\end{center}
+\caption{Statistics for English monolingual corpora.}
+\label{tab:monolingualStats}
+\end{table}  
+%
+\autoref{tab:lmInterpolationBestStrategy} shows that the best strategy for
+building a language model is to do offline linear interpolation to minimize
+perplexity on a development set that has the same genre as the translation
+development sets. The second best strategy is to use an uninterpolated
+language model. The worst strategy is to do a log-linear interpolation
+of the various language model components by tuning these language
+language models as separate features with lattice MERT. Note that
+these observations are confirmed even after rescoring with a large
+stupid-backoff 5-gram language model.
+One possible reason for the log-linear interpolation of various
+language models performs the worst might be that the MERT algorithm
+becomes unstable with more features~\citep{foster-kuhn:2009:WMT}.
+%
+\begin{table}
+  \begin{center}
+    \begin{tabular}{l|lll}
+      Configuration & newstest2012.tune & newstest2012.test & newstest2013 \\
+      \hline
+      Uninterpolated LM & 33.22 & 32.01 & 25.35 \\
+      +5g & 33.33 & 32.26 & 25.53 \\
+      \hline
+      Interpolated LM & 33.71 & 32.26 & 25.47 \\
+      +5g & 33.74 & 32.51 & 25.58 \\
+      \hline
+      Several Components & 33.23 & 31.75 & 25.37 \\
+      +5g & 33.28 & 31.85 & 25.48
+    \end{tabular}
+    \caption{Performance comparison between an uninterpolated language model, a
+    linearly interpolated language model and a log-linearly interpolated language mode.
+    Off-line linear interpolation is the best strategy.}
+    \label{tab:lmInterpolationBestStrategy}
+  \end{center}
+\end{table}
+
+% TODO do exp that compares linear and loglinear interp of ONLY 2 lms.
+
+\section{Domain Adaptation with Provenance Features}
+\label{sec:domainAdaptationGrammar}
+
+% notes on chiang's paper
+%run porter stemmer on en side of // corpus
+%build two word translation table
+%t(e' | f ) and t(e|e')
+%t_m(e | f ) = sum_{e'} t(e' | f) t(e | e')
+%t_m(f | e) = sum_{e'} t(f | e') t(e' | e) = t(f | e')
+%conditioning on provenance
+%each sentence pair has genre/collection info
+%compute word translation tables t_s(e | f) and t_s(f | e) for each feature s
+%for unseen word pairs, use Witten-Bell smoothing
+%for each s, for phrase pair/rule (f,e) add two features - log t_s(e | f)/t(e|f)
+
+In the previous section, we have presented domain adaptation strategies
+for the language model. In this section, we will focus on domain
+adaptation for the translation model.
+
+\citet{chiang-deneefe-pust:2011:ACL} introduce \emph{provenance} lexical features.
+The lexical feature $t(\bm{e} \mid \bm{f})$ for a phrase
+pair $(\bm{f}, \bm{e})$ is defined in \autoref{eq:lexicalFeature}:
+%
+\begin{equation}
+  t(\bm{e} \mid \bm{f}) = \prod_{i = 1}^{|\bm{e}|}
+  \begin{cases}
+    \frac{1}{|a_i|} \sum_{j \in a_i} t(e_i \mid f_j) & \text{if } |a_i| > 0 \\
+    t(e_i \mid \text{NULL}) & \text{otherwise}
+  \end{cases}
+  \label{eq:lexicalFeature}
+\end{equation}
+%
+where $t(e_i \mid f_j)$ is a word translation table computed from the
+word aligned parallel text. Each sentence pair is marked with
+its \emph{provenance}, for example what genre, such as newswire
+or web, it belongs to. Word translation tables and the
+lexical feature are computed for each provenance.
+
+We use a very similar approach with the following differences and
+extensions:
+%
+\begin{itemize}
+  \item The lexical features is computed differently, as described in
+    \autoref{sec:features}.
+  \item The features added to the system are not the ratio between the
+    provenance specific lexical feature and the general lexical feature but
+    simply the provenance specific lexical feature.
+  \item We extend this technique to compute provenance specific
+    source-to-target and target-to-source translation models
+    as described in \autoref{sec:rulextractMapReduce}.
+\end{itemize}
+%
+For our experiments, we use 4 provenances that correspond
+to the 4 subcorpora provided: the Common Crawl corpus, the
+News Commentary corpus, the Yandex corpus and the Wiki Headlines
+corpus. This gives an additional 16 features to our system.
+%
+\begin{table}
+  \begin{center}
+    \begin{tabular}{l|lll}
+      Configuration & newstest2012.tune & newstest2012.test & newstest2013 \\
+      \hline
+      No Provenance & 33.71 & 32.26 & 25.47 \\
+      +5g           & 33.74 & 32.51 & 25.58 \\
+      \hline
+      Provenance & 33.22 & 32.14 & 25.40 \\
+      +5g        & 33.22 & 32.14 & 25.41 \\
+      \hline
+      Provenance Union & 33.65 & 32.36 & 25.55 \\
+      +5g              & 33.67 & 32.58 & 25.63 \\
+%      \hline
+%      Provenance Union No Provenance & 33.22 & 31.78 & 25.59 \\
+%s      +5g                            & 33.22 & 31.78 & 25.59 \\
+    \end{tabular}
+    \caption{Comparison between the baseline and the use of
+    provenance feature, with or without the union strategy.}
+    \label{tab:noprovVsProvVsProvunion}
+  \end{center}
+\end{table}
+%
+Comparing the first two rows of \autoref{tab:noprovVsProvVsProvunion},
+we can see that in our setting provenance features are not
+useful. However, if we use the provenance union strategy described
+in \autoref{sec:rulextractMapReduce}, we can see that having additional
+rules together with provenance features is the best strategy.
+In order to verify whether the gains are only due to additional
+rules, we rerun the experiment in row 3 and remove the provenance
+features. After rescoring, we obtain 33.22 BLEU on newstest2012.tune,
+31.78 BLEU on newstest2012.test and 25.59 BLEU on newstest2013, which
+demonstrates the usefulness of provenance features when using the
+provenance union strategy.
 
 \section{Training Data Size}
+\label{sec:bestPossibleRescoring}
 
-% This should compare less data vs more data for parallel and for
-% monolingual data.
-% Something interesting to compare is big/small first pass LM (4g, 5g) with/without
-% 5g rescoring.
+In this section, we give recommendations on how much
+data should be used to train a first pass language model
+and what order should be chosen for the first pass
+$n$-gram language model.
+
+Our systems are typically run in two steps. The
+first step usually consists in decoding with
+a 4-gram language model. The second step consists
+in 5-gram lattice rescoring.
+\citet{brants-popat-xu-och-dean:2007:EMNLP-CoNLL} argue
+that single pass decoding is conceptually simpler
+and may lose less information. We attempt to verify this
+by incorporating 5-gram language models directly in
+first-pass decoding.
+
+Comparing the first two rows of \autoref{tab:lmSizes}, we
+can see that more language training data for the first
+pass language model helps both in first-pass decoding
+and in rescoring. Comparing the last two rows, we can
+see that more language training data is helpful only
+at the first pass decoding step. Comparing the first and
+third rows, and the second and fourth rows, we can see
+that for equal amounts of training data, the best strategy
+is to use a first-pass 4-gram language model followed by
+large 5-gram language model rescoring. One caveat with this
+conclusion of course is that the maximum amount of data experimented
+with is 7.8B words as opposed to 2 trillion words reported
+by \citet{brants-popat-xu-och-dean:2007:EMNLP-CoNLL}.
+%
+\begin{table}
+  \begin{center}
+    \begin{tabular}{l|lll}
+      Configuration & newstest2012.tune & newstest2012.test & newstest2013 \\
+      \hline
+      medium 4g & 32.96 & 31.53 & 24.60 \\
+      +5g &       33.43 & 32.12 & 25.30 \\
+      \hline
+      large 4g  & 33.71 & 32.26 & 25.47 \\
+      +5g       & 33.74 & 32.51 & 25.58 \\
+      \hline
+      medium 5g & 32.62 & 31.62 & 24.77 \\
+      +5g       & 33.20 & 31.96 & 25.27 \\
+      \hline
+      large 5g  & 32.99 & 31.79 & 25.18 \\
+      +5g       & 32.99 & 31.79 & 25.18 \\
+    \end{tabular}
+    \caption{Comparing various data size conditions for language model training
+    and different $n$-gram language model orders. In conclusion, more language
+    model training data is helpful but the use of higher order language
+    model is only beneficial in rescoring.}
+    \label{tab:lmSizes}
+  \end{center}
+\end{table}
+
+% TODO make the large 5g first pass interpolated by using restricted vocab.
+
+\section{Smoothing for 5-gram Rescoring}
+\label{sec:sbVSkn}
+
+In this section, we contrast the use of a stupid-backoff 5-gram
+language model and a modified Kneser-Ney smoothed language model
+for lattice rescoring. We train a stupid-backoff 5-gram language model
+and a modified Kneser-Ney 5-gram language model on all available
+English data for WMT13, described in \autoref{tab:monolingualStats}.
+
+On average, over the eight experiments from \autoref{tab:SB5gVsKN5g}
+we obtain a gain of 0.10 BLEU on the tune set, 0.12 BLEU on the first
+test set and 0.11 BLEU on the second test set. We conclude that the
+use of modified Kneser-Ney smoothing is slightly beneficial in 5-gram
+lattice rescoring.
+
+\begin{table}
+  \begin{center}
+    \begin{tabular}{l|lll}
+      Configuration         & newstest2012.tune & newstest2012.test & newstest2013 \\
+      \hline
+      Interpolated large 4g & 33.71 & 32.26 & 25.47 \\
+      + SB 5g               & 33.74 & 32.51 & 25.58 \\
+      + KN 5g               & 33.73 & 32.26 & 25.48 \\
+      \hline
+      Uninterpolated large 4g & 33.22 & 32.01 & 25.35 \\
+      + SB 5g                 & 33.33 & 32.26 & 25.53 \\
+      + KN 5g                 & 33.31 & 32.28 & 25.65 \\
+      \hline
+      Several Components      & 33.23 & 31.75 & 25.37 \\
+      + SB 5g                 & 33.28 & 31.85 & 25.48 \\
+      + KN 5g                 & 33.30 & 31.92 & 25.35 \\
+      \hline
+      Provenance              & 33.22 & 32.14 & 25.40 \\
+      + SB 5g                 & 33.22 & 32.14 & 25.41 \\
+      + KN 5g                 & 33.54 & 32.37 & 25.75 \\
+      \hline
+      Provenance Union        & 33.65 & 32.36 & 25.55 \\
+      + SB 5g                 & 33.67 & 32.58 & 25.63 \\
+      + KN 5g                 & 33.89 & 32.82 & 25.84 \\
+      \hline
+      Interpolated medium 5g  & 32.62 & 31.62 & 24.77 \\
+      + SB 5g                 & 33.20 & 31.96 & 25.27 \\
+      + KN 5g                 & 33.24 & 32.29 & 25.47 \\
+      \hline
+      Interpolated medium 4g  & 32.96 & 31.53 & 24.60 \\
+      + SB 5g                 & 33.43 & 32.12 & 25.30 \\
+      + KN 5g                 & 33.65 & 32.46 & 25.55 \\
+      \hline
+      Uninterpolated large 5g & 32.99 & 31.79 & 25.18 \\
+      + SB 5g                 & 32.99 & 31.79 & 25.18 \\
+      + KN 5g                 & 32.99 & 31.79 & 25.18 \\
+    \end{tabular}
+    \caption{Comparison between the gains obtained by stupid-backoff
+    5-gram rescoring and Kneser-Ney 5-gram rescoring.}
+    \label{tab:SB5gVsKN5g}
+  \end{center}
+\end{table}
+
+\section{Conclusion}
+
+In this chapter, we have investigated various refinements
+on translation system building. We come to the following
+conclusions for building higher quality systems:
+%
+\begin{itemize}
+  \item In order to build a language model for cross-domain
+    adaptation, the best strategy is to build an interpolated
+    language model and tune the interpolation weights in order
+    to minimize the perplexity on a development set in the
+    target domain, as opposed to tuning the language model
+    weights with MERT.
+  \item For systems that employ a two pass procedure, using
+    a first pass 4-gram language model performs better than
+    using a first pass 5-gram language model.
+  \item Finally, even with large amounts of monolingual training
+    data at the order several billion words, language model smoothing
+    strategies are important in the lattice rescoring setting.
+\end{itemize}
+
