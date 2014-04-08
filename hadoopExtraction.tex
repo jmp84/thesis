@@ -1,19 +1,26 @@
-\chapter{Rule Retrieval with HFiles}
+\chapter{Data Structures for Translation Grammars}
 \label{chap:hfile}
 
 % TODO check for duplicates in bibliography
+% TODO introduce MapReduce in background chapter
+% TODO check title casing
 
-Data availability and distributed computing techniques have allowed SMT
+Monolingual and parallel data availability and distributed computing techniques
+have allowed SMT
 researchers to build larger translation models. However, decoders need to be
 able to retrieve information efficiently from these models to be able to
-translate an input sentence or a set of input sentences. We introduce an easy to
-implement and general purpose solution to tackle this problem: we store
-translation models as a set of key-value pairs in an HFile. We apply this
-strategy to test set hierarchical phrase-based rule filtering. We compare our
+translate an input sentence or a set of input sentences in a reasonable amount
+of time. For online systems, translation even needs to be carried out in
+real time. Therefore SMT models need to be stored in a data structure
+that supports efficient querying and that also scales. We introduce a solution
+that satisfies these two requirements and that has the advantage that
+it reuses an existing framework in order to ease the implementation.
+We store translation models as a set of key-value pairs in an HFile. We apply this
+strategy in order to filter hierarchical phrase-based rules at the test set level. We compare our
 approach to alternative strategies and show that its trade offs in terms
 of speed, memory and simplicity are
 competitive~\citep{pino-waite-byrne:2012:PBML}. Software written for this work
-is available at \url{https://github.com/jmp84/ruleXtract} (branch PBML-2012).
+is available online.\footnote{\url{https://github.com/jmp84/ruleXtract} (branch PBML-2012)}
 
 \section{Introduction}
 \label{sec:hfileIntro}
@@ -22,34 +29,56 @@ Current machine translation research is characterised by increasing amounts
 of available data. For example, \autoref{fig:wmtdata} shows that
 for the WMT machine translation
 workshop~\citep{bojar-buck-callisonburch-federmann-haddow-koehn-monz-post-soricut-specia:2013:WMT}
-French-English constrained track translation task, the English side of parallel
-data has increased from 13.8M tokens in 2006 to 1012.7M tokens in 2012 and that
+French-English constrained track translation shared task, the English side of parallel
+data has increased from 13.8M tokens in 2006 to 1012.7M tokens in 2013 and that
 available English monolingual data has increased from 27.5M tokens to 6852.7M
-tokens.
+tokens over the same period.
 %
 \begin{figure}
   \begin{center}
-    \includegraphics[scale=0.8]{figures/wmt/wmtdata.eps}
+    \includegraphics{figures/wmt/wmtdata.eps}
     \caption{Number of English tokens (in millions) in parallel and monolingual
-      data available for the WMT translation shared task constrained track for
-      the years 2006 to 2013.}
+      data available for the WMT French-English constrained track translation
+      shared task for the years 2006 to 2013.}
     \label{fig:wmtdata}
   \end{center}
 \end{figure}
 %
+
 Along with growing amounts of data, the use of more powerful computers
 and distributed computing models such as
 MapReduce~\citep{dean-ghemawat:2008:ACM,lin-dyer:2010:book} has enabled machine
 translation researchers to build larger statistical machine translation models.
-Examples include language
-modelling~\citep{brants-popat-xu-och-dean:2007:EMNLP-CoNLL}, translation rule
-extraction~\citep{dyer-cordova-mont-lin:2008:WMT,weese-ganitkevitch-callisonburch-post-lopez:2011:WMT},
-word alignment~\citep{dyer-cordova-mont-lin:2008:WMT,lin-dyer:2010:book} as well
-as end-to-end toolkits for building entire
-phrase-based~\citep{gao-vogel:2010:PBML} or hierarchical phrase-based
-models~\citep{venugopal-zollmann:2009:PBML} using MapReduce.
+Indeed, MapReduce was originally designed to process large datasets for parallelizable
+algorithms. MapReduce has thus been applied to various steps of the
+translation pipeline.
 
-Once SMT models are built, decoders only need a fraction of the information
+\citet{brants-popat-xu-och-dean:2007:EMNLP-CoNLL}
+introduce a new smoothing method called \emph{Stupid Backoff} that fits
+the MapReduce framework better than other smoothing methods such
+as modified Kneser-Ney smoothing and can be scaled
+to training a language model on 2 trillion tokens. They demonstrate
+that for large amounts of monolingual data, i.e. above 10 billion
+tokens, the two smoothing method perform comparably, in addition, they
+are only able to scale \emph{Stupid Backoff} smoothing for datasets
+with more than 31 billion tokens.
+
+\citet{dyer-cordova-mont-lin:2008:WMT}
+acknowledge that translation model estimation has become prohibitive
+on a single core and that existing \emph{ad hoc} parallelization
+algorithms may be more fragile than using an existing framework such
+as MapReduce. They provide solutions to word alignment model
+estimation and translation rule extraction and estimation using MapReduce
+and demonstrate the scalability of their method.
+
+The convenience
+of the MapReduce framework for parallelization has led to the building
+of end-to-end toolkits for entire phrase-based~\citep{gao-vogel:2010:PBML} or
+hierarchical phrase-based models~\citep{venugopal-zollmann:2009:PBML}
+fir translation using the MapReduce framework.
+
+Given a set of SMT models that have been estimated either with MapReduce
+or some other method, translation decoders only need a fraction of the information
 contained in those models to be able to translate an input source sentence or a
 set of input source sentences. For example, in translation from French to
 English, given an input sentence \emph{Salut toi}, we only need to know the
@@ -58,26 +87,34 @@ translation probabilities the model assigns to the words \emph{Salut} and
 With larger models, simply retrieving relevant translation
 probabilities becomes a challenge. Given a test set, the decoder
 only needs the rules whose source side matches part of one of the source
-sentences in the test set to be able to generate hypotheses. In the system
+sentences in the test set to be able to generate hypotheses.
+
+In the system
 described by \citet{iglesias-degispert-banga-byrne:2009:NAACL}, for each
-new test set, rules are re-extracted and filtered at extraction time. This
+new test set, rules are re-extracted, filtered and their
+translation probabilities estimated at extraction time, simply
+because precomputing all translation probabilities for all extracted
+rules is not feasible. This
 method becomes progressively slower with larger amounts of data and we
 would like to improve on it for more rapid experimentation. We also would like
-to use as lightweight a computing infrastructure as possible. For example, HBase
-has been applied to the use of distributed language
+to use as lightweight a computing infrastructure as possible. For example,
+HBase\footnote{\url{http://hbase.apache.org}}, the open source non-relational database
+implementation of
+BigTable~\citep{chang-dean-ghemawat-hsieh-wallach-burrows-chandra-fikes-gruber:2008:ACM}, has been applied to the use of distributed language
 models~\citep{yu:2008:mastersthesis}. However, we wish to address the question
-whether we can adapt this heavy infrastructure to our purposes with minimal
-effort. Rule filtering is an essential step in our pipeline that can be a
+whether we can adapt this infrastructure to our purposes with minimal
+effort and without having to resort to database maintenance.
+Rule filtering is an essential step in our pipeline that can be a
 bottleneck. Our goal is to reduce its processing time from several hours to a
 few minutes.
 
 In this chapter, we address the problem of retrieving relevant translation
-model probabilities by storing the model in the HFile data
+model probabilities. We report on investigations into
+storing the model in the HFile data
 structure.\footnote{\url{http://hbase.apache.org}} To our knowledge, this is the first
 detailed proposed implementation of translation model storage and
-filtering using HFile data structures. We believe it offers a good compromise
-between speed, performance and ease of implementation. Although the HFile
-construction is done via MapReduce and a cluster of machines, the infrastructure
+filtering using HFile data structures. We find that it offers a good compromise
+between speed, performance and ease of implementation. The infrastructure necessary
 for filtering is lightweight and requires the use of only one machine. We will
 apply this approach to test set rule filtering prior
 to decoding. We will discuss alternative
@@ -95,18 +132,22 @@ We now review techniques appearing in the literature that have been used to
 store SMT models and to retrieve the information needed in translation from
 these models. SMT models are usually discrete probabilistic models and can
 therefore be represented as a set of key-value pairs. To obtain relevant
-information from a model stored in a data structure, a set of keys called a
-\emph{query set} is formed, then each key in this query set is looked up in the
-model. Strategies include storing the model as a simple data structure in
+information from a model stored in a certain data structure, a set of keys called a
+\emph{query set} is formed, then each key in this query set is sought for in that
+datastructure. Strategies include storing the model as a simple data structure in
 memory, in a plain text file, in more complicated data structures in memory,
 storing fractions of the entire model, simply storing data as opposed to a
-precomputed model or storing models in a distributed fashion.
+precomputed model or storing models in a distributed fashion. Each of these
+strategies is illustrated below.
 
-If small enough, it may be possible to fit the model into physical memory. In
+It may be possible to fit a model into RAM. In
 this case the model can be stored as a memory associative array, such as a hash
-table, for rapid query retrieval. In-memory storage has been used to store model
+table. In-memory storage allows allows for faster query retrieval than
+on-disk storage, however only smaller models will fit in memory.
+In-memory storage has been used to store model
 parameters between iterations of expectation-maximisation for word
 alignment~\citep{dyer-cordova-mont-lin:2008:WMT,lin-dyer:2010:book}.
+% TODO somehow cite work by matei zaharia
 
 For larger models, the set of key-value pairs can be stored as a table in a
 single text file on local disk. Values for keys in the query set are retrieved
@@ -128,19 +169,47 @@ node only stores the prefix it represents. The keys are therefore compactly
 encoded in the structure of the trie itself. Querying the trie is a
 $\mathcal{O}(\log(n))$ operation, where $n$ is the number of keys in the
 dataset. The trie may also be small enough to fit in physical memory to further
-reduce querying time. Tries have been used for storing phrase
-tables~\citep{zens-ney:2007:HLTNAACL}, hierarchical phrase-based
-grammars~\citep{ganitkevitch-cao-weese-post-callisonburch:2012:WMT} and
-language models~\citep{pauls-klein:2011:HLTACL,heafield:2011:WMT}.
+reduce querying time. \citet{zens-ney:2007:HLTNAACL} use tries
+to store a phrase-based grammmar. All the source phrases are represented
+in a trie stored on disk. Only relevant parts of the trie are loaded into
+memory when a source phrase is looked up.
+\citet{ganitkevitch-cao-weese-post-callisonburch:2012:WMT} extend this
+approach to store hierarchical phrase-based grammars. Both
+source sides and target sides are stored in a packed representation of a trie.
+Packed tries have also been applied for storing language
+models~\citep{pauls-klein:2011:HLTACL,heafield:2011:WMT}.
 
 It is also possible to create a much smaller approximate version of the model.
-Randomised language
-models~\citep{talbot-osborne:2007:ACL,talbot-osborne:2007:EMNLP-CoNLL,talbot-brants:2008:ACL}
-store parameters or counts associated with $n$-grams in a structure similar to a
-Bloom filter~\citep{bloom:1970:ACM}. This structure is small in comparison to
-the original language model, although the reduction in size comes at the cost of
-randomly corrupting model parameters or assigning model parameters to unseen
-$n$-grams. \citet{guthrie-hepple:2010:EMNLP} propose an extension which prevents
+\citet{talbot-osborne:2007:ACL} represent a set of $n$-grams as a Bloom
+filter~\citep{bloom:1970:ACM}.
+They first use a standard Bloom filter to define a binary feature that
+indicates whether an $n$-gram was seen in a monolingual corpus. They
+also use a Bloom filter to encode $n$-grams together with quantized counts
+in order to define a multinomial feature. Both these data structure can
+substantially reduce the disk space and memory usage with respect to lossless
+representations of language models, but allow false positives for $n$-gram
+membership queries and overestimates of $n$-gram quantized counts. The authors
+demonstrate that the features they introduce are useful in translation.
+In a related publication~\citep{talbot-osborne:2007:EMNLP-CoNLL}, the authors
+demonstrate how these techniques can be used as a replacement to represent
+a smoothed language model. \citet{talbot-brants:2008:ACL} use Bloomier
+filter~\citep{chazelle-kilian-rubinfeld-tal:2004:ACM-SIAM}
+to represent ngrams and necessary statistics such as probabilities and backoff
+weights. Unlike Bloom filters that only support boolean characteristic
+functions on a set, Bloomier filters support arbitrary functions, in this case
+a mapping between an $n$-gram and its statistics. False positive can still occur
+but for true positives, correct statistics are retrieved.
+
+% TODO explain this better
+%talbot-brants acl
+%represent ngrams, proba, backoff with hash
+%randomized language model
+%kind of error: false positive but when ngram found, params are correct
+%based on bloomier filter
+%bloomier filter allows for arbitrary function as opposed to binary function
+
+\citet{guthrie-hepple:2010:EMNLP} propose an extension to previous work
+on randomized language models~\citep{talbot-osborne:2007:EMNLP-CoNLL} which prevents
 the random corruption of model parameters but does not stop the random
 assignment of parameters to unseen $n$-grams.
 \citet{levenberg-osborne:2009:EMNLP} extend randomised language models to
@@ -150,7 +219,27 @@ of data~\citep{manku-motwani:2002:VLDB}. This technique has been applied to
 language modelling~\citep{goyal-daumeiii-venkatasubramanian:2009:NAACL} and
 translation rule extraction~\citep{przywara-bojar:2011:PBML}. 
 
-Instead of pre-computing the dataset it is possible to compute the sufficient
+
+%talbot acl
+%use bloom filter
+%use standard bloom filter to test whether ngram was seen
+%use log-frequency bloom filter to add frequency information
+%ngram counts are quantised
+%log frequency bloom filter: (ngram,1) (ngram,2) ... (ngram, quantizedcount(ngram)) inserted into the BF
+%at retrieval time, we get back a count equal or greater than the actual quantized count
+%trick to reduce error: c(w1-wn) < min(c(w1-wn-1), c(w2,wn))
+%bloom filter language model test: use binary feature
+%log-frequency bf lm: use the quantized count
+%experiments: those features are useful in translation
+
+%talbot emnlp
+%this time not just binary features, but the whole lm estimated
+%still use a log-frequency bf
+%new: expected value of count
+%E[c(x)|qc(x)=j] = (b^{j-1} + b^j - 1) / 2
+%ccl: replacement for usual lm, use less space and memory
+
+Instead of doing some precomputation on a dataset, it is possible to compute the sufficient
 statistics at query time using a suffix array~\citep{manber-myers:1990:SIAM}, so
 that the model can be estimated on the fly. A suffix array is a sequence of
 pointers to each suffix in a training corpus. The sequence is sorted with
@@ -159,6 +248,29 @@ have been used for computing statistics for language
 models~\citep{zhang-vogel:2006:techreport}, phrase-based
 systems~\citep{callisonburch-bannard-schroeder:2005:ACL,zhang-vogel:2005:EAMT},
 and hierarchical phrase-based systems~\citep{lopez:2007:EMNLP-CoNLL}.
+\citet{callisonburch-bannard-schroeder:2005:ACL} store both the source side
+and the target side of a parallel corpus in two suffix arrays. They also maintain
+an index between a position in the source or target side of the corpus and the
+sentence number. During decoding, all occurrences of a source phrase
+are located in the suffix array representing the source side of the corpus.
+This produces a source marginal count. For each of these occurrences, the corresponding
+sentence pair and word alignment are retrieved and rules are extracted. This produces
+a rule count, which is normalized with the source marginal count to produce a
+source-to-target probability. \citet{lopez:2007:EMNLP-CoNLL} extends this approach
+to address the grammar extraction and estimation of hierarchical rules.
+
+% TODO explain suffix array better
+%suffixarray callisonburch
+%suffix array for source corpus
+%suffix array for target corpus
+%index between sentence number and position in corpus (src and target)
+%word alignment
+
+%compute s2t probability
+%locate all occurrences of f: gives c(f)
+%for each occurrence of f, retrieve sentence pair and alignment
+%run extraction: gives c(f, e)
+%compute c(f, e) / c(f)
 
 Finally, some approaches store language models in a distributed fashion.
 \citet{brants-popat-xu-och-dean:2007:EMNLP-CoNLL} describe a distributed, fast,
@@ -185,29 +297,41 @@ HFile format is a lookup table with key and value columns. The entries are free
 to be an arbitrary string of bytes of any length. The table is sorted
 lexicographically by the key byte string for efficient record retrieval by key.
 
-\subsection{Internal structure}
+\subsection{HFile Internal Structure}
 
-As can be seen in \autoref{fig:hfile}, the data contained in an HFile is
-internally organised into blocks called data blocks. The block size is
+% TODO read SSTable description
+% TODO check whether blocks are plural or singular
+
+\paragraph{High Level Structure} As can be seen in \autoref{fig:hfile},
+the Hfile internal structure is divided into blocks. There are various types of
+block, depending on the kind of information a block contains.
+In order to
+distinguish block types, the first 8 bytes of a
+block will indicate its type. The blocks are grouped into
+three parts. The first part (top) is organised into
+data blocks interleaved with leaf data index blocks and Bloom blocks.
+The second part (middle) consists of intermediate data index blocks.
+The third part (bottom) consists of metadata: root data index blocks, a file
+information block and a Bloom filter index block.
+
+\paragraph{Index Blocks} The root data index blocks map keys to their
+relevant intermediate data index block, indicated by
+an offset. In turn, an intermediate data index block
+maps keys to their relevant leaf data index block, again indicated by an offset.
+Finally, a leaf data index block maps keys to their relevant data block,
+still indicated by an offset. The same mechanism is employed for the Bloom filter.
+The Bloom filter index block maps keys to their relevant Bloom block.
+
+\paragraph{Block Size Configuration} The block size is
 configurable, with a default size of 64KB. Note that HFile blocks are not to be
 confused with Hadoop Distributed File System (HDFS) blocks whose default size is
-64MB. If an HFile is stored on HDFS, several HFile blocks will be contained in
-an HDFS block. A block index is constructed which maps the first key of an HFile
-block to the location of the block in the file. For large HFiles the block index
-can be very large. Therefore the block index is itself organised into blocks,
-which are called leaf index blocks. These leaf index blocks are interspersed
-with the data blocks in the HFile. In turn, the leaf index blocks are indexed by
-intermediate level data index blocks. The intermediate blocks are then indexed
-by a root data index. The root data index and optionally the Bloom filter
-metadata, described next, are stored at the end of the HFile. In order to
-distinguish block types (data block, index block, etc.), the first 8 bytes of a
-block will indicate the type of block being read. The HFile format allows for
+64MB.
+
+\paragraph{Block Compression} The HFile format allows for
 the blocks to be compressed. The choice of compression codec is selected when
 the file is created. We choose the GZip compression codec for all our
 experiments. Block compression is also used in other related
-software~\citep{pauls-klein:2011:HLTACL}. For more details, the interested
-reader can refer to the HBase
-documentation.\footnote{\url{http://hbase.apache.org/book/book.html}}
+software~\citep{pauls-klein:2011:HLTACL}.
 
 \begin{figure}
   \begin{center}
@@ -220,7 +344,7 @@ documentation.\footnote{\url{http://hbase.apache.org/book/book.html}}
       ... \\
       \hline
       \rowcolor[gray]{0.95}
-      Leaf index block / Bloom block \\
+      Leaf Data Index Block / Bloom Block \\
       \hline
       \rowcolor[gray]{0.86}
       ... \\
@@ -232,7 +356,7 @@ documentation.\footnote{\url{http://hbase.apache.org/book/book.html}}
       ... \\
       \hline
       \rowcolor[gray]{0.95}
-      Leaf index block / Bloom block \\
+      Leaf Data Index Block / Bloom Block \\
       \hline
       \rowcolor[gray]{0.86}
       ... \\
@@ -241,28 +365,34 @@ documentation.\footnote{\url{http://hbase.apache.org/book/book.html}}
       Data Block \\
       \hline
       \rowcolor[gray]{0.7}
-      Intermediate Level Data Index Blocks \\
+      Intermediate Data Index Blocks \\
       \hline
       \rowcolor[gray]{0.6}
-      Root Data Index \\
+      Root Data Index Blocks \\
       \hline
       \rowcolor[gray]{0.6}
-      File Info \\
+      File Info Block \\
       \hline
       \rowcolor[gray]{0.6}
-      Bloom Filter Metadata \\
+      Bloom Filter Index Block \\
       \hline
     \end{tabular}
-    \caption[Caption for LOF]{HFile internal structure.\footnotemark}
+    \caption[Caption for LOF]{HFile internal structure.\footnotemark
+    The structure is divided into three parts. In the first part, data blocks
+    are interspersed with leaf data index blocks and Bloom blocks. The second
+    part contains intermediate data index blocks. The third part consists
+    of metadata: root data index blocks, file format information and a Bloom
+    filter index block.}
     \label{fig:hfile}
   \end{center}
 \end{figure}
 
 \footnotetext{after \url{http://hbase.apache.org/book/book.html} (simplified)}
 
-\subsection{Record retrieval}
+\subsection{Record Retrieval}
+\label{sec:recordRetrieval}
 
-When the HFile is opened for reading, the root data index is loaded into memory.
+When the HFile is opened for reading, the root data index blocks are loaded into memory.
 To retrieve a value from the HFile given a key, the appropriate intermediate
 index block is located by a binary search through the root data index. Binary
 searches are conducted on the intermediate and leaf index blocks to identify the
@@ -270,23 +400,35 @@ data block that contains the key. The data block is then loaded off the disk
 into memory and the key-value record is retrieved by scanning the data block
 sequentially.
 
-\subsection{Bloom filter optimization}
+\subsection{Bloom Filter Optimization for Query Retrieval}
 
 It is possible to query for a key that is not contained in the HFile. This very
-frequently happens in translation because of language data sparsity. Querying
-the existence of a key is expensive as three blocks have to be loaded from disk
-and binary searched. For fast existence check queries, the HFile format allows
+frequently happens in translation because of language data sparsity: in our case,
+because keys are $n$-grams of terminals and nonterminals, the number of possible
+keys is exponential in the size of the vocabulary.
+
+Querying
+the existence of a key is expensive as it involves all the operations
+described in \autoref{sec:recordRetrieval}: load and binary search the root data index,
+load and binary search an intermediate data index block, load and binary search
+a leaf data index block and finally load and scan a data block.
+
+For fast existence check queries, the HFile format allows
 the inclusion of an optional Bloom filter~\citep{bloom:1970:ACM}. A Bloom filter
 provides a probabilistic, memory efficient representation of the key set with a
 $\mathcal{O}(1)$ membership test operation. The Bloom filter may provide a false
-positive,
-but never a false negative for existence of a key in the HFile. For a large
+positive, % TODO expand on Bloom filters somewhere either background or here
+but never a false negative, for existence of a key in the HFile.
+
+For a large
 HFile, the Bloom filter may also be very large. Therefore the  Bloom filter is
 also organised into blocks called Bloom blocks. Each block contains a smaller
 Bloom filter that covers a range of keys in the HFile. Similar to the root data
-index, a Bloom filter metadata or Bloom index is constructed. To check for the
+index, a Bloom index is constructed. To check for the
 existence of a key, a binary search is conducted on the Bloom index, the
-relevant Bloom block is loaded, and the membership test performed. Contrary to
+relevant Bloom block is loaded, and the membership test performed.
+
+Contrary to
 work on Bloom filter language
 model~\citep{talbot-osborne:2007:ACL,talbot-osborne:2007:EMNLP-CoNLL}, this
 filter only tests the existence of a key and does not return any statistics from
@@ -295,13 +437,13 @@ requires to do a usual search. During the execution of a query, two keys may
 reference the same index or Bloom blocks. To prevent these blocks from being
 repeatedly loaded from disk, the blocks are cached after reading.
 
-\subsection{Local disk optimization}
+\subsection{Local Disk Optimization}
 
 The HFile format is designed to be used with HDFS, a distributed file system
 based on the Google File System~\citep{ghemawat-gobioff-leung:2003:OSP}. Large
 files are split into HDFS blocks that are stored on many nodes in a cluster.
 However, the HFile format can also be used completely independently of HDFS. If
-its size is smaller than disk space, the entire HFile can be stored on the local
+its size is smaller than local disk space, the entire HFile can be stored on the local
 disk of one machine and accessed through the machine's local file system. We
 find in \autoref{sec:rulextract} that using local disk
 is faster than using HDFS.
@@ -320,35 +462,41 @@ or CPU caching data from main memory~\citep{patterson-hennessy:2005:COA}.
 \section{Hierarchical Rule Extraction with MapReduce}
 \label{sec:rulextractMapReduce}
 
-In this section, we describe a MapReduce implementation of hierarchical rule
-extraction. The implementation is based on Method 3 described by
+In the previous section, we have described the HFile format. We will use
+this format to store a translation grammar. In this
+section, we describe how we generate this grammar and produce the HFile
+that represents the grammar.
+We describe a MapReduce implementation of hierarchical grammar
+extraction and estimation. The implementation is based on Method 3 described by
 \citet{dyer-cordova-mont-lin:2008:WMT}.
+
 MapReduce~\citep{dean-ghemawat:2008:ACM} is a framework designed for processing
 large amounts of data in a distributed fashion on a computer cluster. In this
 framework, the programmer needs to implement a function called \emph{map} and
 a function called \emph{reduce}. The \emph{map} function is defined in
-\autoref{eq:mapFunction}.
+\autoref{eq:mapFunction}:
 %
 \begin{equation}
   \text{map} : (k_1, v_1) \longmapsto [(k_2, v_2)]
   \label{eq:mapFunction}
 \end{equation}
 %
-$(k_1, v_1)$ is a key-value pair and $[(k_2, v_2)]$ is a list of
-key-value pairs. Keys and values are arbitrary byte sequences. Behind the
-scenes, the MapReduce framework groups all values $v_2$ by key $k_2$ in order
+where $(k_1, v_1)$ is a key-value pair and $[(k_2, v_2)]$ is a list of
+key-value pairs. Keys and values are arbitrary byte sequences. As the key-value
+pairs $(k_2, v_2)$ are computed by the \emph{map function}, the MapReduce framework groups all values $v_2$ by key $k_2$ in order
 to provide an input $(k_2, [v_2])$ to the \emph{reduce} function, defined in
-\autoref{eq:reduceFunction}.
+\autoref{eq:reduceFunction}:
 %
 \begin{equation}
   \text{reduce} : (k_2, [v_2]) \longmapsto [(k_3, v_3)]
   \label{eq:reduceFunction}
 \end{equation}
 %
-The input to the \emph{reduce} function is a key and a list of values and the
-output is a list of key-value pairs.
+The input to the \emph{reduce} function is a key and a list of values. The
+\emph{reduce} function outputs a list of key-value pairs.
 
-Using this notation, we can describe the rule extraction pipeline, summarized in
+Using this notation, we can describe the grammar extraction and estimation
+as a series of MapReduce jobs, summarized in
 \autoref{fig:ruleXtractionPipeline}.
 %
 \begin{figure}
@@ -402,28 +550,37 @@ Using this notation, we can describe the rule extraction pipeline, summarized in
     \path [line] (merge) -- (ruleAllFeatures);
 \end{tikzpicture}
 %\end{center}
-\caption{Rule extraction pipeline as a series of MapReduce jobs. Ellipses
+\caption{Translation grammar extraction and estimation pipeline as a series of MapReduce jobs. Ellipses
 represent (intermediate) input/output of MapReduce jobs. Rectangle represent
 MapReduce jobs.}
 \label{fig:ruleXtractionPipeline}
 \end{figure}
 %
-The first step is rule extraction. For
+The first step in grammar extraction and estimation is rule extraction. For
 this step, $v_1$ represents a sentence pair together with an alignment and $k_1$
 contains metadata about the parallel corpus such as what collection the sentence
 pair comes from. This kind of information is useful for domain adaptation as
-demonstrated in (TODO: reference to provenance features). The \emph{map}
+demonstrated in (TODO: reference to provenance features/wmt chapter and to Chiang). The \emph{map}
 function simply extracts hierarchical rules for
 that sentence pair and outputs the rules. $k_2$ is a rule and $v_2$ contains
 the metadata from $k_1$. For rule extraction, there is no reduce step.
-Rule extraction is followed by several MapReduce jobs run simultaneously to
-compute MapReduce features. MapReduce features are specific quantities related
+
+Rule extraction is followed by several MapReduce jobs that are run simultaneously
+in order to
+compute corpus-level features, that we call MapReduce features. MapReduce features
+are specific quantities related
 to each rule and the computation of which requires looking at the entire set of
-extracted rules. In our case, we only consider source-to-target and
-target-to-source probabilities. We use the metadata stored in the output of the
-extraction job in order to compute collection specific probabilities. Let us
+extracted rules. In this description, we only consider source-to-target and
+target-to-source probabilities, but other MapReduce features are possible,
+for example how many source words are unaligned on average. We use the metadata stored in the output of the
+extraction job in order to compute collection specific probabilities.
+Collection specific probabilities are probabilities computed over a specific subset
+of the training corpus. The metadata indicates whether a rule was extracted from
+that specific subset.
+
+Let us
 consider first the collection specific source-to-target probability computation.
-The general source-to-target is computed in an identical manner with the
+The source-to-target probabilities over the whole corpus would be computed in an identical manner with the
 collection simply being the entire corpus. The input to the \emph{map} function
 is the output of the extraction job, that is a rule together with metadata.
 The \emph{map} function checks that the rule comes from the collection we are
@@ -454,7 +611,7 @@ the features is called. The input key $k_1$ to the \emph{map} function is a
 rule and the input value $v_1$ is a feature. The \emph{map} function outputs
 the source of the rule as a key $k_2$ and the target of the rule together with
 the feature as value $v_2$. Targets and features corresponding to the same
-source are grouped together by the MapReduce framework. The input the
+source are grouped together by the MapReduce framework. The input to the
 \emph{reduce} function is a source ($k_2$) and a list of targets with features
 ($[v_2]$). The \emph{reduce} function simply merges the features for identical
 targets. The output key $k_3$ is the source $k_2$ and the output value $v_3$ is
@@ -473,15 +630,17 @@ all keys are sorted after the reduce step.
 \section{Hierarchical Rule Filtering for Translation}
 \label{sec:rulextract}
 
-In this section, we describe how the HFile data structure can be used
-to store a hierarchical phrase-based translation model~\citep{chiang:2007:CL}
-and how to retrieve rules for a given test set. We describe our system called
+In the previous section, we have described how to obtain an HFile
+that represents a hierarchical translation grammar.
+We will now describe how this datastructure can be used to retrieve rules for
+a given test set efficiently. We describe our system called
 \emph{ruleXtract}, and compare it to other methods through time and memory
 measurements.
 
 \subsection{Task Description}
 
-Given a test set and a hierarchical phrase-based translation model, we would
+Given a test set, defined as a set of sentences to be translated, and a
+hierarchical phrase-based translation grammar, we would
 like to retrieve all the relevant rules from the model. A phrase-based rule is
 relevant if its source is a substring of a sentence in the test set. A
 hierarchical rule is relevant if, after instantiation of its nonterminals, it is
@@ -501,42 +660,50 @@ of allowed \emph{source patterns} and instantiate these patterns against the
 test set. A source pattern is simply a regular expression. For example, the
 pattern $\Sigma^+X$ represents a rule source side containing a sequence of
 terminals followed by the nonterminal X. If the input sentence is
-\emph{Salut à toi}, the pattern will be instantiated as \emph{Salut X} and
-\emph{Salut à X}. We impose the following constraints on source pattern
+\emph{Salut à toi}, the pattern will be instantiated as \emph{Salut X},
+\emph{Salut à X} and \emph{à X}. We impose the following constraints on source pattern
 instantiation where the first four relate to constraints in extraction and the
 last one relates to a decoding constraint:
 %
 \begin{itemize}
-  \item MAX\_SOURCE\_PHRASE: maximum number of terminals for phrase-based rules.
-  \item MAX\_SOURCE\_ELEMENTS: maximum number of terminals and nonterminals.
-  \item MAX\_TERMINAL\_LENGTH: maximum number of consecutive terminals for
+  \item $s_{\text{max}}$: maximum number of terminals for phrase-based rules.
+  \item $s_{\text{max elements}}$: maximum number of terminals and nonterminals.
+  \item $s_{\text{max terminals}}$: maximum number of consecutive terminals for
     hierarchical rules.
-  \item MAX\_NONTERMINAL\_LENGTH: maximum nonterminal span in a hierarchical
+  \item $s_{\text{max}_{\text{NT}}}$: maximum nonterminal span in a hierarchical
     rule.
-  \item HR\_MAX\_HEIGHT: maximum span for the rule. We apply this constraint
-    in order to match the same constraint in the decoder and not generate rules
-    that will never be used.
+  \item $s_{\text{max}_{\text{span}}}$: maximum span for the rule. This constraint
+    is not to be confused with the previous $s_{\text{max}_{\text{NT}}}$ constraint.
+    While $s_{\text{max}_{\text{NT}}}$ represents the maximum span of a nonterminal
+    on the right hand side of a rule, $s_{\text{max}_{\text{span}}}$ represents the maximum span
+    of an entire rule, or alternatively the maximum span of the nonterminal on the left
+    hand side of the rule. Because the latter constraint is enforced by the decoder, we
+    also enforce it in source pattern instantiation so that rules that will
+    never be used by the decoder are not generated.
 \end{itemize}
 %
 The source pattern instances are then sorted for more efficient HFile lookup
 (see \autoref{sec:hfile}). Each query is then looked up in the HFile and if
-present, an HFile record is retrieved. We typically run this retrieval step on
-one machine only. We now compare our approach to similar approaches whose aim is
+present, an HFile record is retrieved.
+% TODO include this somewhere
+%We typically run this retrieval step on one machine only.
+We now compare our approach to similar approaches whose aim is
 to obtain rules for a test set.
 
-\subsection{Suffix Array for Hierarchical Phrase-Based Grammars}
+\subsection{Suffix Arrays for Hierarchical Phrase-Based Grammars}
 
-We use the \emph{cdec}
-software~\citep{dyer-lopez-ganitkevitch-weese-ture-blunsom-setiawan-eidelman-resnik:2010:ACL}
-for hierarchical phrase-based rule extraction. The implementation is based on
+One alternative strategy for building a set specific grammar is to use
+suffix arrays~\citep{manber-myers:1990:SIAM,callisonburch-bannard-schroeder:2005:ACL,zhang-vogel:2005:EAMT,lopez:2007:EMNLP-CoNLL}. We use the \emph{cdec}
+software~\citep{dyer-lopez-ganitkevitch-weese-ture-blunsom-setiawan-eidelman-resnik:2010:ACL} implementation of suffix arrays for
+hierarchical phrase-based rule extraction. The implementation is based on
 earlier work~\citep{lopez:2007:EMNLP-CoNLL} which extends suffix array based
-rule retrieval from phrase-based systems to hierarchical phrase-based systems.
+rule extraction from phrase-based systems~\citep{callisonburch-bannard-schroeder:2005:ACL,zhang-vogel:2005:EAMT} to hierarchical phrase-based systems~\citep{lopez:2007:EMNLP-CoNLL}.
 
 Given a test set, a set of source pattern instances is generated similarly to
 what is done for \emph{ruleXtract}. Then these source pattern instances are
-looked up in a suffix array compiled from the source side of a parallel corpus.
+sought in a suffix array compiled from the source side of a parallel corpus.
 Rules are then extracted using the word alignment and source-to-target
-probabilities are then computed on the fly.
+probabilities are then computed on the fly as described in \autoref{sec:relatedwork}.
 
 \subsection{Text File Representation of Hierarchical Phrase-Based Grammars}
 
@@ -558,47 +725,58 @@ version \emph{Joshua Parallel}. The parallel version using the faster matching
 algorithm is called \emph{Joshua Fast Parallel}.
 
 \subsection{Experimental Setup}
-We use the following setup:
-\begin{itemize}
-  \item Data: we use a small parallel corpus of 750,950 word-aligned sentence
+
+In this section, we describe our experimental setup in terms of data and various
+configurations for grammar extraction, grammar filtering and
+time and memory measurements.
+%
+\paragraph{Data} We use a small parallel corpus of 750,950 word-aligned sentence
     pairs and a larger corpus of 9,221,421 word-aligned sentence pairs from the
-    NIST'12 Chinese-English evaluation, to show how systems scale up with more
-    data.
-  \item Grammar extraction: from the parallel corpora, we extract hierarchical
-    grammars with the source-to-target probability feature only, because we do
-    not want feature computation to introduce noise in timing results when
-    comparing different strategies and software implementations. In addition,
-    the suffix array implementation of rule extraction does not generate
+    NIST'12 Chinese-English evaluation, in order to investigate how systems perform
+    with varying amounts of parallel text and whether those systems are robust
+    when dealing with larger data sets.
+%
+\paragraph{Grammar extraction} From the parallel corpora, we extract hierarchical
+    grammars with the source-to-target probability feature only. This is done
+    because we do
+    not want feature computation to introduce variability in timing results when
+    comparing different strategies and software implementations. In addition, not
+    all systems can generate the same set of features. For example,
+    the suffix array implementation of rule extraction is not able to generate
     target-to-source probabilities. Note that in practice, given a vector of
     parameters, we could simply replace multiple features in the translation
     model by a single value representing the dot product of the features with
-    the parameter vector. The extraction constraints are as follows:
+    the parameter vector.
+
+    The extraction constraints described in (TODO refer to background)
+    are set as follows:
 %
 \begin{itemize}
-  \item MAX\_SOURCE\_PHRASE = 9
-  \item MAX\_SOURCE\_ELEMENT = 5
-  \item MAX\_TERMINAL\_LENGTH = 5 (redundant with MAX\_SOURCE\_ELEMENTS)
-  \item MAX\_NONTERMINAL\_LENGTH = 10
+  \item $ s_{\text{max}}= 9$
+  \item $s_{\text{max elements}} = 5$
+  \item $s_{\text{max terminals}} = 5$ % TODO explain why it's redundant or change value
+  \item $s_{\text{max}_{\text{NT}}} = 10$ % TODO harmonize notation with extraction from posteriors and from background
 \end{itemize}
 %
-The small grammars contains approximately 60M rules while the 
-larger grammar contains approximately 726M rules. The grammar we obtain is
-converted to the \emph{Joshua} format.
-  \item Grammar filtering: for \emph{ruleXtract}, we use these constraints for
+With these settings, the small grammar contains approximately 60M rules while the 
+larger grammar contains approximately 726M rules. The grammars we obtain are
+converted to the \emph{Joshua} format in order to be able to filter them
+with the \emph{Joshua} decoder.
+%
+\paragraph{Grammar filtering} For \emph{ruleXtract}, we use the following constraints for
     source pattern instantiation: 
     \begin{itemize}
-      \item MAX\_SOURCE\_PHRASE = 9
-      \item MAX\_SOURCE\_ELEMENTS = 5
-      \item MAX\_TERMINAL\_LENGTH = 5 (redundant with MAX\_SOURCE\_ELEMENTS)
-      \item MAX\_NONTERMINAL\_LENGTH = $\infty$
-      \item HR\_MAX\_HEIGHT = $\infty$
+      \item $ s_{\text{max}} = 9$
+      \item $s_{\text{max elements}} = 5$
+      \item $s_{\text{max terminals}} = 5$ % TODO explain why redundant with max source elements
+      \item $s_{\text{max}_{\text{NT}}} = \infty$
+      \item $s_{\text{max}_{\text{span}}} = \infty$ % TODO explain diff between hrmaxheight and max nt: max nt is the max span of an X on the rhs whereas hrmaxheight is the max span of the source of a rule, i.e. max span of X on the lhs
     \end{itemize}
-    so that the number of rules obtained after filtering is identical between
-    \emph{ruleXtract} and \emph{Joshua}. For the \emph{Joshua Parallel}
-    configurations, we use 110 jobs for the larger grammar on a cluster of 9
-    machines. For this latter configuration, we report the maximum time spent on
-    a job (not the sum) and the maximum memory usage by a job.
-  \item Measurements: we report time measurements for query processing and query
+    %
+    These settings are chosen so that the number of rules obtained after filtering is identical between
+    \emph{ruleXtract} and \emph{Joshua}.
+%
+\paragraph{Measurements} We report time measurements for query processing and query
     retrieval and the total time used to obtain a set specific rule file for a
     test set of 1755 Chinese sentences and 51008 tokens. We also report peak
     memory usage. For \emph{ruleXtract}, query processing involves generating
@@ -608,84 +786,89 @@ converted to the \emph{Joshua} format.
     \emph{Joshua} configurations, query processing involves indexing the test
     set and generating test set ngrams and query retrieval involves regular
     expression matching.
-  \item Hardware configuration: the machine used for the query has 94GB of
+
+    For the \emph{Joshua Parallel}
+    configurations, we use 110 jobs for the larger grammar on a cluster of 9
+    machines. For this latter configuration, we report the maximum time spent on
+    a job (not the sum) and the maximum memory usage by a job.
+%
+\paragraph{Hardware configuration} the machine used for the query has 94GB of
     memory and an Intel Xeon X5650 CPU. The distributed file system is hosted on
     the querying machine and other machines with the same specification, which
     are used to generate the HFile.
-\end{itemize}
-%
-The setup was designed for accurate comparisons between strategies, however
-these strategies are not necessarily used with this setup in an end-to-end
-translation system. For example the grammar extracted by \emph{Joshua} is
-smaller than the grammar extracted by \emph{ruleXtract} because of target side
-constraints but \emph{ruleXtract} uses filter
-criteria~\citep{iglesias-degispert-banga-byrne:2009:EACL} to reduce the test set
-specific grammar.
+
+Our experimental setup was designed for accurate comparisons between alternative
+strategies for grammar filtering. In practice, end-to-end translation
+system need not use this exact setup. For example the grammar extracted by \emph{Joshua} is
+in general smaller than the grammar extracted by \emph{ruleXtract} because \emph{Joshua}
+uses target side constraints. On the other hand, \emph{ruleXtract} uses filters
+(TODO see background) to reduce the size of the test set specific grammar.
 
 \subsection{Results and Discussion}
 
+%TODO center the double rows rather than adding empty rows
 \begin{table}[htbp]
   \footnotesize
   \begin{center}
-  \begin{tabular}{*{11}{|l}|}
+  \begin{tabular}{*{7}{|l}|}
     \hline
-    \multicolumn{6}{|c|}{{\bf Small Grammar}} \\
+    \multicolumn{7}{|c|}{{\bf Small Grammar}} \\
     \hline
-    {\bf System} & {\bf Query } & {\bf Query} & {\bf Total} & {\bf Peak } & {\bf \# Rules} \\
-                 & {\bf Processing} & {\bf Retrieval} & {\bf Time} & {\bf Memory} & \\
+    \textbf{Row} & {\bf System} & {\bf Query } & {\bf Query} & {\bf Total} & {\bf Peak } & {\bf \# Rules} \\
+                & & {\bf Processing} & {\bf Retrieval} & {\bf Time} & {\bf Memory} & \\
     \hline
-    \emph{ruleXtract} & 9m1s & 7m36s & 16m40s & 40.8G & 6435124 \\
-    \emph{HDFS} & & & & & \\
+    1 & \emph{ruleXtract} & 9m1s & 7m36s & 16m40s & 40.8G & 6435124 \\
+      & \emph{HDFS} & & & & & \\
     \hline
-    \emph{ruleXtract} & 8m57s & 2m16s & 11m15s & 39.9G & 6435124 \\
-    \emph{Bloom, HDFS} & & & & & \\
+    2 & \emph{ruleXtract} & 8m57s & 2m16s & 11m15s & 39.9G & 6435124 \\
+      & \emph{Bloom, HDFS} & & & & & \\
     \hline
-    \emph{ruleXtract} & 8m54s & 7m33s & 16m30s & 40.4G & 6435124 \\
-    \emph{Local} & & & & & \\
+    3 & \emph{ruleXtract} & 8m54s & 7m33s & 16m30s & 40.4G & 6435124 \\
+      & \emph{Local} & & & & & \\
     \hline
-    \emph{ruleXtract} & 8m50s & 2m19s & 11m11s & 38.8G & 6435124 \\
-    \emph{Bloom, Local} & & & & & \\
+    4 & \emph{ruleXtract} & 8m50s & 2m19s & 11m11s & 38.8G & 6435124 \\
+      & \emph{Bloom, Local} & & & & & \\
     \hline
-    \emph{Joshua} & 0.9s & 29m51s & 29m54s & 42.2G & 6435124 \\
+    5 & \emph{Joshua} & 0.9s & 29m51s & 29m54s & 42.2G & 6435124 \\
     \hline
-    \emph{Joshua} & 0.9s & 7m25s & 7m28s & 40.1G & 7493178 \\
-    \emph{Fast} & & & & & \\
+    6 & \emph{Joshua} & 0.9s & 7m25s & 7m28s & 40.1G & 7493178 \\
+      & \emph{Fast} & & & & & \\
     \hline
-    \multicolumn{6}{|c|}{{\bf Large Grammar}} \\
+    \multicolumn{7}{|c|}{{\bf Large Grammar}} \\
     \hline
-    {\bf System} & {\bf Query } & {\bf Query} & {\bf Total} & {\bf Peak } & {\bf \# Rules} \\
-                 & {\bf Processing} & {\bf Retrieval} & {\bf Time} & {\bf Memory} & \\
+    \textbf{Row} & {\bf System} & {\bf Query } & {\bf Query} & {\bf Total} & {\bf Peak } & {\bf \# Rules} \\
+                & & {\bf Processing} & {\bf Retrieval} & {\bf Time} & {\bf Memory} & \\
     \hline
-    \emph{ruleXtract} & 8m56s & 22m18s & 31m17s & 42.2G & 47978228 \\
-    \emph{HDFS} & & & & & \\
+    7 & \emph{ruleXtract} & 8m56s & 22m18s & 31m17s & 42.2G & 47978228 \\
+      & \emph{HDFS} & & & & & \\
     \hline
-    \emph{ruleXtract} & 9m12 & 15m33s & 24m49s & 40.7G & 47978228  \\
-    \emph{Bloom, HDFS} & & & & & \\
+    8 & \emph{ruleXtract} & 9m12 & 15m33s & 24m49s & 40.7G & 47978228  \\
+      & \emph{Bloom, HDFS} & & & & & \\
     \hline
-    \emph{ruleXtract} & 8m55s & 21m3s & 30m1s & 41.6G & 47978228 \\
-    \emph{Local} & & & & & \\
+    9 & \emph{ruleXtract} & 8m55s & 21m3s & 30m1s & 41.6G & 47978228 \\
+      & \emph{Local} & & & & & \\
     \hline
-    \emph{ruleXtract} & 9m0s & 14m43s & 23m46s & 40.6G & 47978228 \\
-    \emph{Bloom, Local} & & & & & \\
+    10 & \emph{ruleXtract} & 9m0s & 14m43s & 23m46s & 40.6G & 47978228 \\
+       & \emph{Bloom, Local} & & & & & \\
     \hline
-    \emph{Joshua} & 0.9s & out of & out of & out of & out of \\
-                  &      & memory & memory & memory & memory \\
+    11 & \emph{Joshua} & 0.9s & out of & out of & out of & out of \\
+       & &      & memory & memory & memory & memory \\
     \hline
-    \emph{Joshua} & 0.9s & out of & out of & out of & out of \\
-                  &      & memory & memory & memory & memory \\
-    \emph{Fast} & & & & & \\
+    12 & \emph{Joshua} & 0.9s & out of & out of & out of & out of \\
+       & \emph{Fast} &      & memory & memory & memory & memory \\
+      & & & & & & \\
     \hline
-    \emph{Joshua} & 0.9s & 537m10s & 537m11s & 10.1G & 47978228 \\
-    \emph{No Cache} & & & & & \\
+    13 & \emph{Joshua} & 0.9s & 537m10s & 537m11s & 10.1G & 47978228 \\
+       & \emph{No Cache} & & & & & \\
     \hline
-    \emph{Joshua} & 0.9s & 78m53s & 78m54s & 10.1G & 83339443 \\
-    \emph{Fast No Cache} & & & & & \\
+    14 & \emph{Joshua} & 0.9s & 78m53s & 78m54s & 10.1G & 83339443 \\
+       & \emph{Fast No Cache} & & & & & \\
     \hline
-    \emph{Joshua} & \multicolumn{3}{|c|}{total time (not sum): 43m36s} & 4G & 47978228 \\
-    \emph{Parallel} & \multicolumn{3}{|c|}{} & & \\
+    15 & \emph{Joshua} & \multicolumn{3}{c|}{total time for slowest job: 43m36s} & 4G & 47978228 \\
+       & \emph{Parallel} & \multicolumn{3}{c|}{} & & \\
     \hline
-    \emph{Joshua} & \multicolumn{3}{|c|}{total time (not sum): 44m29s} & 4G & 83339443 \\
-    \emph{Fast Parallel} & \multicolumn{3}{|c|}{} & & \\
+    16 & \emph{Joshua} & \multicolumn{3}{c|}{total time for slowest job: 44m29s} & 4G & 83339443 \\
+       & \emph{Fast Parallel} & \multicolumn{3}{c|}{} & & \\
     \hline
   \end{tabular}
   \caption{Time and memory measurements for rule filtering with different
@@ -697,46 +880,70 @@ specific grammar.
 Results are summarized in \autoref{tab:ruleXtract}, from which we can draw the
 following observations:
 %
-\begin{itemize}
-  \item Speed: column \emph{Total Time} shows that \emph{ruleXtract} is
+  % TODO when pointing at rows, use hyperlinks
+\paragraph{Speed} The \emph{Total Time} column shows that \emph{ruleXtract} is
     competitive with alternative strategies in terms of speed.
-  \item Memory: column \emph{Peak Memory} shows that both \emph{ruleXtract} and
-    \emph{Joshua} memory usage is important. In the case of \emph{ruleXtract},
-    this is because we keep all source pattern instances in memory. In the case
-    of \emph{Joshua}, this is due to a caching optimization.
-  \item HFile optimization: comparing \emph{HDFS} and \emph{Local} rows, we can
+\paragraph{Memory} The \emph{Peak Memory} column shows that both \emph{ruleXtract} and
+    \emph{Joshua} memory usage is important, up to 40GB. In the case of \emph{ruleXtract},
+    this is because we keep all source pattern instances for all test set
+    sentences are kept in memory. In the case
+    of \emph{Joshua}, this is due to a caching optimization: rule source sides
+    that have already been considered relevant to the test set are stored
+    in a hash map.
+\paragraph{Local disk optimization} Comparing \emph{HDFS} and \emph{Local} rows
+    (row 1 vs. row 3, row 2 vs. row 4, row 7 vs. row 9, row 8 vs. row 10), we can
     see that using the local filesystem as opposed to HDFS gives a small
-    decrease in query retrieval time, more important for the larger grammar.
-    This is due to the fact that HDFS blocks are located on different data
-    nodes. Since the HFile size is smaller than the disk space, it is preferable
-    to work locally, although it requires copying the HFile from HDFS to the
-    hard disk. Comparing rows with and without \emph{Bloom}, we can see that the
+    decrease in query retrieval time, more substantial for the larger grammar.
+    This is because when the HFile is stored on HDFS, it is composed of several
+    HDFS blocks that could be located on different data nodes.
+    Since the HFile size is smaller than the disk space on each data node, it is preferable
+    to store the HFile on local disk. However, because the HFile was generated on
+    HDFS through a MapReduce job, this
+    requires copying the HFile from HDFS to
+    local disk.
+\paragraph{Bloom filter optimization} Comparing rows with and without \emph{Bloom}
+    (row 1 vs. row 2, row 3 vs. row 4, row 7 vs. row 8 and row 9 vs. row 10), we can
+    see that the
     use of a Bloom filter gives an important decrease in query retrieval time.
     This is due to the fact that the number of source pattern instances queries
     is 31,552,746 and after Bloom filtering, the number of queries is 1,146,554
     for the small grammar and 2,309,680 for the larger grammar, reducing the
     number of time consuming HFile lookups respectively by 96\% and 93\%. Note
-    that Bloom filters increase query processing time only in the case of a
+    that Bloom filters increase query processing time only for the
     large grammar and more so when using HDFS.
-  \item Parallelization: in order to run \emph{Joshua} on the larger grammar and
+\paragraph{Parallelization} In order to run \emph{Joshua} on the larger grammar and
     avoid memory problems, we needed to use parallelization, which provided
-    competitive speeds and a low memory footprint (maximum 4G per job).
-\end{itemize}
-%
-For information, \emph{cdec}'s total processing time is 57m40s for the small
+    competitive speeds and a low memory footprint (maximum 4G per job) (see rows
+    15 and 16).
+
+For comparison, \emph{cdec}'s total processing time is 57m40s for the small
 grammar, which is significantly slower than the other methods. However, we do
-not include a direct comparison to \emph{cdec} in \autoref{tab:ruleXtract}
-because the suffix array method involves much on-the-fly computation that has
-been precomputed in the case of \emph{Joshua} and \emph{ruleXtract}. Despite
-this apparent slowness, the use of suffix array methods for rule extraction
-favors rapid experimentation because no precomputation is required. But we note
-that the HFile generation from the larger parallel corpus took 5 hours and from
-this HFile it is possible to run multiple experiments by varying test sets
-and/or filtering parameters.
+not include \emph{cdec}'s suffix array implementation performance in
+\autoref{tab:ruleXtract}
+because the suffix array method involves much on-the-fly computation, such
+as rule extraction and source-to-target probability estimation, that has
+already been precomputed in the case of \emph{Joshua} and \emph{ruleXtract}.
+
+% TODO need to compare apples to apples: stick in numbers for cdec and
+% the larger corpus
+Despite this apparent slowness, the use of suffix array methods for rule extraction
+favors rapid experimentation because no time consuming precomputation is required.
+For example, compiling the small parallel corpus into a suffix array
+data structure takes 2m49s and extracting a grammar for our test set from
+that corpus takes 57m40s as mentioned before. This gives an indication of the total
+time needed to extract a grammar for an arbitrary corpus and an arbitrary test
+set.
+
+In our case, the precomputation which involves HFile generation is slightly more
+time consuming: HFile generation from the larger parallel corpus took 5 hours.
+However, once this HFile is generated, it is possible to quickly extract grammars
+for arbitrary test sets and arbitrary filtering parameters for rapid
+experimentation.
 
 The \emph{ruleXtract} system works in batch mode and dividing the number of
 words in the test set by the total time in the best configuration
-(\emph{ruleXtract, Bloom, Local}) for the large grammar yields a speed of 35.8
+(\emph{ruleXtract, Bloom, Local} row 10) for the large grammar yields
+a speed of 35.8
 words per second which is a real time system speed for batch processing tasks in
 which latency has little effect. However, running the system in that
 configuration gives a speed of 2.5 words per second for the longest sentence in
@@ -747,8 +954,10 @@ system.
 \section{Conclusion}
 \label{sec:conclusion}
 
-We have presented a strategy to filter SMT models to a given test set.
-This strategy is easy to implement, flexible as can be applied to other tasks
+We have presented techniques to build large translation
+grammars and to filter these grammars to a given test set efficiently.
+Our strategy is relatively easy to implement, it is
+flexible as it has been applied to other tasks such as language modelling
 and it does not require extensive computing resources as it is run on one
 machine. We have demonstrated that its performance in terms of speed and memory
 usage is competitive with other current alternative approaches.
