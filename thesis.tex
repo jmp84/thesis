@@ -1,6 +1,7 @@
 \documentclass[oneside, 12pt]{book}
 
 % TODO make a separate preamble
+% TODO look at compilation with xelatex or lualatex (xeCJK or luatexja for Chinese)
 \usepackage[table]{xcolor}
 \usepackage{graphicx}
 \usepackage{rotating}
@@ -14,12 +15,16 @@
 \usepackage{bm}
 \usepackage[utf8]{inputenc}
 \usepackage[T1,T2A]{fontenc} % T2A is for Russian
+\usepackage{CJKutf8}
 \def\pgfsysdriver{pgfsys-dvipdfm.def}
 \usepackage{tikz}
 \usetikzlibrary{calc,fit,shapes,arrows,positioning,automata}
 \usepackage[dvipdfm,a4paper,pagebackref,hyperindex=true]{hyperref}
 \usepackage[all]{hypcap}
 \usepackage{footnotebackref}
+
+% number subsubsections
+\setcounter{secnumdepth}{3}
 
 \newcommand{\red}[1]{\textcolor{red}{#1}}
 \def \RT [#1][#2][#3]{#1$\rightarrow${\tt $\langle$}#2,#3{\tt $\rangle$}}
@@ -72,7 +77,7 @@ urlcolor=linkcol %couleur des liens pour les url
 
 %\includeonly{introduction}
 %\includeonly{extractionFromPosteriors}
-%\includeonly{statisticalMachineTranslation}
+\includeonly{statisticalMachineTranslation}
 %\includeonly{hadoopExtraction}
 %\includeonly{extractionFromPosteriors}
 \includeonly{hadoopExtraction}

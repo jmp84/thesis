@@ -185,11 +185,18 @@ Typically, state-of-the-art SMT systems are organized into
 a pipeline of deterministic or statistical modules, as shown
 in \autoref{fig:mtPipeline}.
 Parallel text is first preprocessed. This consists of data cleaning
-and word segmentation. For morphologically poor languages such as
-English, simple rules for word segmentation are usually good enough.
-For morphologically rich languages, more advanced word segmentation
-methods are needed. Word segmentation techniques are also needed
-for languages that do not have word boundaries, such as Chinese.
+and tokenization.
+For morphologically poor languages such as
+English, simple rules for tokenization, e.g. separate words by white space
+and punctuation, are usually good enough.
+For morphologically rich languages, more advanced techniques
+are needed for effective tokenization, for example
+morphological analysis~\citep{habash-rambow:2005:ACL}, in order
+to combat data sparsity and work with a vocabulary with reasonable size.
+In the case of languages without word
+boundaries, such as Chinese, word segmentation techniques
+need to be applied~\citep{zhang-clark:2007:ACL}, in order
+to be able to break sentences into words.
 
 The preprocessed parallel text is then word-aligned
 (see \autoref{sec:StatisticalMachineTranslationWordAlignment}).
@@ -207,7 +214,8 @@ decoder.\footnote{\url{http://www.isi.edu/licensed-sw/rewrite-decoder}}
 Nowadays, word alignment models are used as an intermediate
 step in the translation pipeline.
 A translation grammar is then extracted and estimated
-from the word alignments (see \autoref{sec:hierruleextract}.
+from the word alignments (see \autoref{sec:hierruleextract} and
+translation is performed under the translation grammar.
 
 The monolingual data is also preprocessed in the same fashion as the
 target side of the parallel text and one or more language models are
