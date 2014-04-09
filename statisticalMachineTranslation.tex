@@ -1,6 +1,7 @@
 \chapter{Statistical Machine Translation}
 \label{chap:smt}
 
+% TODO: rule filtering
 %TODO(remove "and colleagues")
 %TODO add some related work for reparameterization of model 2 and maybe discriminative
 %alignment ?
@@ -1354,6 +1355,7 @@ unseen events, therefore different smoothing strategies have been explored to
 remedy this problem.
 
 \subsection{Back-off and Interpolated Models}
+\label{sec:backoffAndInterpolatedModels}
 
 Smoothing strategies for language modelling make use of lower order
 distributions either by backoff or interpolation. The general form of a backoff
@@ -1497,6 +1499,7 @@ $N_1$, $N_2$ and $N_{3+}$ are defined in \autoref{eq:definitionN}.
     independent and correlates well with human judgments, especially for statistical translation systems.
 
     \subsection{Minimum Error Rate Training}
+    \label{sec:mert}
 
     Minimum error rate training~\citep{och:2003:ACL} is a method to optimise the feature weights
     in a log-linear model for translation with respect to a particular evaluation metric. We present
