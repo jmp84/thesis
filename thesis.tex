@@ -21,6 +21,9 @@
 \usepackage[all]{hypcap}
 \usepackage{footnotebackref}
 
+% number subsubsections
+\setcounter{secnumdepth}{3}
+
 \newcommand{\red}[1]{\textcolor{red}{#1}}
 \def \RT [#1][#2][#3]{#1$\rightarrow${\tt $\langle$}#2,#3{\tt $\rangle$}}
 \def \SR [#1]{ {\tt $\langle$}#1}
@@ -70,11 +73,11 @@ urlcolor=linkcol %couleur des liens pour les url
 \DeclareMathOperator*{\argmin}{argmin}
 \DeclareMathOperator*{\argmax}{argmax}
 
-\includeonly{introduction}
+%\includeonly{introduction}
 %\includeonly{extractionFromPosteriors}
 %\includeonly{statisticalMachineTranslation}
 %\includeonly{hadoopExtraction}
-%\includeonly{extractionFromPosteriors}
+\includeonly{extractionFromPosteriors}
 %\includeonly{hadoopExtraction}
 %\includeonly{gyroRegeneration,gyroTranslation}
 %\includeonly{gyroRegeneration}
