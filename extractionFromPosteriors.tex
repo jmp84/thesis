@@ -1,7 +1,27 @@
-\chapter{Hierarchical Rule Extraction from Alignment Posterior Probabilities}
-\chaptermark{Rule Extraction from Posteriors}
+\chapter{Hierarchical Phrase-Based Grammar Extraction from Alignment Posterior Probabilities}
+\chaptermark{Hiero Extraction from Posteriors}
 \label{chap:extractionFromPosteriors}
 
+% TODO do something about G_3 and G_4 used sometimes and sometimes not
+% TODO grep for {\ (to detect for example {\it )
+% TODO grep for output used as a verb and correct
+% TODO grep for ??
+% TODO grep \forall and replace comma maybe or find a better way
+% TODO grep for consistent and use it consistently
+% TODO ensure that equations don't go over margin
+% TODO review count assigned to phrase pair in liu et al 2009
+% TODO take look at Jamie's thesis background on HMM word alignment models
+% TODO in grammar pattern section, say which grammars are used for exps
+% TODO read through comments and address left out ones
+% TODO either in this chap or background, add an equation describing the translation
+% model: simply relative frequency src-trg / src
+% TODO check resp. respectively usage
+% TODO throughout refer to background chapter rather than re-citing papers
+% TODO consistent use of hyphens in phrase pairs
+% TODO review grammatical usage of citet citep
+% TODO grep for abbreviations, grep for period and put right spacing
+% TODO uniform notation for phrase pairs: brackets or parenthesis, let's say
+% bracket is better
 %TODO remove all latex compilation warnings
 %TODO somewhere in the introduction, use the convention source and target.
 %TODO try to get rid of htbp in floats and see the outcome
@@ -11,11 +31,20 @@
 %TODO remove all \bf bu \bm
 %TODO search replace A(i_1, i_2, j_1, j_2) by A(j_1, j_2, i_1, i_2)
 %TODO search replace f_R f_C
+
+In \autoref{chap:hfile}, we have described how to exploit the MapReduce
+framework and the HFile format in order to generate very large
+translation grammars
+and retrieve rules from these grammars efficiently. The main contribution
+was at the infrastructure level rather at the modelling level. In this chapter,
+we will attempt to improve models for translation grammar extraction.
+
 Standard practice in SMT systems is to decouple the word alignment phase from
 the rule extraction phase. Typically, word alignment models are only used to
 obtain a set of alignment links, then those alignment links determine
-constraints that are followed in the rule extraction step (see TODO refer to
-background section). In this chapter, we attempt to leverage the information
+constraints that are followed in the rule extraction
+step (see \autoref{sec:hierruleextract}). In
+this chapter, we attempt to leverage the information
 contained in alignment models by extracting rules from alignment posterior
 probabilities~\citep{degispert-pino-byrne:2010:EMNLP}. These statistics are
 computed from the HMM alignment model~\citep{vogel-ney-tillmann} and they
@@ -32,47 +61,38 @@ demonstrate improvements on a medium scale Chinese-English task with these
 methods. We also investigate how best to exploit source-to-target and
 target-to-source alignment models.
 
-\section{Definitions and Notation}
-\label{sec:definitionAndNotation}
+%\section{Notation}
+%\label{sec:definitionAndNotation}
 
-In this section, we introduce definitions and notations that will
-be used throughout the chapter.
-
-\subsection{Alignment}
-
-An alignment model $\bm{a}$ is a random variable
-with values in the set of functions that maps source
-(resp. target) word positions to target (resp. source) word
-positions. $\bm{a}$ also denotes a particular instance
-of the variable.
-
-Given a sentence pair $(\bm{f} = f_1^J, \bm{e} = e_1^I)$,
-an alignment \emph{link} is simply a pair $(j, i) \in [1, J] \times [1, I]$.
-We denote $\bm{L}$ to be a set of links for the sentence pair $(\bm{f}, \bm{e})$.
-$\bm{L}$ can be obtained by the Viterbi
-algorithm~\citep{brown-dellapietra-dellapietra-mercer-1993} or maximum a posteriori
-decoding~\citep{kumar-och-macherey:2007:EMNLP} and by
-symmetrisation techniques~\citep{koehn-och-marcu:2003:NAACL}.
-
-\subsection{Translation Rules}
-
-A \emph{phrase based} rule is a translation
-rule that contains only terminals in its right hand side.
-A \emph{hierarchical} rule is a translation
-rule that contains at least one nonterminal in its right hand side.
+%In \autoref{sec:StatisticalMachineTranslationWordAlignment}, we
+%have introduced the variable $\bm{a}$, which denotes either
+%a set of alignment links or the random variable that defines the word
+%alignment model. In this chapter, for clarity, we distinguish these
+%two cases. Given a sentence pair $(\bm{f} = f_1^J, \bm{e} = e_1^I)$,
+%an alignment \emph{link} is simply a pair $(j, i) \in [1, J] \times [1, I]$.
+%We denote $\bm{L}$ to be a set of links for the sentence pair $(\bm{f}, \bm{e})$.
+%$\bm{L}$ can be obtained by the Viterbi
+%algorithm~\citep{brown-dellapietra-dellapietra-mercer-1993} or maximum a posteriori
+%decoding~\citep{matusov-zens-ney:2004:COLING,kumar-och-macherey:2007:EMNLP} and by
+%symmetrisation techniques (see \autoref{sec:symmetrisationHeuristics}).
+%We also remind definitions from \autoref{sec:hieroTypesOfRules}:
+%a \emph{phrase-based} rule is a translation
+%rule that contains only terminals in its right hand side;
+%a \emph{hierarchical} rule is a translation
+%rule that contains at least one nonterminal in its right hand side.
 
 \section{Introduction}
 \label{sec:extractionFromPosteriorsIntro}
 
-In state-of-the-art SMT systems, rules are extracted from a % TODO(check abbr)
-word-aligned parallel text where the alignments are generated by the Viterbi
-algorithm in the case of Model 1, Model
-2~\citep{brown-dellapietra-dellapietra-mercer-1993} or the HMM
-model~\citep{vogel-ney-tillmann} or by an approximation to the Viterbi algorithm
-in the case of IBM Model 4~\citep{brown-dellapietra-dellapietra-mercer-1993}.
+In state-of-the-art SMT systems, rules are extracted from % TODO(check abbr)
+word-aligned parallel text. The alignments are typically generated by
+applying symmetrisation
+heuristics (see \autoref{sec:symmetrisationHeuristics}) to Viterbi
+alignments (see \autoref{eq:viterbiAlignment}) obtained
+from source-to-target and target-to-source word alignment models.
 Additional information that these models could provide, such as posterior
 probabilities over alignment links, is not used. For example, let us consider
-the word aligned German-English sentence pair in
+the word-aligned German-English sentence pair in
 \autoref{fig:wordalignedSentencePairMistake}.
 %
 \begin{figure}
@@ -84,42 +104,45 @@ the word aligned German-English sentence pair in
     \node [right of = hat] (den) {den};
     \node [right of = den] (Ball) {Ball};
     \node [right of = Ball] (gesehen) {gesehen};
-    \node [right of = gesehen] (germanDot) {.};
+    %\node [right of = gesehen] (germanDot) {.};
     \node [below of = Er] (He) {He};
     \node [right of = He] (has) {has};
     \node [right of = has] (seen) {seen};
     \node [right of = seen] (the) {the};
     \node [right of = the] (ball) {ball};
-    \node [right of = ball] (englishDot) {.};
+    %\node [right of = ball] (englishDot) {.};
     % draw edges
     \draw (Er) -- (He);
     \draw (hat) -- (has);
     \draw (den) -- (the);
     \draw (Ball) -- (ball);
     \draw (gesehen) -- (seen);
-    \draw (germanDot) -- (englishDot);
+    %\draw (germanDot) -- (englishDot);
     % spurious alignment link
     \draw (hat) -- (seen);
   \end{tikzpicture}
   \end{center}
-  \caption{German-English word aligned sentence pair. The spurious alignment
-  link between the German word \emph{hat} and the English word \emph{seen}
-  prevents the phrase pair (\emph{hat}, \emph{has}) to be extracted from this
+  \caption{German-English word-aligned sentence pair. The spurious alignment
+  link between the German word \emph{hat} (\emph{has}) and the English word \emph{seen}
+  prevents the phrase pair $\langle$\emph{hat}, \emph{has}$\rangle$ to be extracted from this
   sentence pair.}
   \label{fig:wordalignedSentencePairMistake}
 \end{figure}
 %
 Intuitively, we can tell that
-there is a spurious alignment link between the German word \emph{hat} and the
+there is a spurious alignment link between the German
+word \emph{hat} (\emph{has}) and the
 English word \emph{seen}. This link will prevent the extraction of the useful
-phrase pair (\emph{hat}, \emph{has}) from this sentence pair. However, it is
+phrase pair $\langle$\emph{hat}, \emph{has}$\rangle$
+from this sentence pair. However, it is
 possible that the \emph{posterior probability} of this spurious link according
 to the alignment model is relatively low. We hypothesize that posterior
 probability information from alignment models is more reliable than the links
 obtained from Viterbi alignment.
 
 In this chapter, we use HMM alignment
-models to generate the statistics needed to both extract rules and estimate the
+models (see \autoref{sec:statisticalMachineTranslationHmmAlignmentModel}) to
+generate the statistics needed to both extract rules and estimate the
 translation models. We hypothesise that this tighter coupling between alignment
 and translation models will provide better translation quality.
 
@@ -156,10 +179,10 @@ produced with posterior probabilities
 $p(\bm{a_1} \mid \bm{f}, \bm{e}), ..., p(\bm{a_n} \mid \bm{f}, \bm{e})$. These
 posteriors are normalized to produce probabilities
 $\hat{p}(\bm{a_1}), ..., \hat{p}(\bm{a_n})$. Similarly, probabilities
-$\hat{p}(\pi_1), ..., \hat{p}(\pi_{n'})$ are obtained
-for an $n'$-best list of parses $\pi_1, ..., \pi_{n'}$. For each alignment
-$\bm{a_i}$ and parse $\pi_j$, syntax-augmented hierarchical rules are extracted
-with a count $\hat{p}(\bm{a_i})\hat{p}(\pi_j)$.
+$\hat{p}(\bm{\pi_1}), ..., \hat{p}(\bm{\pi_{n'}})$ are obtained
+for an $n'$-best list of parses $\bm{\pi_1}, ..., \bm{\pi_{n'}}$. For each alignment
+$\bm{a_i}$ and parse $\bm{\pi_j}$, syntax-augmented hierarchical rules are extracted
+with a count $\hat{p}(\bm{a_i}) \, \hat{p}(\bm{\pi_j})$.
 
 Alignment $n$-best lists have also been used to create a
 structure called
@@ -183,7 +206,7 @@ fractional counts assigned to these phrase pairs are computed in terms
 of the link posteriors and then used to estimate the translation models
 by relative frequency. The fractional count computation approximates
 the posterior probability of all alignments consistent with the phrase
-pair. Our method also uses link posteriors probabilities
+pair. Our method also uses link posterior probabilities
 to constrain the extraction but the posteriors are computed
 exactly rather than approximated. In addition, posterior probabilities
 of consistent alignments is also computed exactly. Finally, our method
@@ -192,32 +215,39 @@ is also applied to hierarchical phrase-based translation.
 Alignment posterior probabilities without approximation have also been
 used.
 For a given test set, \citet{deng-and-byrne:2008:ASLP} first extract
-phrase pairs in a standard way. Then, source phrases in the test set
+phrase pairs in a standard manner. Then, source phrases in the test set
 that do not have any corresponding target in the list of extracted
 phrase pairs are selected. For each of these source phrases, sentence
 pairs where the source phrase occurs are considered. For each such
 sentence pair, all target phrases in the target sentence are assigned
-phrase pair alignment posterior probabilities according to the
+phrase pair posterior
+probabilities (see \autoref{sec:extractionFromPosteriorsPhrasePair})
+according to the
 source-to-target and target-to-source alignment models, then ranked
 by the geometric average of the two probabilities. The top phrase pair
 is retained if its scores are above specific thresholds.
-Our definition of phrase pair posterior probabilities and the way to compute
-them are directly inspired by their work. However, we do not use
+Our definition of phrase pair posterior probabilities and the procedure to compute
+them are directly inspired by the work we just described. However, we do not use
 the word-to-phrase HMM model but the simpler word-to-word HMM model.
-In addition, our method does not rely on the standard extraction method
-and we apply it to hierarchical phrase-based translation.
+In addition, our method is applied to hierarchical phrase-based grammars
+rather than simpler phrase-based grammars. Finally, our grammar
+extraction scheme does not consist in
+first extracting a standard grammar and then augmenting the grammar with additional rules: we
+modify the extraction procedure to directly extract a hierarchical
+grammar from alignment link posterior probabilities
+or phrase pair posterior probabilities.
 
 \citet{kumar-och-macherey:2007:EMNLP} also use exact computation
 of alignment link posteriors in a different application setting.
 First, instead of using the Viterbi criterion for word alignment
-(\autoref{eq:viterbiCriterion}),
+reminded in \autoref{eq:viterbiCriterion},
 %
 \begin{equation}
-  \hat{\bm{a}} = \argmax_{\bm{a}} p(\bm{f}, \bm{a} \mid \bm{e})
+  \bm{\hat{a}} = \argmax_{\bm{a}} p(\bm{f}, \bm{a} \mid \bm{e})
   \label{eq:viterbiCriterion}
 \end{equation}
 %
-they use the Maximum A-Posteriori criterion is used (\autoref{eq:mapCriterion}).
+the maximum a posteriori criterion~\citep{matusov-zens-ney:2004:COLING}, shown in \autoref{eq:mapCriterion}, is used:
 %
 \begin{equation}
   \hat{a}_j = \argmax_{i} p(a_j = i \mid \bm{f}, \bm{e})
@@ -227,7 +257,9 @@ they use the Maximum A-Posteriori criterion is used (\autoref{eq:mapCriterion}).
 Then, given a parallel corpus for three languages $F$, $G$, $E$, the
 link posteriors for the language pair ($F$, $E$) are computed
 in terms of the posteriors for the language pair ($F$, $G$) and ($G$, $E$).
-G is called a \emph{bridge} language. Multiple bridge languages are used
+G is called a \emph{bridge} language. The motivation is that
+alignments for the $F$-$G$ language pair and the $G$-$E$ language
+pair may inform alignment for $F$-$E$. Multiple bridge languages are used
 and produce corresponding posterior matrices. The matrices are interpolated
 and alignments are extracted for each bridge language and for the
 interpolation. Translation gains are obtained in system combination.
@@ -247,13 +279,18 @@ Experiments demonstrate translation improvements over IBM Model 4.
 NP-hard problem. Given a sentence pair $(\bm{f}, \bm{e})$, a bijective phrase
 alignment $\bm{a}$ is defined as a bijective mapping between source phrases that
 form a partition of $\bm{f}$ and target phrases that form a partition of
-$\bm{e}$. A scoring function $\phi$ is also defined that assigns a real valued
-score to any phrase pair (source phrase, target phrase). The score of a
+$\bm{e}$. A scoring function $\phi$ is also defined that assigns a real-valued
+score to any phrase pair $\langle$source phrase, target phrase$\rangle$. The score of a
 bijective phrase alignment is simply the product of the scores of its phrase pairs.
 Given $(\bm{f}, \bm{e}, \phi)$, the phrase alignment optimization problem is to find
 the best scoring alignment. \citet{denero-klein:2008:ACL} show that this problem
 is NP-hard by showing that the corresponding decision problem is NP-complete via
-reduction of the SAT problem.
+reduction of the SAT problem. We give here an indication of the size of the search
+space. The number of possible source partitions is $2^{|\bm{f}| - 1}$.
+Given a source partition with $K + 1$ phrases, there are $(K + 1)!$ possible
+permutation of the source phrases and $2^{{|e| - 1} \choose K}$ possible target
+partitions with $K+1$ phrases. In conclusion, there is little hope to solve
+the phrase alignment problem exactly.
 
 \citet{saers-wu:2009:SSST} report an
 improvement on a phrase-based system where word alignment has been trained with
@@ -265,7 +302,7 @@ expectation maximization algorithm can be carried out in $O(n^6)$
 where $n$ is the number of tokens in a sentence.
 \citet{pauls-klein-chiang-knight:2010:NAACL} also use an
 inversion transduction grammar to directly align phrases to nodes in a
-string-to-tree model.Bayesian methods have also been developed to induce a
+string-to-tree model. Bayesian methods have also been developed to induce a
 grammar directly from an unaligned parallel
 corpus~\citep{blunsom-cohn-osborne:2008:NIPS,blunsom-cohn-dyer-osborne:2009:ACL}.
 Finally, \citet{Cmejrek2009} extract rules directly from
@@ -273,8 +310,9 @@ bilingual chart parses of the parallel corpus without using word alignments.
 We take a different approach in that we aim to start with very strong alignment
 models and use them to guide grammar extraction.
 
-Finally, another possible direction for better estimation of a translation model
-is smoothing, which could be complementary to the approach taken here.
+Finally, some work on smoothing, which could be complementary to the approach taken
+in this thesis, has been conducted to address the
+shortcomings of relative frequency estimation for translation models.
 \citet{foster-kuhn-johnson:2006:EMNLP} conduct an extensive series of
 experiments that either replace the relative frequency estimated phrase table by
 a smoothed phrase table or add the smoothed phrase table as a feature and
@@ -284,11 +322,12 @@ observe improvement in translation quality.
 \label{sec:extractionFromPosteriorsExtraction}
 
 In \autoref{sec:extractionFromPosteriorRelated}, we have reviewed approaches
-that ``widen'' the translation pipeline by using alignment $n$-best lists,
-we have also reviewed applications of exact computation of alignment posterior
+that ``widen'' the translation pipeline by using alignment $n$-best lists.
+We have also reviewed applications of exact computation of alignment posterior
 probabilities and attempts to directly model phrase alignment. We will now
-describe our rule extraction methods, based on exact computation of
-alignment posterior probabilities. Similarly to~\citep{hopkins-langmead-vo:2011:WMT},
+describe our grammar extraction methods, based on exact computation of
+alignment posterior probabilities under an alignment model.
+As in previous work~\citep{hopkins-langmead-vo:2011:WMT},
 we first present a general approach that encompasses both standard methods
 based on rule extraction from Viterbi alignments as well as our methods.
 For clarity of presentation, we first describe our methods in the simpler case
@@ -298,7 +337,7 @@ rule extraction.
 \subsection{General Framework for Rule Extraction}
 \label{sec:extractionFromPosteriorsExtractionGeneralApproach}
 
-We first describe a general method to the extraction of phrase-based rules.
+We first describe a general method for the extraction of phrase-based rules.
 An extension of this procedure for
 hierarchical rules is described in
 \autoref{sec:extractionFromPosteriorsExtractionDisjoint}. The algorithm is
@@ -337,10 +376,11 @@ alignment constraints are satisfied
 phrase pair ($f_{j_1}^{j_2}$, $e_{i_1}^{i_2}$) is extracted with a certain
 count (\hyperlink{alg:line:extract}{line \ref{alg:line:extract}}): the phrase
 pair is added to the list of phrase pairs used in translation, and the count
-will be used subsequently to compute translation models. The purpose
+will be used subsequently to compute translation models by relative frequency.
+The purpose
 of the constraints is to obtain a manageable number of rules. If we did not
-impose constraints, we would extract $\frac{I (I + 1) J (J + 1)}{4}$ rules
-(not necessarily distinct) for the sentence pair $(f_1^J, e_1^I)$. During
+impose constraints, we would extract $\frac{I (I + 1) J (J + 1)}{4}$ (not necessarily distinct) rules
+for the sentence pair $(f_1^J, e_1^I)$. During
 translation, the decoder would need to apply more pruning, which would
 potentially lead to more search errors and a decrease in translation
 quality.
@@ -348,11 +388,13 @@ quality.
 We will now refine this general procedure to make it more practical and
 closer to a possible implementation.
 Let us call the source constraints $\mathcal{C}_S$, the alignment constraints
-$\mathcal{C}_A$ and the target constraints $\mathcal{C}_T$. In practice, source
+$\mathcal{C}_A$ and the target constraints $\mathcal{C}_T$. These are
+Boolean functions used to select phrase pairs. In practice, source
 constraints are checked on the source phrases before looking
-at the target phrases. If source constraints are not met, then we need not even
-consider target phrases. In addition, target phrases are only considered if they
-satisfy alignment constraints with the source phrase and if they do, we rank
+at the target phrases. If source constraints are not met, then we need not
+consider target phrases for that source phrase.
+In addition, target phrases are only considered if they
+satisfy alignment constraints with the source phrase and, if they do, we rank
 them according to a certain ranking function $\mathcal{R}$. Target constraints also
 depend on the ranking $\mathcal{R}$, for example we can decide to keep only a certain
 number of target phrases per source phrase. When a phrase pair is extracted, it
@@ -376,7 +418,7 @@ With this notation, we obtain the revised extraction procedure in
         \EndFor
         \State{\Call{Sort}{$T, \mathcal{R}$}} \Comment{Target phrases ranked according to $\mathcal{R}$}
         \For{$e_{i_1}^{i_2} \in T$}
-          \If{$\mathcal{C}_T(e_{i_1}^{i_2}, T)$} \Comment{Target constraints, also depend on ranking}
+          \If{$\mathcal{C}_T(e_{i_1}^{i_2}, T)$} \Comment{Target constraints}
             \State{\Call{Extract}{\RT[$X$][$f_{j_1}^{j_2}$][$e_{i_1}^{i_2}$], $\mathcal{C}(f_{j_1}^{j_2}, e_{i_1}^{i_2})$}}
           \EndIf
         \EndFor
@@ -384,7 +426,14 @@ With this notation, we obtain the revised extraction procedure in
     \EndFunction
   \end{algorithmic}
   \caption{General procedure for phrase-based rule extraction. This version
-  is more practical and closer to a possible implementation.}
+  is more practical and closer to a possible implementation.
+  Source phrases are first considered. Only if source constraints $\mathcal{C}_S$ are satisfied, then
+  target phrases are considered. Targets that satisfy alignment constraints $\mathcal{C}_A$ with
+  their
+  source are ranked by $\mathcal{R}$. Finally, phrase pairs where the target
+  satisfies target constraints can be extracted with a certain count $\mathcal{C}$.
+  Note that the target constraints implicitly depend on the ranking of the
+  targets by $\emph{R}$.}
   \label{alg:generalRuleXtractSpecialized}
 \end{figure}
 %
@@ -399,14 +448,14 @@ In this section, we describe the standard extraction procedure within
 the framework introduced in
 \autoref{sec:extractionFromPosteriorsExtractionGeneralApproach}.
 Common practice takes a fixed set of word alignment links $\bm{L}$
-as defined in \autoref{sec:definitionAndNotation}
 and extracts
 rules from this set. Alignment links $\bm{L}$ are obtained from
 the alignment model $\bm{a}$ either by the Viterbi algorithm or
-by maximum a posteriori estimation~\citep{kumar-och-macherey:2007:EMNLP}
+by maximum a posteriori
+estimation~\citep{matusov-zens-ney:2004:COLING,kumar-och-macherey:2007:EMNLP}
 and possibly using symmetrisation heuristics to combine links obtained
 from source-to-target and target-to-source alignment
-models~\citep{koehn-och-marcu:2003:NAACL}. We can restate this
+models (see \autoref{sec:symmetrisationHeuristics}). We can restate this
 common approach in the framework proposed in
 \autoref{sec:extractionFromPosteriorsExtractionGeneralApproach} and in
 \autoref{alg:generalRuleXtractSpecialized} where constraints, ranking and
@@ -428,15 +477,20 @@ $s_{\text{max}}$ represents the maximum length of a source phrase.
   \label{eq:consistencyConstraint}
 \end{equation}
 %
-The first constraint means that there cannot be any alignment link between a
-word inside the phrase pair and a word outside of it. The second constraint
-means that
-there should be at least one alignment link in the phrase pair. Sometimes, an
+Alignment constraints have already been described in \autoref{sec:phrasextract} as
+the conditions required for phrase pair extraction.
+The first bracketed constraint requires that there be no alignment link between a
+word inside the phrase pair and a word outside of it. The second
+bracketed constraint
+requires that
+there be at least one alignment link in the phrase pair. Sometimes, an
 additional constraint specifies that the boundary words in the phrase pair
-should be aligned. In this work, this constraint is not present.
+should be aligned. In this work, this constraint is not present. % TODO repeat in background ?
 A phrase pair that satisfies \autoref{eq:consistencyConstraint} is said
-to be \emph{consistent} with the alignment~\citep{koehn:2010:book}.
-  \item target constraints $\mathcal{C}_T(e_{i_1}^{i_2}, T)$: no constraint.
+to be \emph{consistent} with the alignment (see \autoref{sec:phrasextract}).
+  \item target constraints $\mathcal{C}_T(e_{i_1}^{i_2}, T)$: no constraint is
+    imposed in this work. Target constraints based on length may be imposed
+    depending on the implementation.
   \item ranking and counting functions:
 %
 \begin{equation}
@@ -444,6 +498,8 @@ to be \emph{consistent} with the alignment~\citep{koehn:2010:book}.
 \end{equation}
 \end{itemize}
 %
+The above constraints, ranking and counting functions define the standard
+approach to grammar extraction.
 In the next sections, we depart from this approach and apply novel functions
 to rank and count target-side translations according to their quality in the
 context of each parallel sentence, as defined by the word alignment models. We
@@ -455,91 +511,100 @@ target-to-source translation models.
 \subsection[Extraction from Posteriors Probabilities over Alignment Links]{Extraction from Posteriors Probabilities over \\ Alignment Links}
 \label{sec:extractionFromPosteriorsLink}
 
-We now consider the hidden random variable $\bm{a}$ that models the
-alignment process. For presentation, we only consider source-to-target
-alignment models: the variable $\bm{a}$ takes values in functions from source
-word positions to target word positions.
+%We now consider the hidden random variable $\bm{a}$ that models the
+%alignment process.
+For presentation, we only consider source-to-target
+alignment models: the random variable $\bm{a}$ that models the alignment
+process
+takes values in functions from source
+word positions to target word positions. However, it it possible to apply
+our method with any directional alignment model.
 We will use the link
-posterior probability $p(a_j = i | f_1^J, e_1^I)$ to guide
+posterior probability $p(a_j = i \mid f_1^J, e_1^I)$ to guide
 rule extraction. This statistic expresses how likely it is that
 a word $f_j$ in source position $j$ and a word $e_i$ in
 target position $i$ are aligned given the sentence pair $(f_1^J,e_1^I)$.
-They can be computed efficiently for Model 1, Model 2 and HMM. We will derive
+The link posterior probability can be computed efficiently for
+Model 1, Model 2 and HMM. In our experiments, we only use the HMM model
+to compute link posteriors but comparisons between link posteriors obtained
+from various models may be interesting in the future. We will derive
 a closed form solution for these models to compute the link posterior
-probability. Applying the definition of conditional
+probability.
+Applying the definition of conditional
 probability, we obtain the general form of the link posterior probability in
 \autoref{eq:linkposdef}.
 %
 \begin{equation} \label{eq:linkposdef}
-  p(a_{j_0} = i_0 | f_1^J, e_1^I) = \frac{p(a_{j_0}=i_0,f_1^J|e_1^I)}{p(f_1^J|e_1^I)}
+  p(a_{j_0} = i_0 \mid f_1^J, e_1^I) = \frac{p(a_{j_0}=i_0,f_1^J \mid e_1^I)}{p(f_1^J \mid e_1^I)}
 \end{equation}
 %
 Using \autoref{eq:linkposdef}, we will now derive the link posterior probability
-$p_{M_1}(a_{j_0} = i_0 | f_1^J, e_1^I)$ for Model 1,
-$p_{M_2}(a_{j_0} = i_0 | f_1^J, e_1^I)$ for Model 2 and
-$p_{\text{HMM}}(a_{j_0} = i_0 | f_1^J, e_1^I)$ for the HMM model.
+$p_{M_1}(a_{j_0} = i_0 \mid f_1^J, e_1^I)$ for Model 1,
+$p_{M_2}(a_{j_0} = i_0 \mid f_1^J, e_1^I)$ for Model 2 and
+$p_{\text{HMM}}(a_{j_0} = i_0 \mid f_1^J, e_1^I)$ for the HMM model.
 
 \subsubsection{Link Posterior Probability for Model 1}
 
-Let us derive $p_{M_1}(a_{j_0} = i_0 | f_1^J, e_1^I)$,
-the link posterior probability under Model 1. We use notation
+Let us derive $p_{M_1}(a_{j_0} = i_0 \mid f_1^J, e_1^I)$,
+the link posterior probability under Model 1. We use the notation
 from~\citep{brown-dellapietra-dellapietra-mercer-1993}. We compute the
 numerator from
 \autoref{eq:linkposdef} by marginalising over all possible alignments and
-inverting sum and product signs to obtain \autoref{eq:linkposM1Numerator}.
+inverting sum and product signs to obtain \autoref{eq:linkposM1Numerator}:
 %
 \begin{align}
-  & p_{M_1}(a_{j_0}=i_0,f_1^J|e_1^I) \nonumber \\
-  &= \sum_{a_1 = 0}^{I} ... \sum_{a_{j_0-1} = 0}^{I} \sum_{a_{j_0+1} = 0}^{I} ... \sum_{a_J = 0}^{I} p_{M_1}(a_1 ... a_{j_0-1} i_0 a_{j_0+1} ... a_J,f_1^J|e_1^I) \nonumber \\
-  &= \sum_{a_1 = 0}^{I} ... \sum_{a_{j_0-1} = 0}^{I} \sum_{a_{j_0+1} = 0}^{I} ... \sum_{a_J = 0}^{I} \frac{\varepsilon}{(1+I)^J} t(f_{j_0}|e_{i_0}) \prod_{\substack{j = 1 \\ j \neq j_0}}^J t(f_j|e_{a_j}) \nonumber \\
-  &= \frac{\varepsilon}{(1+I)^J} t(f_{j_0}|e_{i_0}) \prod_{\substack{j = 1 \\ j \neq j_0}}^J \sum_{i=0}^I t(f_j|e_i) \label{eq:linkposM1Numerator}
+  & p_{M_1}(a_{j_0}=i_0,f_1^J \mid e_1^I) \nonumber \\
+  &= \sum_{a_1 = 0}^{I} ... \sum_{a_{j_0-1} = 0}^{I} \sum_{a_{j_0+1} = 0}^{I} ... \sum_{a_J = 0}^{I} p_{M_1}(a_1 ... a_{j_0-1} i_0 a_{j_0+1} ... a_J,f_1^J \mid e_1^I) \nonumber \\
+  &= \sum_{a_1 = 0}^{I} ... \sum_{a_{j_0-1} = 0}^{I} \sum_{a_{j_0+1} = 0}^{I} ... \sum_{a_J = 0}^{I} \frac{\varepsilon}{(1+I)^J} t(f_{j_0} \mid e_{i_0}) \prod_{\substack{j = 1 \\ j \neq j_0}}^J t(f_j \mid e_{a_j}) \nonumber \\
+  &= \frac{\varepsilon}{(1+I)^J} t(f_{j_0} \mid e_{i_0}) \prod_{\substack{j = 1 \\ j \neq j_0}}^J \sum_{i=0}^I t(f_j \mid e_i) \label{eq:linkposM1Numerator}
 \end{align}
 %
 We compute the denominator from \autoref{eq:linkposdef}
 similarly (see Equation (15)
 in~\citep{brown-dellapietra-dellapietra-mercer-1993}) and obtain
-\autoref{eq:linkposM1Denominator}.
+\autoref{eq:linkposM1Denominator}:
 %
 \begin{equation} \label{eq:linkposM1Denominator}
-  p_{M_1}(f_1^J|e_1^I) = \frac{\varepsilon}{(1+I)^J} \prod_{j=1}^J \sum_{i=0}^I t(f_j|e_i)
+  p_{M_1}(f_1^J \mid e_1^I) = \frac{\varepsilon}{(1+I)^J} \prod_{j=1}^J \sum_{i=0}^I t(f_j \mid e_i)
 \end{equation}
 %
 After simplification, we obtain \autoref{eq:linkposM1} from
-\autoref{eq:linkposM1Numerator} and \autoref{eq:linkposM1Denominator}.
+\autoref{eq:linkposM1Numerator} and \autoref{eq:linkposM1Denominator}:
 %
 \begin{equation} \label{eq:linkposM1}
-  p_{M_1}(a_{j_0} = i_0 | f_1^J, e_1^I) = \frac{t(f_{j_0}|e_{i_0})}{\sum_{i=0}^I t(f_{j_0}|e_i)}
+  p_{M_1}(a_{j_0} = i_0 \mid f_1^J, e_1^I) = \frac{t(f_{j_0}|e_{i_0})}{\sum_{i=0}^I t(f_{j_0}|e_i)}
 \end{equation}
 %
 
 \subsubsection{Link Posterior Probability for Model 2}
-We apply the same method to compute $p_{M_2}(a_{j_0} = i_0 | f_1^J, e_1^I)$, the
+We apply the same method to compute $p_{M_2}(a_{j_0} = i_0 \mid f_1^J, e_1^I)$, the
 link posterior probability for Model 2. We also use
 notation from~\citep{brown-dellapietra-dellapietra-mercer-1993} but
-we replace the notation for the alignment probability $a(i | j, J, I)$
-by $p_a(i | j, J, I)$ for clarity.
+we replace the notation for the alignment probability $a(i \mid j, J, I)$
+by $p_a(i \mid j, J, I)$ for clarity.
 We compute the numerator from \autoref{eq:linkposdef} in
-\autoref{eq:linkposM2Numerator}.
+\autoref{eq:linkposM2Numerator}:
 %
 \begin{align}
-  & p_{M_2}(a_{j_0}=i_0,f_1^J|e_1^I) \nonumber \\
-  &= \sum_{a_1 = 0}^{I} ... \sum_{a_{j_0-1} = 0}^{I} \sum_{a_{j_0+1} = 0}^{I} ... \sum_{a_J = 0}^{I} p_{M_2}(a_1 ... a_{j_0-1} i_0 a_{j_0+1} ... a_J,f_1^J|e_1^I) \nonumber \\
-  &= \sum_{a_1 = 0}^{I} ... \sum_{a_{j_0-1} = 0}^{I} \sum_{a_{j_0+1} = 0}^{I} ... \sum_{a_J = 0}^{I} \varepsilon \ p_a(i_0 | j_0, J, I) \ t(f_{j_0}|e_{i_0}) \prod_{\substack{j = 1 \\ j \neq j_0}}^J p_a(a_j | j, J, I) \ t(f_j|e_{a_j}) \nonumber \\
-  &= \varepsilon \ p_a(i_0 | j_0, J, I) \ t(f_{j_0}|e_{i_0}) \prod_{\substack{j = 1 \\ j \neq j_0}}^J \sum_{i=0}^I p_a(i | j, J, I) \ t(f_j|e_i) \label{eq:linkposM2Numerator}
+  & p_{M_2}(a_{j_0}=i_0,f_1^J \mid e_1^I) \nonumber \\
+  &= \sum_{a_1 = 0}^{I} ... \sum_{a_{j_0-1} = 0}^{I} \sum_{a_{j_0+1} = 0}^{I} ... \sum_{a_J = 0}^{I} p_{M_2}(a_1 ... a_{j_0-1} i_0 a_{j_0+1} ... a_J,f_1^J \mid e_1^I) \nonumber \\
+  &= \sum_{a_1 = 0}^{I} ... \sum_{a_{j_0-1} = 0}^{I} \sum_{a_{j_0+1} = 0}^{I} ... \sum_{a_J = 0}^{I} \varepsilon \ p_a(i_0 \mid j_0, J, I) \ t(f_{j_0} \mid e_{i_0}) \nonumber \\
+  & \prod_{\substack{j = 1 \\ j \neq j_0}}^J p_a(a_j \mid j, J, I) \ t(f_j \mid e_{a_j}) \nonumber \\
+  &= \varepsilon \ p_a(i_0 \mid j_0, J, I) \ t(f_{j_0} \mid e_{i_0}) \prod_{\substack{j = 1 \\ j \neq j_0}}^J \sum_{i=0}^I p_a(i \mid j, J, I) \ t(f_j \mid e_i) \label{eq:linkposM2Numerator}
 \end{align}
 %
 We compute the denominator from \autoref{eq:linkposdef} similarly and obtain
-\autoref{eq:linkposM2Denominator}.
+\autoref{eq:linkposM2Denominator}:
 %
 \begin{equation} \label{eq:linkposM2Denominator}
-  p_{M_2}(f_1^J|e_1^I) = \varepsilon \ \prod_{j=1}^J \sum_{i=0}^I p_a(i | j, J, I) \ t(f_j|e_i)
+  p_{M_2}(f_1^J \mid e_1^I) = \varepsilon \ \prod_{j=1}^J \sum_{i=0}^I p_a(i \mid j, J, I) \ t(f_j \mid e_i)
 \end{equation}
 %
 After simplification, we obtain \autoref{eq:linkposM2} from
 \autoref{eq:linkposM2Numerator} and \autoref{eq:linkposM2Denominator}.
 %
 \begin{equation} \label{eq:linkposM2}
-  p_{M_2}(a_{j_0} = i_0 | f_1^J, e_1^I) = \frac{p_a(i_0 | j_0, J, I) \ t(f_{j_0} | e_{i_0})}{\sum_{i=0}^I p_a(i | j_0, J, I) \ t(f_{j_0}|e_i)}
+  p_{M_2}(a_{j_0} = i_0 \mid f_1^J, e_1^I) = \frac{p_a(i_0 \mid j_0, J, I) \ t(f_{j_0} \mid e_{i_0})}{\sum_{i=0}^I p_a(i \mid j_0, J, I) \ t(f_{j_0} \mid e_i)}
 \end{equation}
 %
 
@@ -553,47 +618,48 @@ sentence $f_1^J$, the hidden sequence is $a_1^J$ and that in addition
 to standard presentations of HMM, all probabilities are conditioned on
 the target sentence $e_1^I$.
 We compute the numerator from \autoref{eq:linkposdef} in
-\autoref{eq:linkposHMMNumerator}.
+\autoref{eq:linkposHMMNumerator}:
 %
 \begin{align}
-  p_{\text{HMM}}(a_{j_0} = i_0, f_1^J | e_1^I) &= p_{\text{HMM}}(a_{j_0} = i_0, f_1^{j_0}, f_{j_0 + 1}^J | e_1^I) \nonumber \\
-                                               &= p_{\text{HMM}}(f_{j_0 + 1}^J | a_{j_0} = i_0, f_1^{j_0}, e_1^I) \ p_{\text{HMM}}(a_{j_0} = i_0, f_1^{j_0} | e_1^I) \nonumber \\
-                                               &= p_{\text{HMM}}(f_{j_0 + 1}^J | a_{j_0} = i_0, e_1^I) \ p_{\text{HMM}}(a_{j_0} = i_0, f_1^{j_0} | e_1^I) \nonumber \\
+  p_{\text{HMM}}(a_{j_0} = i_0, f_1^J \mid e_1^I) &= p_{\text{HMM}}(a_{j_0} = i_0, f_1^{j_0}, f_{j_0 + 1}^J \mid e_1^I) \nonumber \\
+                                               &= p_{\text{HMM}}(f_{j_0 + 1}^J \mid a_{j_0} = i_0, f_1^{j_0}, e_1^I) \ p_{\text{HMM}}(a_{j_0} = i_0, f_1^{j_0} \mid e_1^I) \nonumber \\
+                                               &= p_{\text{HMM}}(f_{j_0 + 1}^J \mid a_{j_0} = i_0, e_1^I) \ p_{\text{HMM}}(a_{j_0} = i_0, f_1^{j_0} \mid e_1^I) \nonumber \\
                                                &= \beta_{j_0}(i_0) \ \alpha_{j_0}(i_0) \label{eq:linkposHMMNumerator}
 \end{align}
 %
 where $\beta_{j_0}(i_0)$ and $\alpha_{j_0}(i_0)$ are respectively
-the backward and forward HMM probabilities defined in \autoref{eq:backwardForward}.
+the backward and forward HMM probabilities defined in \autoref{eq:backwardForward}:
 %
 \begin{equation}
   \begin{split}
-    \beta_{j}(i)  &= p_{\text{HMM}}(f_{j + 1}^J | a_{j} = i, e_1^I) \\
-    \alpha_{j}(i) &= p_{\text{HMM}}(a_{j} = i, f_1^{j} | e_1^I)
+    \beta_{j}(i)  &= p_{\text{HMM}}(f_{j + 1}^J \mid a_{j} = i, e_1^I) \\
+    \alpha_{j}(i) &= p_{\text{HMM}}(a_{j} = i, f_1^{j} \mid e_1^I)
   \end{split}
   \label{eq:backwardForward}
 \end{equation}
 %
 The forward and backward probabilities can be computed recursively as
-shown in \autoref{eq:forwardRecursion} and \autoref{eq:backwardRecursion}.
+shown in \autoref{eq:forwardRecursion} and \autoref{eq:backwardRecursion}:
 %
 \begin{align}
-  \alpha_{j}(i) &= p_{\text{HMM}}(a_{j} = i, f_1^{j} | e_1^I) \nonumber \\
-                &= \sum_{k = 0}^I p_{\text{HMM}}(a_{j} = i, a_{j - 1} = k, f_1^{j - 1}, f_j | e_1^I) \nonumber \\
-                &= \sum_{k = 0}^I p_{\text{HMM}}(f_j | a_j = i, a_{j - 1} = k, f_1^{j-1}, e_1^I) \ p_{\text{HMM}}(a_{j} = i, a_{j - 1} = k, f_1^{j - 1} | e_1^I) \nonumber \\
-                &= \sum_{k = 0}^I p_{\text{HMM}}(f_j | e_i) \ p_{\text{HMM}}(a_{j} = i | a_{j - 1} = k, f_1^{j - 1}, e_1^I) \ p(a_{j - 1} = k, f_1^{j - 1} | e_1^I) \nonumber \\
-                &= \sum_{k = 0}^I p_{\text{HMM}}(f_j | e_i) \ p_{\text{HMM}}(a_{j} = i | a_{j - 1} = k, I) \ \alpha_{j - 1}(k) \label{eq:forwardRecursion} \\
-  \beta_{j}(i)  &= p_{\text{HMM}}(f_{j + 1}^J | a_{j} = i, e_1^I) \nonumber \\
-                &= \sum_{k = 0}^I p_{\text{HMM}}(f_{j+2}^J, a_{j + 1} = k, f_{j + 1} | a_j = i, e_1^I) \nonumber \\
-                &= \sum_{k = 0}^I p_{\text{HMM}}(f_{j+2}^J | a_{j + 1} = k, f_{j + 1}, a_j = i, e_1^I) \ p_{\text{HMM}}(a_{j + 1} = k, f_{j + 1} | a_j = i, e_1^I) \nonumber \\
-                &= \sum_{k = 0}^I p_{\text{HMM}}(f_{j+2}^J | a_{j + 1} = k, e_1^I) \ p_{\text{HMM}}(f_{j + 1} | a_{j + 1} = k, a_j = i, e_1^I) \ p(a_{j + 1} = k | a_j = i, e_1^I) \nonumber \\
-                &= \sum_{k = 0}^I \beta_{j + 1}(k) \ p_{\text{HMM}}(f_{j + 1} | e_k) \ p_{\text{HMM}}(a_{j + 1} = k | a_j = i, I) \label{eq:backwardRecursion}
+  \alpha_{j}(i) &= p_{\text{HMM}}(a_{j} = i, f_1^{j} \mid e_1^I) \nonumber \\
+                &= \sum_{k = 0}^I p_{\text{HMM}}(a_{j} = i, a_{j - 1} = k, f_1^{j - 1}, f_j \mid e_1^I) \nonumber \\
+                &= \sum_{k = 0}^I p_{\text{HMM}}(f_j \mid a_j = i, a_{j - 1} = k, f_1^{j-1}, e_1^I) \ p_{\text{HMM}}(a_{j} = i, a_{j - 1} = k, f_1^{j - 1} \mid e_1^I) \nonumber \\
+                &= \sum_{k = 0}^I p_{\text{HMM}}(f_j \mid e_i) \ p_{\text{HMM}}(a_{j} = i \mid a_{j - 1} = k, f_1^{j - 1}, e_1^I) \ p_{\text{HMM}}(a_{j - 1} = k, f_1^{j - 1} \mid e_1^I) \nonumber \\
+                &= \sum_{k = 0}^I p_{\text{HMM}}(f_j \mid e_i) \ p_{\text{HMM}}(a_{j} = i \mid a_{j - 1} = k, I) \ \alpha_{j - 1}(k) \label{eq:forwardRecursion} \\
+  \beta_{j}(i)  &= p_{\text{HMM}}(f_{j + 1}^J \mid a_{j} = i, e_1^I) \nonumber \\
+                &= \sum_{k = 0}^I p_{\text{HMM}}(f_{j+2}^J, a_{j + 1} = k, f_{j + 1} \mid a_j = i, e_1^I) \nonumber \\
+                &= \sum_{k = 0}^I p_{\text{HMM}}(f_{j+2}^J \mid a_{j + 1} = k, f_{j + 1}, a_j = i, e_1^I) \ p_{\text{HMM}}(a_{j + 1} = k, f_{j + 1} \mid a_j = i, e_1^I) \nonumber \\
+                &= \sum_{k = 0}^I p_{\text{HMM}}(f_{j+2}^J \mid a_{j + 1} = k, e_1^I) \ p_{\text{HMM}}(f_{j + 1} \mid a_{j + 1} = k, a_j = i, e_1^I) \nonumber \\
+                & p_{\text{HMM}}(a_{j + 1} = k \mid a_j = i, e_1^I) \nonumber \\
+                &= \sum_{k = 0}^I \beta_{j + 1}(k) \ p_{\text{HMM}}(f_{j + 1} \mid e_k) \ p_{\text{HMM}}(a_{j + 1} = k \mid a_j = i, I) \label{eq:backwardRecursion}
 \end{align}
 %
 The denominator from \autoref{eq:linkposdef} is computed in
-\autoref{eq:linkposHMMDenominator}
+\autoref{eq:linkposHMMDenominator}:
 %
 \begin{align}
-  p_{\text{HMM}}(f_1^J | e_1^I) &= \sum_{k = 0}^I p_{\text{HMM}}(a_J = k, f_1^J | e_1^I) \nonumber \\
+  p_{\text{HMM}}(f_1^J \mid e_1^I) &= \sum_{k = 0}^I p_{\text{HMM}}(a_J = k, f_1^J \mid e_1^I) \nonumber \\
                                 &= \sum_{k = 0}^I \alpha_J(k) \label{eq:linkposHMMDenominator}
 \end{align}
 %
@@ -609,57 +675,60 @@ in order to define constraints, ranking and counting functions.
 \subsubsection{Constraints, Ranking and Counting Functions from HMM Link Posterior Probabilities}
 
 We use HMM link posterior probabilities computed in \autoref{sec:linkPosteriorHMM}
-to define constraints, ranking and counting functions:
+in order to define constraints, ranking and counting functions:
 %
 \begin{itemize}
-  \item source\_constraints $\mathcal{C}_S(f_{j_1}^{j_2})$:
+  \item source constraints $\mathcal{C}_S(f_{j_1}^{j_2})$:
 %
 \begin{equation}
   j_2 - j_1  < s_{\text{max}}
 \end{equation}
 %
-This is the same constraint as defined in
+This is the same constraint as defined for standard Viterbi extraction in
 \autoref{sec:extractionFromPosteriorsViterbi}.
   \item alignment constraints $\mathcal{C}_A(f_{j_1}^{j_2}, e_{i_1}^{i_2}, \bm{a})$:
 %
 \begin{equation}
   \begin{split}
-    & \exists (j,i) \in [j_1,j_2] \times [i_1,i_2], p(a_j = i|f_1^J,e_1^I) > \lambda \\
-    & \forall (j,i) \in [1, J] \times [1, I] \cap \{(j,i): p(a_j = i | f_1^J,e_1^I) > \lambda\} \\
+    & \exists (j,i) \in [j_1,j_2] \times [i_1,i_2], p(a_j = i \mid f_1^J,e_1^I) > \lambda \\
+    & \forall (j,i) \in [1, J] \times [1, I] \cap \{(j,i): p(a_j = i \mid f_1^J,e_1^I) > \lambda\} \\
     & \hspace{3em} j \in [j_1, j_2] \Leftrightarrow i \in [i_1, i_2]
   \end{split}
 \end{equation}
 %
-where $\lambda$ is a float threshold defined experimentally. Intuitively,
+where $\lambda$ is a threshold defined experimentally. Intuitively,
 $\lambda$ is a high link posterior probability.
 The first constraint means that we require at least one link with a
 high posterior probability in the phrase pair considered. The second
 constraint means that there should be no link with a high posterior probability
 that be inconsistent with the phrase pair. Note that these constraints are
-identical to the Viterbi alignment constraints if we choose $\bm{L}$ to be the
-set of all links with high posterior defined in \autoref{eq:linksWithHighPosterior}.
+identical to the Viterbi alignment constraints defined
+in \autoref{sec:extractionFromPosteriorsViterbi} if we choose $\bm{L}$ to be the
+set of all links with high posterior defined in \autoref{eq:linksWithHighPosterior}:
 %
 \begin{equation}
-  \bm{L} = \{(j, i) \in [1, J] \times [1, I]: p(a_j = i|f_1^J,e_1^I) > \lambda\}
+  \bm{L} = \{(j, i) \in [1, J] \times [1, I]: p(a_j = i \mid f_1^J,e_1^I) > \lambda\}
   \label{eq:linksWithHighPosterior}
 \end{equation}
 %
 Also note that the second
-constraint does not consider links to the \emph{null} word relevant.
-This is because we do not need to include the \emph{null} word
+constraint does not consider links to the null
+word (see \autoref{sec:StatisticalMachineTranslationWordAlignment}) relevant.
+This is because we do not need to include the null word
 in a translation rule.
-  \item target constraints $\mathcal{C}_T(e_{i_1}^{i_2}, T)$: we pick the first 3
-translation candidates according to the ranking function $\mathcal{R}$.
+  \item target constraints $\mathcal{C}_T(e_{i_1}^{i_2}, T)$: we pick the
+    first $k$ translation candidates according to the ranking
+    function $\mathcal{R}$.
   \item ranking function:
 %
 \begin{equation} \label{eq:linkPosRanking}
-  \mathcal{R}(f_{j_1}^{j_2},e_{i_1}^{i_2}) = \prod_{j=j_1}^{j_2} \sum_{i=i_1}^{i_2} \frac{p(a_j = i|f_1^J,e_1^I)}{i_2-i_1+1}
+  \mathcal{R}(f_{j_1}^{j_2},e_{i_1}^{i_2}) = \prod_{j=j_1}^{j_2} \sum_{i=i_1}^{i_2} \frac{p(a_j = i \mid f_1^J,e_1^I)}{i_2-i_1+1}
 \end{equation}
 %
 This ranking function is very similar to the score used for lexical features
-described in TODO(reference to background chapter). Here,
+described in \autoref{sec:features}. Here,
 we use link posteriors instead of Model 1 translation probabilities. This
-function favours short phrases, therefore we do not use it as a counting
+function favours short target phrases, therefore we do not use it as a counting
 function. Preliminary experiments show that this function is not appropriate for
 counting rules and that it gives poor results. We therefore use the same counting
 function as in standard practice described in
@@ -667,7 +736,7 @@ function as in standard practice described in
   \item counting function:
 %
 \begin{equation}
-  f_C(f_{j_1}^{j_2},e_{i_1}^{i_2}) = 1
+  \mathcal{C}(f_{j_1}^{j_2},e_{i_1}^{i_2}) = 1
 \end{equation}
 %
 \end{itemize}
@@ -675,7 +744,8 @@ function as in standard practice described in
 We have described rule extraction from alignment link posterior
 probabilities. Next, we will describe rule extraction from alignment
 posterior probabilities over phrase pairs. This method will use the
-same constraints but different ranking and counting functions.
+same source constraints, alignment constraints and target constraints
+but different ranking and counting functions.
 
 \subsection{Extraction from Posteriors over Phrase Pairs}
 \label{sec:extractionFromPosteriorsPhrasePair}
@@ -683,11 +753,11 @@ same constraints but different ranking and counting functions.
 In the previous section, we defined and gave closed form solutions to
 alignment link posterior probabilities for Model 1, Model 2 and the HMM model.
 We can also define alignment posterior probabilities over phrase pairs. Let us
-consider the phrase pair $(f_{j_1}^{j_2}, e_{i_1}^{i_2})$ in the
+consider the phrase pair $\langle f_{j_1}^{j_2}, e_{i_1}^{i_2} \rangle$ in the
 sentence pair $(f_1^J, e_1^I)$. In
 \autoref{eq:alignmentConsistentDefinition}, we define
 $A(j_1, j_2; i_1, i_2)$, the set of alignments that have no links between
-inside the phrase pair and outside the phrase pair.
+inside the phrase pair and outside the phrase pair:
 %
 \begin{equation}
   A(j_1, j_2;i_1, i_2) = \{a_1^J : a_j \in [i_1, i_2] \Leftrightarrow j \in [j_1,j_2] \}
@@ -698,24 +768,27 @@ Alignments in $A(j_1, j_2;i_1, i_2)$ satisfy the consistency constraint
 defined in \autoref{eq:consistencyConstraint}
 but do not require a link in $[j_1, j_2] \times [i_1, i_2]$.
 The posterior probability of these alignments given the sentence
-pair is defined in \autoref{eq:phrasePairPosteriorDefinition}.
+pair is defined in \autoref{eq:phrasePairPosteriorDefinition}:
 %
 \begin{equation}
   \begin{split}
-  p(A(j_1, j_2; i_1, i_2) | e_1^I, f_1^J) &= \frac{p(f_1^J, A(j_1, j_2; i_1, i_2)| e_1^I)}{p(f_1^J | e_1^I)} \\
-                                          &= \frac{\sum_{a_1^J \in A(j_1, j_2; i_1, i_2)} p(f_1^J,a_1^J| e_1^I)}{\sum_{a_1^J} p(f_1^J,a_1^J|e_1^I)}
+  p(A(j_1, j_2; i_1, i_2) \mid e_1^I, f_1^J) &= \frac{p(f_1^J, A(j_1, j_2; i_1, i_2) \mid e_1^I)}{p(f_1^J \mid e_1^I)} \\
+                                          &= \frac{\sum_{a_1^J \in A(j_1, j_2; i_1, i_2)} p(f_1^J,a_1^J \mid e_1^I)}{\sum_{a_1^J} p(f_1^J,a_1^J \mid e_1^I)}
   \end{split}
   \label{eq:phrasePairPosteriorDefinition}
 \end{equation}
 %
 We call this quantity the \emph{phrase pair posterior probability}.
 We will now derive formula for the phrase pair posterior probability in the
-case of Model 1, Model 2 and the HMM Model.
+case of Model 1, Model 2 and the HMM Model. Again, experiments only use phrase pair
+posteriors computed from the HMM model, but comparing those with the posteriors
+obtained from Model 1 and Model 2 may be interesting for future research.
 
 \subsubsection{Phrase Pair Posterior Probability for Model 1}
 
 Let us first define $J_{\text{in}}$, $J_{\text{out}}$, $I_{\text{in}}$ and
-$I_{\text{out}}$ in \autoref{eq:iInsideOutside}.
+$I_{\text{out}}$ in \autoref{eq:iInsideOutside} for a set of indices
+$i_1$, $i_2$, $j_1$, $j_2$:
 %
 \begin{equation}
 \begin{split}
@@ -728,13 +801,13 @@ $I_{\text{out}}$ in \autoref{eq:iInsideOutside}.
 \end{equation}
 %
 For Model 1, the numerator from \autoref{eq:phrasePairPosteriorDefinition} is
-obtained in \autoref{eq:phrasePairPosteriorModel1Numerator}.
+obtained in \autoref{eq:phrasePairPosteriorModel1Numerator}:
 %
 \begin{align}
-  & \sum_{a_1^J \in A(j_1, j_2; i_1, i_2)} p_{M_1}(f_1^J, a_1^J | e_1^I) \nonumber \\
-  &= \sum_{a_1 \in I_{\text{out}}} ... \sum_{a_{j_1-1} \in I_{\text{out}}} \sum_{a_{j_1} \in I_{\text{in}}} ... \sum_{a_{j_2} \in I_{\text{in}}} \sum_{a_{j_2 + 1} \in I_{\text{out}}} ... \sum_{a_J \in I_{\text{out}}} p_{M_1}(a_1^J, f_1^J| e_1^I) \nonumber \\
-  &= \sum_{a_1 \in I_{\text{out}}} ... \sum_{a_{j_1-1} \in I_{\text{out}}} \sum_{a_{j_1} \in I_{\text{in}}} ... \sum_{a_{j_2} \in I_{\text{in}}} \sum_{a_{j_2 + 1} \in I_{\text{out}}} ... \sum_{a_J \in I_{\text{out}}} \frac{\varepsilon}{(1+I)^J} \prod_{j = 1}^J t(f_j|e_{a_j}) \nonumber \\
-  &= \frac{\varepsilon}{(1+I)^J} \ \left( \prod_{j \in J_{\text{out}}} \sum_{i \in I_{\text{out}}} t(f_j|e_i) \right) \ \left( \prod_{j \in J_{\text{in}}} \sum_{i \in I_{\text{in}}} t(f_j|e_i) \right)
+  & \sum_{a_1^J \in A(j_1, j_2; i_1, i_2)} p_{M_1}(f_1^J, a_1^J \mid e_1^I) \nonumber \\
+  &= \sum_{a_1 \in I_{\text{out}}} ... \sum_{a_{j_1-1} \in I_{\text{out}}} \sum_{a_{j_1} \in I_{\text{in}}} ... \sum_{a_{j_2} \in I_{\text{in}}} \sum_{a_{j_2 + 1} \in I_{\text{out}}} ... \sum_{a_J \in I_{\text{out}}} p_{M_1}(a_1^J, f_1^J \mid e_1^I) \nonumber \\
+  &= \sum_{a_1 \in I_{\text{out}}} ... \sum_{a_{j_1-1} \in I_{\text{out}}} \sum_{a_{j_1} \in I_{\text{in}}} ... \sum_{a_{j_2} \in I_{\text{in}}} \sum_{a_{j_2 + 1} \in I_{\text{out}}} ... \sum_{a_J \in I_{\text{out}}} \frac{\varepsilon}{(1+I)^J} \prod_{j = 1}^J t(f_j \mid e_{a_j}) \nonumber \\
+  &= \frac{\varepsilon}{(1+I)^J} \ \left( \prod_{j \in J_{\text{out}}} \sum_{i \in I_{\text{out}}} t(f_j \mid e_i) \right) \ \left( \prod_{j \in J_{\text{in}}} \sum_{i \in I_{\text{in}}} t(f_j \mid e_i) \right)
   \label{eq:phrasePairPosteriorModel1Numerator}
 \end{align}
 %
@@ -742,12 +815,12 @@ The denominator from \autoref{eq:phrasePairPosteriorDefinition} has already been
 computed in \autoref{eq:linkposM1Denominator}.
 Simplifying \autoref{eq:phrasePairPosteriorModel1Numerator} and
 \autoref{eq:linkposM1Denominator}, we obtain
-\autoref{eq:phrasePairPosteriorModel1}.
+\autoref{eq:phrasePairPosteriorModel1}:
 %
 \begin{align}
-  & p_{M_1}(A(j_1, j_2; i_1, i_2) | e_1^I, f_1^J) \nonumber \\
-  &= \left( \prod_{j \in J_{\text{out}}} \sum_{i \in I_{\text{out}}} \frac{t(f_j|e_i)}{\sum_{i' = 0}^I t(f_{j}|e_{i'})} \right)  \left( \prod_{j \in J_{\text{in}}} \sum_{i \in I_{\text{in}}} \frac{t(f_j|e_i)}{\sum_{i' = 0}^I t(f_{j}|e_{i'})} \right) \nonumber \\
-  &= \left( \prod_{j \in J_{\text{out}}} \sum_{i \in I_{\text{out}}} p_{M_1}(a_j = i | f_1^J, e_1^I) \right) \left( \prod_{j \in J_{\text{in}}} \sum_{i \in I_{\text{in}}} p_{M_1}(a_j = i | f_1^J, e_1^I) \right)
+  & p_{M_1}(A(j_1, j_2; i_1, i_2) \mid e_1^I, f_1^J) \nonumber \\
+  &= \left( \prod_{j \in J_{\text{out}}} \sum_{i \in I_{\text{out}}} \frac{t(f_j \mid e_i)}{\sum_{i' = 0}^I t(f_{j} \mid e_{i'})} \right)  \left( \prod_{j \in J_{\text{in}}} \sum_{i \in I_{\text{in}}} \frac{t(f_j \mid e_i)}{\sum_{i' = 0}^I t(f_{j} \mid e_{i'})} \right) \nonumber \\
+  &= \left( \prod_{j \in J_{\text{out}}} \sum_{i \in I_{\text{out}}} p_{M_1}(a_j = i \mid f_1^J, e_1^I) \right) \left( \prod_{j \in J_{\text{in}}} \sum_{i \in I_{\text{in}}} p_{M_1}(a_j = i \mid f_1^J, e_1^I) \right)
   \label{eq:phrasePairPosteriorModel1}
 \end{align}
 %
@@ -756,11 +829,11 @@ Simplifying \autoref{eq:phrasePairPosteriorModel1Numerator} and
 
 To avoid repetition, we skip the derivation which is analogous to
 the derivation for Model 1. We obtain the phrase pair posterior in
-\autoref{eq:phrasePairPosteriorModel2}.
+\autoref{eq:phrasePairPosteriorModel2}:
 %
 \begin{align}
-  & p_{M_2}(A(j_1, j_2; i_1, i_2) | e_1^I, f_1^J) \nonumber \\
-  &= \left( \prod_{j \in J_{\text{out}}} \sum_{i \in I_{\text{out}}} p_{M_2}(a_j = i | f_1^J, e_1^I) \right) \left( \prod_{j \in J_{\text{in}}} \sum_{i \in I_{\text{in}}} p_{M_2}(a_j = i | f_1^J, e_1^I) \right)
+  & p_{M_2}(A(j_1, j_2; i_1, i_2) \mid e_1^I, f_1^J) \nonumber \\
+  &= \left( \prod_{j \in J_{\text{out}}} \sum_{i \in I_{\text{out}}} p_{M_2}(a_j = i \mid f_1^J, e_1^I) \right) \left( \prod_{j \in J_{\text{in}}} \sum_{i \in I_{\text{in}}} p_{M_2}(a_j = i \mid f_1^J, e_1^I) \right)
   \label{eq:phrasePairPosteriorModel2}
 \end{align}
 %
@@ -770,40 +843,40 @@ the derivation for Model 1. We obtain the phrase pair posterior in
 Let us now compute the phrase pair posterior probability for the HMM model. The
 denominator from \autoref{eq:phrasePairPosteriorDefinition} can be computed using
 the forward algorithm while the numerator can be computed using a modified
-forward algorithm~\citep{deng:2005:PHD}. Let us define $\tilde{\alpha}_j(i)$ the
+forward algorithm~\citep{deng:2005:PHD}. Let us define $\tilde{\alpha}_j(i)$, the
 modified forward probability in \autoref{eq:modifiedForwardProbabilityDefinition}:
 %
 \begin{equation}
-  \tilde{\alpha}_j(i) = p_{\text{HMM}}(A(j_1,j_2;i_1,i_2), f_1^j, a_j=i | e_1^I)
+  \tilde{\alpha}_j(i) = p_{\text{HMM}}(A(j_1,j_2;i_1,i_2), f_1^j, a_j=i \mid e_1^I)
   \label{eq:modifiedForwardProbabilityDefinition}
 \end{equation}
 %
 The numerator from \autoref{eq:phrasePairPosteriorDefinition} can be computed
-in \autoref{eq:phrasePairPosteriorHMMNumerator}.
+in \autoref{eq:phrasePairPosteriorHMMNumerator}:
 %
 \begin{equation}
-  p(A(j_1, j_2; i_1, i_2), f_1^J | e_1^I) = \sum_{i=0}^I \tilde{\alpha}_J(i)
+  p(A(j_1, j_2; i_1, i_2), f_1^J \mid e_1^I) = \sum_{i=0}^I \tilde{\alpha}_J(i)
   \label{eq:phrasePairPosteriorHMMNumerator}
 \end{equation}
 %
 The denominator from \autoref{eq:phrasePairPosteriorDefinition} can be computed
 using the regular forward probability in
-\autoref{eq:phrasePairPosteriorHMMDenominator}.
+\autoref{eq:phrasePairPosteriorHMMDenominator}:
 %
 \begin{equation}
-  p(f_1^J | e_1^I) = \sum_{i=0}^I \alpha_J(i)
+  p(f_1^J \mid e_1^I) = \sum_{i=0}^I \alpha_J(i)
   \label{eq:phrasePairPosteriorHMMDenominator}
 \end{equation}
 %
 Like the regular forward probability, the modified forward probability can also
 be computed recursively. We can also write the modified forward probability as
-in \autoref{eq:rewriteModifiedForwardProbability}.
+in \autoref{eq:rewriteModifiedForwardProbability}:
 %
 \begin{equation}
   \begin{split}
-  \tilde{\alpha}_j(i) &= p_{\text{HMM}}(A(j_1,j_2;i_1,i_2), f_1^j, a_j=i | e_1^I) \\
-                      &= \sum_{a_1^{j} \in A(j_1,j_2;i_1,i_2)} p_{\text{HMM}}(a_1^{j-1}, f_1^j, a_j=i | e_1^I) \\
-                      &= \sum_{\substack{a_1^{j} \in A(j_1,j_2;i_1,i_2) \\ a_j=i}} p_{\text{HMM}}(a_1^{j-1}, f_1^j, a_j=i | e_1^I)
+  \tilde{\alpha}_j(i) &= p_{\text{HMM}}(A(j_1,j_2;i_1,i_2), f_1^j, a_j=i \mid e_1^I) \\
+                      &= \sum_{a_1^{j} \in A(j_1,j_2;i_1,i_2)} p_{\text{HMM}}(a_1^{j-1}, f_1^j, a_j=i \mid e_1^I) \\
+                      &= \sum_{\substack{a_1^{j} \in A(j_1,j_2;i_1,i_2) \\ a_j=i}} p_{\text{HMM}}(a_1^{j-1}, f_1^j, a_j=i \mid e_1^I)
   \end{split}
   \label{eq:rewriteModifiedForwardProbability}
 \end{equation}
@@ -811,7 +884,7 @@ in \autoref{eq:rewriteModifiedForwardProbability}.
 The computation of $\tilde{\alpha}_j(i)$ is by a constrained forward algorithm where
 the constraint is given in \autoref{eq:modifiedForwardConstraints}. This is because
 an alignment in $A(j_1,j_2;i_1,i_2)$  cannot have a link from inside the phrase
-pair to outside the phrase pair (see \autoref{eq:alignmentConsistentDefinition}).
+pair to outside the phrase pair (see \autoref{eq:alignmentConsistentDefinition}):
 %
 \begin{equation}
   \forall (j, i) \in J_{\text{out}} \times I_{\text{in}} \cup J_{\text{in}} \times I_{\text{out}}, \tilde \alpha_j(i) = 0
@@ -820,32 +893,32 @@ pair to outside the phrase pair (see \autoref{eq:alignmentConsistentDefinition})
 %
 For a link $(j, i) \in J_{\text{out}} \times I_{\text{out}} \cup J_{\text{in}} \times I_{\text{in}}$ that satisfies the constraint from
 \autoref{eq:modifiedForwardConstraints}, we can derive the modified
-forward probability in \autoref{eq:modifiedForwardRecursion}.
+forward probability in \autoref{eq:modifiedForwardRecursion}:
 %
 \begin{align}
-  \tilde{\alpha}_j(i) &= p_{\text{HMM}}(A(j_1, j_2; i_1, i_2), f_1^j, a_j=i | e_1^I) \nonumber \\
+  \tilde{\alpha}_j(i) &= p_{\text{HMM}}(A(j_1, j_2; i_1, i_2), f_1^j, a_j=i \mid e_1^I) \nonumber \\
                       &= \sum_{a_1^{j-1} \in A(j_1, j_2; i_1, i_2)}
-                         p_{\text{HMM}}(f_j, f_1^{j-1},  a_j=i, a_1^{j-1} | e_1^I) \nonumber \\
+                         p_{\text{HMM}}(f_j, f_1^{j-1},  a_j=i, a_1^{j-1} \mid e_1^I) \nonumber \\
                       &= \sum_{a_1^{j-1} \in A(j_1, j_2; i_1, i_2)}
-                         p_{\text{HMM}}(f_j | f_1^{j-1},  a_j=i, a_1^{j-1}, e_1^I) \times \nonumber \\
-                      & \hspace{7.7em} p_{\text{HMM}}(a_j=i | f_1^{j-1}, a_1^{j-1}, e_1^I) \times \nonumber \\
-                      & \hspace{7.7em} p_{\text{HMM}}(f_1^{j-1}, a_1^{j-1} | e_1^I) \nonumber \\
-                      &= p_{\text{HMM}}( f_j | e_i ) 
+                         p_{\text{HMM}}(f_j \mid f_1^{j-1},  a_j=i, a_1^{j-1}, e_1^I) \times \nonumber \\
+                      & \hspace{7.7em} p_{\text{HMM}}(a_j=i \mid f_1^{j-1}, a_1^{j-1}, e_1^I) \times \nonumber \\
+                      & \hspace{7.7em} p_{\text{HMM}}(f_1^{j-1}, a_1^{j-1} \mid e_1^I) \nonumber \\
+                      &= p_{\text{HMM}}( f_j \mid e_i ) 
                          \sum_{a_1^{j-1} \in A(j_1, j_2; i_1, i_2)}
-                         p_{\text{HMM}}(a_j=i | a_{j-1}, I) \
-                         p_{\text{HMM}}(f_1^{j-1},  a_1^{j-1} | e_1^I) \nonumber \\
-                      &= p_{\text{HMM}}(f_j | e_i) \
+                         p_{\text{HMM}}(a_j=i \mid a_{j-1}, I) \
+                         p_{\text{HMM}}(f_1^{j-1},  a_1^{j-1} \mid e_1^I) \nonumber \\
+                      &= p_{\text{HMM}}(f_j \mid e_i) \
                          \sum_{k=0}^I \sum_{\substack{a_1^{j-1} \in A(j_1, j_2; i_1, i_2) \\ a_{j-1} = k}}
-                         p_{\text{HMM}}(a_j=i | a_{j-1} = k, I) \nonumber \\
-                      & \hspace{15.2em} p_{\text{HMM}}(f_1^{j-1},  a_{j-1} = k,  a_1^{j-2} | e_1^I) \nonumber \\
-                      &= p_{\text{HMM}}(f_j | e_i) \
+                         p_{\text{HMM}}(a_j=i \mid a_{j-1} = k, I) \nonumber \\
+                      & \hspace{15.2em} p_{\text{HMM}}(f_1^{j-1},  a_{j-1} = k,  a_1^{j-2} \mid e_1^I) \nonumber \\
+                      &= p_{\text{HMM}}(f_j \mid e_i) \
                          \sum_{k = 0}^I
-                         p_{\text{HMM}}(a_j = i | a_{j-1} = k, I) \nonumber \\
+                         p_{\text{HMM}}(a_j = i \mid a_{j-1} = k, I) \nonumber \\
                       & \hspace{4.7em} \sum_{\substack{a_1^{j-1} \in A(j_1, j_2; i_1, i_2) \\ a_{j-1} = k}}
-                         p_{\text{HMM}}(f_1^{j-1},  a_{j-1} = k,  a_1^{j-2} | e_1^I) \nonumber \\
-                      &= p_{\text{HMM}}(f_j | e_i) \
+                         p_{\text{HMM}}(f_1^{j-1},  a_{j-1} = k,  a_1^{j-2} \mid e_1^I) \nonumber \\
+                      &= p_{\text{HMM}}(f_j \mid e_i) \
                          \sum_{k = 0}^I
-                         p_{\text{HMM}}(a_j=i | a_{j-1} = k, I) \; \tilde \alpha_{j-1}(k)
+                         p_{\text{HMM}}(a_j=i \mid a_{j-1} = k, I) \; \tilde \alpha_{j-1}(k)
                          \label{eq:modifiedForwardRecursion}
 \end{align}
 %
@@ -855,17 +928,18 @@ in order to define ranking and counting functions.
 \subsubsection{Constraints, Ranking and Counting Functions from HMM Link and Phrase Posterior Probabilities}
 
 In order to keep the size of the rule set manageable, we use
-the same constraints as for link posterior extraction defined in
+the same source constraints, alignment constraints and target constraints
+as for link posterior extraction defined in
 \autoref{sec:extractionFromPosteriorsLink}.
 We use the phrase pair posterior probabilities under the HMM model both for ranking
 and scoring
 extracted rules. This approach assigns a fractional count to each extracted
 rule, which allows finer estimation of the source-to-target and target-to-source
 translation models.  The ranking and counting functions
-are defined in \autoref{eq:rankingCountingPhrasePairExtraction}.
+are defined in \autoref{eq:rankingCountingPhrasePairExtraction}:
 %
 \begin{equation}
-  \mathcal{R}(f_{j_1}^{j_2},e_{i_1}^{i_2}) = \mathcal{C}(f_{j_1}^{j_2},e_{i_1}^{i_2}) = p_{\text{HMM}}(A(j_1, j_2; i_1, i_2) | f_1^j, e_1^J)
+  \mathcal{R}(f_{j_1}^{j_2},e_{i_1}^{i_2}) = \mathcal{C}(f_{j_1}^{j_2},e_{i_1}^{i_2}) = p_{\text{HMM}}(A(j_1, j_2; i_1, i_2) \mid f_1^j, e_1^J)
   \label{eq:rankingCountingPhrasePairExtraction}
 \end{equation}
 
@@ -883,8 +957,11 @@ the extraction of hierarchical rules.
 \label{sec:extractionFromPosteriorsExtractionDisjoint}
 
 In this section, we extend the techniques presented so far to hierarchical
-rule extraction. In order to avoid repetition, we focus on the rule pattern
-$\langle w X w, w X w \rangle$ only. We first rewrite the algorithm in
+rule extraction. In order to avoid repetition, we describe these
+techniques for the rule pattern
+$\langle w X w, w X w \rangle$
+only (see \autoref{sec:constraintsOnHierarhicalGrammars} for the
+definition of patterns). We first rewrite the algorithm in
 \autoref{alg:generalRuleXtractSpecialized} into the algorithm in
 \autoref{alg:generalRuleXtractSpecializedHierarchical} for this pattern.
 %
@@ -903,14 +980,16 @@ $\langle w X w, w X w \rangle$ only. We first rewrite the algorithm in
         \EndFor
         \State{\Call{Sort}{$T, \mathcal{R}$}} \Comment{Hierarchical target phrases ranked according to $\mathcal{R}$}
         \For{$e_{i_1}^{i_2} X e_{i_3}^{i_4} \in T$}
-          \If{$\mathcal{C}_T(e_{i_1}^{i_2} X e_{i_3}^{i_4}, T)$} \Comment{Target constraints, also depend on ranking}
+          \If{$\mathcal{C}_T(e_{i_1}^{i_2} X e_{i_3}^{i_4}, T)$} \Comment{Target constraints}
             \State{\Call{Extract}{\RT[$X$][$f_{j_1}^{j_2} X f_{j_3}^{j_4}$][$e_{i_1}^{i_2} X e_{i_3}^{i_4}$], $\mathcal{C}(f_{j_1}^{j_2} X f_{j_3}^{j_4}, e_{i_1}^{i_2} X e_{i_3}^{i_4})$}}
           \EndIf
         \EndFor
       \EndFor
     \EndFunction
   \end{algorithmic}
-  \caption{General procedure for hierarchical phrase-based rule extraction. The procedure is presented for the pattern $\langle w X w, w X w \rangle$ only.}
+  \caption{General procedure for hierarchical phrase-based rule extraction. The procedure is presented for the pattern $\langle w X w, w X w \rangle$ only. This algorithm is
+  analogous to the algorithm used to extract phrase-based rules and presented
+  in \autoref{alg:generalRuleXtractSpecialized}.}
   \label{alg:generalRuleXtractSpecializedHierarchical}
 \end{figure}
 %
@@ -920,7 +999,7 @@ standard Viterbi extraction and for extraction from alignment posteriors.
 \subsubsection{Hierarchical Rule Extraction from Viterbi Alignment Links}
 
 We now describe the constraints, ranking and counting functions for
-hierarchical rule extraction from Viterbi alignments.
+hierarchical rule extraction from Viterbi alignments:
 %
 \begin{itemize}
   \item source constraints $\mathcal{C}_S(f_{j_1}^{j_2} X f_{j_3}^{j_4})$:
@@ -930,13 +1009,17 @@ hierarchical rule extraction from Viterbi alignments.
     (j_2 - j_1 + 1) + 1 + (j_4 - j_3 + 1) &\leq s_{\text{max elements}} \\
     j_2 - j_1 &< s_{\text{max terminals}} \\
     j_4 - j_3 &< s_{\text{max terminals}} \\
-    \mbox{span}(X) &\leq \text{max}_{\text{NT}}
+    \text{span}(X) &\leq s_\text{max NT}
   \end{split}
+  \label{eq:sourceConstraintsHiero}
 \end{equation}
 %
+We remind definitions introduced
+in \autoref{sec:hfileForHiero} for the thresholds in
+\autoref{eq:sourceConstraintsHiero}.
 $s_{\text{max elements}}$ is the maximum number of terminals and nonterminals
 in the source. $s_{\text{max terminals}}$ is the maximum number of consecutive
-terminals in the source. $\text{max}_{\text{NT}}$ is the maximum \emph{span}
+terminals in the source. $s_{\text{max NT}}$ is the maximum \emph{span}
 for a nonterminal, i.e. the maximum number of
 terminals covered by a nonterminal. These thresholds are defined
 experimentally.
@@ -962,8 +1045,9 @@ The last four constraints
 mean that the boundary words
 $f_{j_2 + 1}, f_{j_3 - 1}, e_{i_2 + 1}, e_{i_3 - 1}$ are not unaligned.
   \item target constraints $\mathcal{C}_T(e_{i_1}^{i_2} X e_{i_3}^{i_4}, T)$: no
-constraint.
-  \item ranking and counting functions
+constraint. Again, other implementations may impose for example length-based
+constraints on the target.
+  \item ranking and counting functions:
 %
 \begin{equation}
   \mathcal{R}(f_{j_1}^{j_2} X f_{j_3}^{j_4}, e_{i_1}^{i_2} X e_{i_3}^{i_4}) = \mathcal{C}(f_{j_1}^{j_2} X f_{j_3}^{j_4}, e_{i_1}^{i_2} X e_{i_3}^{i_4}) = 1
@@ -983,16 +1067,18 @@ posterior extraction of hierarchical rules:
   \begin{split}
     & j_2 - j_1 < s_{\text{hier max}} \\
     & j_4 - j_3 < s_{\text{hier max}} \\
-    & j_3 - j_2 < \text{max}_{\text{NT}}
+    & j_3 - j_2 < s_{\text{max NT}}
   \end{split}
 \end{equation}
 %
 $s_{\text{hier max}}$ is the maximum length for consecutive terminals
-in the source. $\text{max}_{\text{NT}}$ is the maximum number of
+in the source. $s_{\text{max NT}}$ is the maximum number of
 terminals covered by a nonterminal. These thresholds are defined
 experimentally.
   \item For alignment constraints, let us first define $J_{\text{in}}$, $J_{\text{out}}$, $I_{\text{in}}$ and
-$I_{\text{out}}$ in \autoref{eq:iInsideOutsideHierarchical}.
+$I_{\text{out}}$ in \autoref{eq:iInsideOutsideHierarchical}
+for a set of indices
+$i_1$, $i_2$, $i_3$, $i_4$, $j_1$, $j_2$, $j_3$, $j_4$:
 %
 \begin{equation}
 \begin{split}
@@ -1010,18 +1096,19 @@ are defined in \autoref{eq:alignmentConstraintsLinkHierarchical}.
 %
 \begin{equation}
   \begin{split}
-    & \exists (j,i) \in (j_2, j_3) \times (i_2, i_3), p(a_j = i |f_1^J,e_1^I) > \lambda \\
-    & \exists (j,i) \in [j_1, j_2] \times I_{\text{in}}, p(a_j = i | f_1^J, e_1^I) > \lambda \\
-    & \exists (j,i) \in [j_3, j_4] \times I_{\text{in}}, p(a_j = i | f_1^J, e_1^I) > \lambda \\
-    & \exists (j,i) \in J_{\text{in}} \times [i_1, i_2], p(a_j = i | f_1^J, e_1^I) > \lambda \\
-    & \exists (j,i) \in J_{\text{in}} \times [i_3, i_4], p(a_j = i | f_1^J, e_1^I) > \lambda \\
-    & \forall (j,i) \in [1, J] \times [1, I] \cap \{(j,i): p(a_j = i | f_1^J,e_1^I) > \lambda\} \\
+    & \exists (j,i) \in (j_2, j_3) \times (i_2, i_3), p(a_j = i \mid f_1^J,e_1^I) > \lambda \\
+    & \exists (j,i) \in [j_1, j_2] \times I_{\text{in}}, p(a_j = i \mid f_1^J, e_1^I) > \lambda \\
+    & \exists (j,i) \in [j_3, j_4] \times I_{\text{in}}, p(a_j = i \mid f_1^J, e_1^I) > \lambda \\
+    & \exists (j,i) \in J_{\text{in}} \times [i_1, i_2], p(a_j = i \mid f_1^J, e_1^I) > \lambda \\
+    & \exists (j,i) \in J_{\text{in}} \times [i_3, i_4], p(a_j = i \mid f_1^J, e_1^I) > \lambda \\
+    & \forall (j,i) \in [1, J] \times [1, I] \cap \{(j,i): p(a_j = i \mid f_1^J,e_1^I) > \lambda\} \\
     & \hspace{1em} j \in (j_2, j_3) \Leftrightarrow i \in (i_2, i_3) \\
     & \hspace{1em} j \in J_{\text{in}} \Leftrightarrow i \in I_{\text{in}} \\
   \end{split}
   \label{eq:alignmentConstraintsLinkHierarchical}
 \end{equation}
 %
+% TODO explain these constraints with some text
   \item target constraints $\mathcal{C}_T(e_{i_1}^{i_2} X e_{i_3}^{i_4}, T)$:
 %
 \begin{equation}
@@ -1032,12 +1119,12 @@ are defined in \autoref{eq:alignmentConstraintsLinkHierarchical}.
 \end{equation}
 %
 $t_{\text{hier max}}$ is the maximum number of consecutive terminals in the target
-side. We pick the first 3 translation candidates according to the ranking function
-$R$.
+side. Another constraint requires to pick the first $k$ targets per source
+according to the ranking function $\mathcal{R}$. In the experiments to follow, $k = 3$.
   \item ranking function:
 %
 \begin{equation} \label{eq:linkPosRankingHierarchical}
-  \mathcal{R}(f_{j_1}^{j_2} X f_{j_3}^{j_4}, e_{i_1}^{i_2} X e_{i_3}^{i_4}) = \prod_{j \in J_{\text{in}}} \sum_{i \in I_{\text{in}}} \frac{p(a_j = i | f_1^J,e_1^I)}{i_2-i_1+i_4-i_3+2}
+  \mathcal{R}(f_{j_1}^{j_2} X f_{j_3}^{j_4}, e_{i_1}^{i_2} X e_{i_3}^{i_4}) = \prod_{j \in J_{\text{in}}} \sum_{i \in I_{\text{in}}} \frac{p(a_j = i \mid f_1^J,e_1^I)}{i_2-i_1+i_4-i_3+2}
 \end{equation}
 %
   \item counting function:
@@ -1046,6 +1133,7 @@ $R$.
 \end{equation}
 \end{itemize}
 %
+% TODO say something about ranking and counting function
 
 \subsubsection{Hierarchical Rule Extraction from Phrase Posterior Probabilities}
 
@@ -1063,13 +1151,15 @@ $A(j_1, j_2; j_3, j_4; i_1, i_2; i_3, i_4)$ in
   \label{eq:alignmentConsistentDefinitionHierarchical}
 \end{equation}
 %
+where $I_{\text{in}}$ and $J_{\text{in}}$ have been defined
+in \autoref{eq:iInsideOutsideHierarchical}.
 We can now define the ranking and counting functions in
 \autoref{eq:rankingCountingHierarchicalPhrasePairPosterior}.
 %
 \begin{equation}
   \begin{split}
-  \mathcal{R}(f_{j_1}^{j_2} X f_{j_3}^{j_4}, e_{i_1}^{i_2} X e_{i_3}^{i_4}) = p_{\text{HMM}}(A(j_1, j_2; j_3, j_4; i_1, i_2; i_3, i_4) | f_1^j, e_1^J) \\
-  \mathcal{R}(f_{j_1}^{j_2} X f_{j_3}^{j_4}, e_{i_1}^{i_2} X e_{i_3}^{i_4}) = p_{\text{HMM}}(A(j_1, j_2; j_3, j_4; i_1, i_2; i_3, i_4) | f_1^j, e_1^J)
+  \mathcal{R}(f_{j_1}^{j_2} X f_{j_3}^{j_4}, e_{i_1}^{i_2} X e_{i_3}^{i_4}) = p_{\text{HMM}}(A(j_1, j_2; j_3, j_4; i_1, i_2; i_3, i_4) \mid f_1^j, e_1^J) \\
+  \mathcal{C}(f_{j_1}^{j_2} X f_{j_3}^{j_4}, e_{i_1}^{i_2} X e_{i_3}^{i_4}) = p_{\text{HMM}}(A(j_1, j_2; j_3, j_4; i_1, i_2; i_3, i_4) \mid f_1^j, e_1^J)
   \end{split}
   \label{eq:rankingCountingHierarchicalPhrasePairPosterior}
 \end{equation}
@@ -1083,23 +1173,47 @@ are given by \autoref{eq:modifiedForwardConstraintsHierarchical}.
   \forall (j, i) \in J_{\text{out}} \times I_{\text{in}} \cup J_{\text{in}} \times I_{\text{out}} , \tilde \alpha_j(i) = 0
   \label{eq:modifiedForwardConstraintsHierarchical}
 \end{equation}
+%
+where $I_{\text{in}}$, $J_{\text{in}}$, $I_{\text{out}}$ and $J_{\text{out}}$
+have been defined
+in \autoref{eq:iInsideOutsideHierarchical}.
 
 We have presented a framework to extract phrase based rules and hierarchical
 rules. This framework encompasses standard extraction from Viterbi
 alignment links as well as two novel methods that use link posterior
-probabilities and phrase pair posterior probabilities. We will now define
-grammars that will be used in experiments and motivate what kind of
-pattern we use in these grammars.
+probabilities and phrase pair posterior probabilities.
+We will now evaluate our original methods, first by assessing
+the expressiveness of the grammars extracted with these methods
+and then by measuring translation quality.
 
-\section{Grammar Pattern Definition}
+\section{Experiments}
+\label{sec:extractionFromPosteriorsExperiments}
+
+In this section, we carry out experiments in order to demonstrate
+the effectiveness of our original grammar extraction method. We will
+assess the quality of the grammars extracted in terms of how expressive
+these grammars are and in terms of translation quality.
+In \autoref{sec:extractionFromPosteriorsGrammarDefinition}, we
+define the patterns to be included in the grammars used for experiments.
+In \autoref{sec:extractionFromPosteriorsExperimentalSetup}, we describe
+our experimental setup. In \autoref{sec:grammarcoverage} and
+\autoref{sec:extractionFromPosteriorsTranslationResults}, we report
+results for grammar expressiveness and translation quality.
+In \autoref{sec:extractionFromPosteriorsComparisonWPPP}, we compare
+our two original methods: link posterior extraction vs.\ phrase pair posterior
+extraction. Finally, in \autoref{sec:extractionFromPosteriorsSymmetrising},
+we explore various methods to exploit information from source-to-target and
+target-to-source alignment models.
+
+\subsection{Experimental Setup: Grammar Pattern Definition}
 \label{sec:extractionFromPosteriorsGrammarDefinition}
 
-In this section we define the hierarchical phrase-based synchronous grammars we
+In this section we define the hierarchical phrase-based grammars we
 use for translation experiments. Each grammar is defined by the patterns it
-contains (see TODO(reference to background chapter)).
-
+contains (see \autoref{sec:constraintsOnHierarhicalGrammars}).
 We first start with a basic grammar $G_0$ defined in the
 left-most column of \autoref{tab:grammar}.
+% TODO make a bigger table
 %
 \begin{table}
 \begin{center}
@@ -1133,7 +1247,7 @@ collection of translation candidates for a given input sentence.
 Patterns were added to the base grammar $G_0$ according to their frequency of
 use in a translation experiment. We analysed one iteration of minimum error rate
 training. For each sentence, the decoder generates a 1000-best list of
-hypotheses. For each hypothesis, the decoder also outputs its single best
+hypotheses. For each hypothesis, the decoder also generates its single best
 derivation. We extracted rules from the single best derivations of the single
 best hypotheses and analysed their pattern frequency. \autoref{tab:rulesused}
 shows the most frequently used rule patterns. We assume that if a rule pattern
@@ -1185,18 +1299,6 @@ for translation quality.
 %  target translation. In Section \ref{sec:emnlp10exp} TODO(change this reference) we evaluate this for
 %  a Chinese to English task.
 
-\section{Experiments}
-\label{sec:extractionFromPosteriorsExperiments}
-
-In \autoref{sec:extractionFromPosteriorsExtraction},
-we have provided methods to extract translation grammars, either in the standard way
-by using Viterbi alignments, or in a novel manner by using alignment
-posteriors. In \autoref{sec:extractionFromPosteriorsGrammarDefinition},
-we have defined what kind of pattern we include in translation grammars.
-We will now evaluate the grammars defined
-in \autoref{sec:extractionFromPosteriorsGrammarDefinition}, first by assessing
-their expressiveness and then by measuring translation quality.
-
 \subsection{Experimental Setup}
 \label{sec:extractionFromPosteriorsExperimentalSetup}
 
@@ -1204,21 +1306,25 @@ We report on experiments in Chinese to English translation. Our system is
 trained on a subset of the GALE 2008 evaluation parallel
 text.\footnote{http://projects.ldc.upenn.edu/gale/data/catalog.html} This is
 approximately 50M words per language. We report translation results on a
-development set {\it tune-nw} and a test set {\it test-nw1}. These contain
+development set \emph{tune-nw} and a test set \emph{test-nw1}. These contain
 translations produced by the GALE program and portions of the newswire sections
-of NIST MT02 through MT06~\footnote{http://www.itl.nist.gov/iad/mig/tests/mt}.
-They contain 1,755 sentences and 1,671 sentences respectively. Results are also
+of NIST MT02 through MT06.\footnote{http://www.itl.nist.gov/iad/mig/tests/mt}
+They contain 1755 sentences and 1671 sentences respectively. Results are also
 reported on a smaller held-out test set {\it test-nw2}, containing 60\% of the
 NIST newswire portion of MT06, that is, 369 sentences.
+In \autoref{sec:extractionFromPosteriorsComparisonWPPP}, the entire newswire
+portion of MT06 is used and the test set is named \emph{test-nw3}.
 
+% TODO MTTK: say what model
 The parallel texts for both language pairs are aligned using
 MTTK~\citep{deng-byrne:2005:HLTEMNLP,deng-and-byrne:2008:ASLP}. For decoding,
-we use HiFST TODO(reference to background chapter). The language model
+we use HiFST (see \autoref{sec:hifst}). The language model
 is a 4-gram language model estimated over the English side of the parallel text
 and the AFP and Xinhua portions of the English Gigaword Fourth
 Edition~(LDC2009T13) for the first pass translation, interpolated with a
-zero-cutoff stupid-backoff~\citep{brants-popat-xu-och-dean:2007:EMNLP-CoNLL}
-5-gram estimated using 10.5B words of English newswire text for 5-gram language
+zero-cutoff stupid-backoff
+5-gram (see \autoref{sec:stupidBackoffSmoothing} and
+\autoref{sec:relatedwork}) estimated using 10.5B words of English newswire text for 5-gram language
 model rescoring. In tuning the systems, standard minimum error rate training
 iterative parameter estimation under BLEU is performed on the development set.
 
@@ -1236,7 +1342,7 @@ extraction, setting $s_{\text{max}}$ to 9 did not provide any improvements
 and slowed down decoding times.
   \item $s_{\text{max elements}}$ is set to 5.
   \item $s_{\text{max terminals}}$ is set to 5.
-  \item $\text{max}_{\text{NT}}$ is set to 10.
+  \item $s_{\text{max NT}}$ is set to 10.
   \item $\lambda$ is set to 0.5.
   \item $s_{\text{hier max}}$ and $t_{\text{hier max}}$ are set to 3.
 \end{itemize}
@@ -1257,13 +1363,12 @@ $G_3$\footnote{We did not include $G_4$ in coverage analysis} for the following
 extraction methods:
 %
 \begin{itemize}
-  \item {\bf Viterbi (V)}. This is the standard extraction method based on a set
+  \item \textbf{Viterbi (V)}: this is the standard extraction method based on a set
 of alignment links. We distinguish four cases, depending on the model used to
 obtain the set of links: source-to-target ({\bf V-st}), target-to-source
 ({\bf V-ts}), and two common symmetrisation strategies: union ({\bf V-union})
-and grow-diag-final ({\bf V-gdf}), described by
-\citet{koehn-och-marcu:2003:NAACL}.
-  \item {\bf Word Link Posteriors (WP)}. The extraction method is based on link
+and grow-diag-final ({\bf V-gdf}) (see \autoref{sec:symmetrisationHeuristics}).
+  \item \textbf{Word Link Posteriors (WP)}: the extraction method is based on link
 posteriors described in \autoref{sec:extractionFromPosteriorsLink}. These
 rules can be obtained either from the posteriors of the source-to-target
 ({\bf WP-st}) or the target-to-source ({\bf WP-ts}) alignment models. We apply
@@ -1286,12 +1391,13 @@ reaching 80\% for grammar $G_3$.
 
 \begin{figure}
   \begin{center}
-    \includegraphics[width=6cm,angle=-90]{figures/coverage.eps}
-    \caption{\label{fig:coverage} Percentage of parallel sentences successfully aligned for various extraction methods and grammars.}
+    \includegraphics[width=7.2cm,angle=-90]{figures/coverage.eps}
+    \caption{\label{fig:coverage} Percentage of parallel sentences successfully aligned for various extraction methods and grammars.} % TODO expand
   \end{center}
 \end{figure}
 
-The maximum rule span in alignment was allowed to be 15 words, so as to be
+The maximum rule span ($s_{\text{max span}}$ defined
+in \autoref{sec:hfileForHiero}) in alignment was allowed to be 15 words, so as to be
 similar to translation, where the maximum rule span is 10 words. Relaxing this
 in alignment to 30 words yields approximately 90\% coverage for {\bf WP-merge}
 under $G_3$.
@@ -1308,12 +1414,12 @@ In this section we investigate the translation performance of each hierarchical
 grammar, as defined by rules obtained from three rule extraction methods:
 %
 \begin{itemize}
-  \item {\bf Viterbi union (V-union)}. Standard rule extraction from the union
+  \item \textbf{Viterbi union (V-union)}: standard rule extraction from the union
     of the source-to-target and target-to-source alignment link sets. % Section \ref{ssec:symm} contrasts this with other symmetrization strategies.
-  \item {\bf Word Posteriors (WP-st)}. Extraction based on word posteriors as
+  \item \textbf{Word Posteriors (WP-st)}: extraction based on word posteriors as
     described in \autoref{sec:extractionFromPosteriorsLink}. The posteriors
     are provided by the source-to-target alignment model.
-  \item {\bf Phrase Posteriors (PP-st)}. Extraction based on alignment
+  \item \textbf{Phrase Posteriors (PP-st)}: extraction based on alignment
     posteriors over phrase pairs, as described in
     \autoref{sec:extractionFromPosteriorsPhrasePair}, with fractional counts
     equal to the phrase pair posterior probability under the source-to-target
@@ -1330,7 +1436,7 @@ instances of search pruning per input word.
     %\footnotesize
     \begin{tabular}{|l|l||c|c|c||c||c|}
       \hline
-      Grammar & Extraction & \multicolumn{3}{|c||}{{\em tune-nw}} & {\em test-nw1} & {\em test-nw2} \\  \cline{3-7}
+      Grammar & Extraction & \multicolumn{3}{c||}{{\em tune-nw}} & {\em test-nw1} & {\em test-nw2} \\  \cline{3-7}
       &            & {\em time} & {\em prune} & BLEU & BLEU & BLEU \\ \hline
       $G_H$ & {\bf V-union} & 3.7 & 0.3 & 35.1 & 35.6 & 37.6  \\
       \hline
@@ -1355,22 +1461,31 @@ instances of search pruning per input word.
 As a contrast, we extract rules according to the heuristics introduced
 by~\citet{chiang:2007:CL} and apply the filters described
 by~\citet{iglesias-degispert-banga-byrne:2009:EACL} to generate a standard
-hierarchical phrase-based grammar $G_H$ described in TODO(reference to
-background chapter). This uses rules with up to two nonadjacent
+hierarchical phrase-based grammar $G_H$ described in
+\autoref{sec:constraintsOnHierarhicalGrammars}.
+This uses rules with up to two nonadjacent
 nonterminals, but excludes identical rule types such as \RT[$X$][$w~X$][$w~X$]
 or \RT[$X$][$w~X_1~w~X_2$][$w~X_1~w~X_2$], which were reported to cause
 computational difficulties without a clear improvement in
 translation~\citep{iglesias-degispert-banga-byrne:2009:EACL}. 
-    
-{\em Grammar complexity}. As expected, for the standard extraction method (see
+
+% TODO change these into paragraphs with \paragraph
+
+\paragraph{Grammar complexity}
+
+As expected, for the standard extraction method (see
 rows entitled {\bf V-union}), grammar $G_1$ is shown to underperform all other
-grammars due to its structural limitations. On the other hand, grammar $G_2$
+grammars due to its structural limitations: in parsing the source, $G_1$
+does not allow inversions after concatenating two phrases. % TODO expand here or when discussing the grammars
+Grammar $G_2$
 obtains much better scores, nearly generating the same translation quality as
 the baseline grammar $G_H$. Finally, $G_3$ does not prove able to outperform
-$G_2$, which suggests that the phrase-disjoint rules with one nonterminal are
+$G_2$ consistently, which suggests that the phrase-disjoint rules with one nonterminal are
 redundant for the translation grammar.
     
-{\em Rule extraction method}. For all grammars, we find that the proposed
+\paragraph{Rule extraction method}
+
+For all grammars, we find that the proposed
 extraction methods based on alignment posteriors outperform standard
 Viterbi-based extraction, with improvements ranging from 0.5 to 1.1 BLEU points
 for {\em test-nw1} (depending on the grammar) and from 1.0 to 1.5 for
@@ -1379,7 +1494,9 @@ option. Interestingly, we find that $G_2$ extracted with {\bf WP} and {\bf PP}
 methods outperforms the more complex $G_H$ grammar as obtained from Viterbi
 alignments.
     
-{\em Rule set statistics}. For grammar $G_2$ and for the {\em tune-nw} set,
+\paragraph{Rule set statistics}
+
+For grammar $G_2$ and for the {\em tune-nw} set,
 Viterbi-based extraction produces 0.7M rules, while the WP and PP extraction
 methods yield 1.1M and 1.2M rules, respectively. We further analyse the sets of
 rules $X \rightarrow \langle \gamma,\alpha \rangle$ in terms of the number of
@@ -1390,10 +1507,12 @@ number of target sequences for each source sequence, Viterbi extraction yields
 an average of 8.7 while WP and PP yield 9.7 and 8.4 rules on average. This shows
 that method {\bf PP} yields wider coverage but with sharper source-to-target
 rule translation probability distributions than method {\bf WP}, as the average
-number of translations per rule is determined by a $p(\alpha|\gamma)>0.01$
-threshold.
+number of translations per rule is determined by a threshold of 0.01 for
+the minimum source-to-target probability. % TODO clarify
 
-{\em Decoding time and pruning in search}. In connection to the previous
+\paragraph{Decoding time and pruning in search}
+
+In connection to the previous
 comments, we find an increased need for search pruning, and subsequently slower
 decoding speed, as the search space grows larger with methods {\bf WP} and
 {\bf PP}. A larger search space is created by the larger rule sets, which allows
@@ -1403,8 +1522,9 @@ the system to generate new hypotheses of better quality.
 \label{sec:extractionFromPosteriorsComparisonWPPP}
 
 \autoref{sec:extractionFromPosteriorsTranslationResults} has shown that the
-{\bf PP} extraction method gives the best translation results. The reason for
-this is that more rules were extracted and that the translation models were
+{\bf PP} extraction method gives the best translation results
+in our experiments. Reasons for
+this may be that more rules were extracted and the translation models were
 better estimated. These results were obtained with a fixed value of the
 parameter $n_{obs}$ that was found to give good results for each method. Now, we
 would like to observe the effect of varying $n_{obs}$. Given an extraction
@@ -1415,13 +1535,14 @@ different rule source sides for both phrasal and hierarchical rules, etc., for
 two different extraction methods in order to observe the effect of estimating
 the translation model with one method versus the other.
 
-\autoref{tab:nocc} summarises the results. The test set {\em test-nw3} is a
-superset of {\em test-nw2}. The table shows 4 configurations: the {\bf WP}
+\autoref{tab:nocc} summarises the results.
+The table shows 4 configurations: the {\bf WP}
 extraction method with two different values of $n_{obs}$ and the {\bf PP}
 extraction method with two different values of $n_{obs}$. Configurations
 ({\bf WP} $n_{obs}$=2) and ({\bf PP} $n_{obs}$=1) give comparable rule sets.
 Configurations ({\bf WP} $n_{obs}$=1) and ({\bf PP} $n_{obs}$=0.2) also give
-comparable rule sets. We first study the effect of decreasing $n_{obs}$ for each
+comparable rule sets in terms of size. We
+first study the effect of decreasing $n_{obs}$ for each
 extraction method. For the {\bf WP} method, decreasing $n_{obs}$ from 2 to 1
 leads to a average decrease of 0.1 BLEU computed on the test sets for different
 grammars. We believe that increasing the size of the rule set can lead to more
@@ -1436,7 +1557,7 @@ rule sets. The configurations ({\bf PP} $n_{obs}$=1) and
 ({\bf PP} $n_{obs}$=0.2) with respect to the configurations
 ({\bf WP} $n_{obs}$=2) and ({\bf WP} $n_{obs}$=1) present an average gain of
 0.2 BLEU. This shows that the translation model estimation using phrase pair
-posteriors is beneficial.
+posteriors is beneficial in translation.
 
 \begin{sidewaystable}
   \begin{small}
@@ -1477,9 +1598,10 @@ extracted under the source-to-target alignment models ({\bf V-st}, {\bf WP-st}
 and {\bf PP-st}) consistently perform better than the {\bf V-ts}, {\bf WP-ts}
 and {\bf PP-ts} cases. Also, for Viterbi extraction we find that the
 source-to-target {\bf V-st} case performs better than any of the symmetrisation
-strategies, which contradicts previous findings for non-hierarchical
+strategies, which is not consistent with previous findings for non-hierarchical
 phrase-based systems~\citep{koehn-och-marcu:2003:NAACL}.
-  
+
+% TODO reread carefully and clarify if needed  
 We use the {\bf PP} rule extraction method to extract two sets of rules, under
 the {\bf st} and {\bf ts} alignment models respectively. We now investigate two
 ways of merging these sets into a single grammar for translation. The first
@@ -1492,9 +1614,9 @@ weight rules differently according to the alignment model they were extracted
 from. However, we do not find any improvement with either strategy.
 
 Finally, we use linearised lattice minimum Bayes-risk
-decoding~\citep{tromble-kumar-och-macherey:2008:EMNLP,blackwood-degispert-byrne:2010:ACL,blackwood:2010:PHD}
+decoding
 to combine translation
-lattices~\citep{degispert-iglesias-blackwood-banga-byrne:2010:CL} as produced by
+lattices (see \autoref{sec:lmbrSysComb}) as produced by
 rules extracted under each alignment direction (see rows named
 LMBR{\bf(V-st,V-ts)} and LMBR{\bf(PP-st,PP-ts)}). Gains are consistent when
 comparing this to applying lattice minimum Bayes' risk to each of the best
@@ -1546,3 +1668,5 @@ from Viterbi alignments. A fine-grained analysis was provided to explain the
 advantages of the phrase pair posterior extraction method. Finally, it was shown
 that the best way to exploit both alignment directions is to train separate
 models for each direction, translate separately and combine the lattice outputs.
+
+% TODO expand conclusions

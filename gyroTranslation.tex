@@ -1,4 +1,5 @@
 \chapter{String Regeneration Applied to Machine Translation}
+\label{chap:gyroTrans}
 
 % TODO harmonize notation 1st pass vs. first pass first-pass
 % TODO remove mismatch between 34.92 and 34.96
@@ -244,8 +245,8 @@ In this section, we describe a first solution to remedy this issue.
 
 Our solution is to bias the language model towards the MT hypothesis.
 In order to do this, we compute $n$-gram posteriors from the
-1st-pass translation lattices using the technique described
-in (TODO refer to background). We then convert the posteriors
+1st-pass translation lattices~\citep{blackwood:2010:PHD}.
+We then convert the posteriors
 to integer counts and estimate a
 Good-Turing~\citep{good:1953:biometrika,chen-goodman:1998:harvard} smoothed 4-gram
 language model from these counts.
