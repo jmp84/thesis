@@ -393,7 +393,10 @@ We will now describe the last two operations, \textsc{CanApply}
 and \textsc{Extend} but before that, we need to describe what kind
 of information a state contains.
 
-\paragraph{State Definition} The states
+\paragraph{State Definition}
+\label{sec:gyroStateDefinition}
+
+The states
 contain enough information
 in order to extend a hypothesis and represent
 all hypotheses that can be recombined. A state therefore
@@ -449,6 +452,8 @@ $s$ with $r$ into a new state $s'$ as follows:
 %
 
 \paragraph{Pruning}
+\label{sec:gyroPruningDescription}
+
 Our algorithm does not solve the issue that the search space for an input
 of size $N$ with distinct words has a size $N!$. We therefore need pruning
 in search.
@@ -828,7 +833,7 @@ string regeneration task setting.
 \end{table}
 
 \subsection{Future Cost}
-\label{sec:gytoFutureCost}
+\label{sec:gyroFutureCost}
 
 Hypotheses that cover the same number of words in the input
 bag of words are grouped together in a stack and
