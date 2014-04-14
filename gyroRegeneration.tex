@@ -1,16 +1,44 @@
 \chapter{String Regeneration as Phrase-Based Translation}
+\chaptermark{String Regeneration as Phrase-Based MT}
 \label{chap:gyro}
 
-%TODO normalize ngram n-gram $n$-gram etc.
-%TODO shorter name for the chapter
-%TODO make subsubsection numbered
-%TODO discuss look ahead
+% TODO British vs US spelling
+% TODO grep config grep -v configuration and replace
+% TODOFINAL do a kitchen sink exp with all goodies (either with chop or not)
+% TODO grep for mentions of BLEU without case
+% TODO check if mentioned that columns are sorted by score
+% TODO point to github
+% TODO maybe say somewhere that unigrams not found in the n-grams are added
+% TODO score intermediate system for NIST 12 (see email Gonzalo for the references)
+% TODO grep for natural language generation and replace by nlg
+% TODO finish sig tests for wmt chapter
+% TODO maybe do sig tests for this chapter
+% TODO grep for sec:optimization and replace with sec:evaluationMetrics where appropriate
+% TODO background: lmbr applied to get the oracle
+% TODO future work idea: more sophisticated future cost language model for gyro trans
+% TODO normalize ngram n-gram $n$-gram etc.
+% TODO shorter name for the chapter
+% TODO make subsubsection numbered
+% TODO discuss look ahead
 
-Machine translation output was originally evaluated in terms
+In the previous chapters, we have proposed various improvements to hierarchical
+phrase-based translation systems, in terms of
+infrastructure (\autoref{chap:hfile}), grammar
+modelling (\autoref{chap:extractionFromPosteriors} and \autoref{chap:wmt})
+and language modelling for first pass decoding as well as
+rescoring (\autoref{chap:wmt}). In the
+chapter to follow (\autoref{chap:gyroTrans}), we will also
+introduce techniques for potential improvements in fluency in the output
+of hierarchical phrase-based systems. In this chapter, we lay
+the ground work to be applied in translation in \autoref{chap:gyroTrans}.
+
+Machine translation output was originally evaluated by
+human judges in terms
 of \emph{adequacy}, or how well the meaning of the source
 text is preserved in the translated text, and \emph{fluency},
-or how well formed is the
-translation~\citep{white-oconnell-carlson:1993:HLT}. % TODO link to background maybe:  sec:sourceChannelModel
+or how well formed the translation is~\citep{white-oconnell-carlson:1993:HLT}.
+Adequacy and fluency are one of the motivation for separating SMT models
+into a translation model and a language model (see \autoref{sec:sourceChannelModel}).
 There is increasing concern that translation output
 often lacks fluency~\citep{knight:2007:TALK}.
 In this chapter, we study the related problem of
@@ -21,32 +49,54 @@ is inspired by phrase-based translation techniques and
 achieves state-of-the-art performance on the string regeneration
 task.
 
-% TODO: in section blabla
+% TODO end of abstract too quick
 
 \section{Introduction}
 
 Before the widespread use of automatic metrics such as
-BLEU~\citep{papineni-roukos-ward-zhu:2002:ACL} or
+BLEU (see \autoref{sec:evaluationMetrics}) or
 METEOR~\citep{banerjee-lavie:2005:MTSumm}, machine translation
 systems were originally evaluated in terms of \emph{adequacy}
-and \emph{fluency}~\citep{white-oconnell-carlson:1993:HLT}.
-\emph{Adequacy} measures how well the meaning of the
-source text is preserved in the translation output while \emph{fluency}
-measures how well formed is the translation output.
+and \emph{fluency}~\citep{white-oconnell-carlson:1993:HLT} by human judges.
+While \emph{adequacy} measures how well the meaning of the
+source text is preserved in the translation output, \emph{fluency}
+measures to what extent the translation output is well formed.
 
 There is increasing concern that translation output
 often lacks fluency~\citep{knight:2007:TALK}.
 Current popular automatic metrics for translation can be gamed in the
 sense that it is possible to obtain a high score according to these
-metric with an output that lacks fluency.
-One reason is that these
-metrics measure local matches between translation output and
-references without ensuring that the overall structure of the output
-is sound. This may have led research on translation to neglect fluency.
+metrics with an output that lacks fluency.
+For example, a translation may obtain a high BLEU score simply
+because it contains many $n$-grams that are also in the reference
+translation but this translation may not be well formed syntactically.
+\autoref{fig:gamingBLEUexample} shows how an improvement of
+20 BLEU points at the sentence level between an MT hypothesis
+and an oracle MT hypothesis may not translate into
+an improvement in fluency. Of course, BLEU is designed to
+measure quality at the set level, so hopefully other oracle MT
+hypotheses will probably improve fluency.
+This situation may have led research on translation to neglect fluency.
+%
+\begin{figure}
+\begin{quote}
+  \textbf{SMT System (19.76 BLEU)}: enda according to jerzy made a televised speech, the president of burundi civil war of resistance army soldiers in the past ten years, and had to settle on january 5 before the completion of the new military leadership will be in place before january 7, four of the former rebel army leader.
 
-Even so, obtaining a fluent translation output is difficult.
-One of the reasons for lack of fluency is word ordering.
-Word ordering is a fundamental problem in many natural language
+  \textbf{SMT System Oracle (39.91 BLEU)}: en, a us \$according to al made a televised speech, said that the president of the burundi's rebel army soldiers in the past 10-year civil war must be before january 5 and the completion of the new military leadership will be in place by january 7, and four of the former leaders of the rebel forces.
+
+  \textbf{Reference}: According to President Ndayizeye's televised speech, former rebel fighters in Burundi's 10-year civil war must be settled in by January 5.  The new army leadership is to be made up of 40 percent former rebels and should be in place by January 7.
+\end{quote}
+\caption{Example showing how a large improvement in BLEU score does not imply an improvement in fluency.
+  The first quote is one of the output sentences produced by an SMT system presented in \autoref{chap:gyroTrans}.
+  The second quote is the oracle translation for that system, i.e.\ the best possible translation to be found
+  in the lattice of translations generated by the system. The third quote is one of the human reference translation.}
+\label{fig:gamingBLEUexample}
+\end{figure}
+
+Even if one strives to produce a fluent translation, this remains a very difficult task.
+Different word ordering between distant language pairs such as
+Chinese-English is one of the main reasons for the lack of fluency in translation.
+In general, obtaining a correct word order is a fundamental problem in many natural language
 processing applications.
 In machine translation, because
 source language and target language have a different word
@@ -61,13 +111,13 @@ is also critical at the surface realisation
 step~\citep{reiter-dale:1997:JNLE}.
 Word ordering is also one possible type of grammatical
 error, especially for foreign language
-learners~\citep{yu-chen:2012:COLING}.
+learners~\citep{yu-chen:2012:COLING}. % TODO do something with this last crazy sentence
 
 In this chapter, we address the word ordering problem in
 isolation through the task of
 string regeneration~\citep{wan-dras-dale-paris:2009:EACL}.
 Given an input sentence where the word order has
-been scrambled, the string regeneration task is to recover
+been scrambled, the string regeneration task consists in recovering
 the original sentence. This task can be seen as one of the
 steps in surface realisation for language generation where
 the input is a list of content words and function words and
@@ -75,35 +125,54 @@ the output a grammatical sentence. It also allows us to study
 the realization task independently of the translation task.
 
 We use a simple but extensible approach, inspired from
-stack-based decoding for phrase-based translation.
+stack-based decoding for phrase-based
+translation (see \autoref{sec:phraseBasedDecoding}).
 Given a bag of word as input, we use $n$-gram rules
 extracted from a large monolingual corpus and concatenate
-these $n$-grams to form hypotheses. The hypotheses are scored
+these $n$-grams in order to form hypotheses. The hypotheses are scored
 with a linear model in the same manner as translation
-hypotheses in phrase-based translation~\citep{och-ney:2002:ACL}.
+hypotheses in phrase-based translation.
 One of the critical features in this system
-is the language model. Arbitrary features can be added to the
-system, demonstrating its flexibility.
-% TODO
+is the language model. In experiments to follow, we only study
+this main language model feature, however, our decoder has other features
+implemented and
+arbitrary features can be added easily to the
+system, demonstrating the system flexibility.
+
+Our strategy achieves state-of-the-art performance as
+measured by BLEU (\autoref{sec:evaluationMetrics}) in the string regeneration
+task. We also study various capabilities of our decoder: in
+\autoref{sec:phraseBasedDecoding}, we show how to
+split the input into chunks for more rapid experimentation;
+in \autoref{sec:gyroPruning}, we analyze the effect of stack-based pruning;
+in \autoref{sec:gyroEffectNgramOrder}, we study
+the effect of including $n$-gram rules with a larger $n$-gram order;
+in \autoref{sec:overlap}, we relax decoding constraints by allowing
+$n$-gram rules to overlap; in \autoref{sec:gyroFutureCost}, we introduce
+future cost estimation using a unigram language model; finally, in
+\autoref{gyro:rescoring}, we demonstrate how SMT rescoring techniques
+are also applicable to the output of our decoder.
+% TODO read gyro paper eacl
+
+
+% TODO ?
 %In addition, we present
 %an alternative version that incorporates a dependency language
 %model~\citep{shen-xu-weischedel:2008:ACL,shen-xu-weischedel:2010:CL}.
 
-Our strategy achieves state-of-the-art in the string regeneration
-task. We also study various capabilities of our decoder, such as
-splitting the input into chunks, pruning, length of rules, rule overlap
-and rescoring. % TODO expand on this
-% TODO read gyro paper eacl
-
 \section{Background}
+\label{sec:gyroBackground}
+
+% TODO probably need to cite these guys: (Bangalore and Rambow, 2000; Langkilde, 2000),
+% TODO describe dependency tree linearization
 
 \citet{brown-cocke-dellapietra-dellapietra-jelinek-lafferty-mercer-roossin:1990:CL}
-introduce the string regeneration task, or \emph{bag of word translation}
-to demonstrate the effectiveness
+anecdotally mention the string regeneration task, or \emph{bag of word translation},
+in order to demonstrate the effectiveness
 of $n$-gram language models. With a 3-gram language model, they recover
-63\% of sentences with less than 11 words with brute force search
+63\% of a sentences with less than 11 words with brute force search
 over all permutations. This is of course impractical for longer
-sentences. For comparison, our system is able to recover
+sentences. For a loose comparison, our system is able to recover
 60\% of the tokenized and lowercased sentences with less than 11 words
 on Section 23 of the Penn Treebank.
 %TODO compare our system to this performance
@@ -113,7 +182,7 @@ on Section 23 of the Penn Treebank.
 
 String regeneration has recently gained interest as
 a standalone
-task~\citep{wan-dras-dale-paris:2009:EACL,he-wang-guo-liu:2009:ACLIJCNLP,zhang-clark:2011:EMNLP,zhang-blackwood-clark:2012:EACL2012,zhang:2013:IJCAI}.
+task.%~\citep{wan-dras-dale-paris:2009:EACL,he-wang-guo-liu:2009:ACLIJCNLP,zhang-clark:2011:EMNLP,zhang-blackwood-clark:2012:EACL2012,zhang:2013:IJCAI}.
 %
 %wan et al:
 %find the best dep tree
@@ -130,62 +199,111 @@ task~\citep{wan-dras-dale-paris:2009:EACL,he-wang-guo-liu:2009:ACLIJCNLP,zhang-c
 %use language model. this is an example of tree linearization
 %
 %
-String regeneration serves as a proxy to measure the grammaticality of a
-natural language generation system output and is a simplified version
-of the \emph{linguistic realisation} task in natural language
-generation~\citep{reiter-dale:1997:JNLE}.
-\citet{wan-dras-dale-paris:2009:EACL} use the minimum spanning tree algorithm
-to find an optimal tree given a bag of words.
-\citet{he-wang-guo-liu:2009:ACLIJCNLP} use a log-linear model to map
-dependency relations into surface strings. They achieve a BLEU
-score of 88.74\% using the Chinese Dependency Treebank.
+\citet{wan-dras-dale-paris:2009:EACL} introduced the string regeneration
+task as a proxy to measure the grammaticality of a
+natural language generation system output.
+String regeneration can also be considered as a simplified version
+of the \emph{linguistic realisation} task in a natural language
+generation system~\citep{reiter-dale:1997:JNLE}, which consists in
+generating a surface form that is ``syntactically, morphologically,
+and orthographically correct''.
+
+\citet{wan-dras-dale-paris:2009:EACL} use a
+modified version of the minimum spanning tree algorithm
+in order to find an optimal dependency tree that covers an input bag of words.
+Once a dependency tree is built, an $n$-gram language model is used
+so as to order siblings in the tree.
+Performance is measured by the BLEU metric.
+\citet{wan-dras-dale-paris:2009:EACL} demonstrate BLEU
+improvements when regenerating Section 23 of the
+Penn Treebank using their original algorithm vs.\ baseline
+algorithms based on $n$-gram language models only. Base nouns
+indicated by the Penn Treebank are kept together for experimentation.
+
+
+\citet{he-wang-guo-liu:2009:ACLIJCNLP} also use the dependency tree
+formalism for string realization. They describe a sentence
+realizer that takes as input an unordered dependency tree, i.e.\ a dependency
+tree that only encode head-modifier relations but not the surface
+string ordering. Because an exhaustive search is intractable (consider
+all possible children permutations at each node), \citet{he-wang-guo-liu:2009:ACLIJCNLP}
+adopt a divide-and-conquer approach that recursively linearize
+subtrees in a bottom-up fashion. A log-linear model is used
+to select the best possible linearization for each subtree.
+Features include dependency relations, $n$-gram language models
+for the surface string and for the sequence of heads.
+
 CCG grammars~\citep{zhang-clark:2011:EMNLP} have also been used
-for the string realisation task. These grammars have also
-been combined with large language
-models~\citep{zhang-blackwood-clark:2012:EACL2012}.
-Dependency-based language model have also been used for the
-string realisation task~\citep{guo-wang-vanGenabith:2011:JNLE}.
-The works described so far are instances of \emph{tree linearization}: given
+for the string regeneration task as an alternative
+to the dependency grammar formalism. Given an input bag
+of words, the best CCG parse that covers the input if searched
+for. Similarly to previous work, input base nouns are kept as
+single units. In follow-up work~\citep{zhang-blackwood-clark:2012:EACL2012},
+CCG grammars are combined with large language models
+and provide performance improvements as measured by the BLEU
+metric.
+
+%Dependency-based language model have also been used for the
+%string realisation task~\citep{guo-wang-vanGenabith:2011:JNLE}.
+%Given an unordered
+Some of the works described so far are instances of \emph{tree linearization}: given
 a set of unordered dependency, reconstruct a dependency tree which gives
 the word ordering~\citep{belz-bohnet-mille-wanner-white:2012:INLG}.
 \citet{zhang:2013:IJCAI} extends this task to partial tree linearization: the
 input is a set of possibly missing POS tags and possibly missing unordered
-dependencies. This last work achieves the best performance on string regeneration
-on the Penn Tree Bank so far.
+dependencies. This last work achieves state-of-the art performance on string regeneration
+on the Penn Treebank, when using dependency information on the input.
+\citet{zhang:2013:IJCAI} also report results on string regeneration without
+using dependency information on the input but keeping base nouns as single
+units.
 
 In this chapter, we restrict the input to be a bag of words without any additional
-information. To our knowledge, our method achieves state-of-the-art performance
-on this task.
+syntactic or semantic information.
+Our work is directly inspired by recent work that exploits phrase-based
+grammar together with a hierarchical phrase-based decoder based on
+FSTs (see \autoref{sec:hifst})~\citep{degispert-tomalin-byrne:2014:EACL}. We
+also use phrase-based grammars, but
+our decoding procedure is analogous to stack-based decoding for phrase-based
+translation.
+To our knowledge, our method achieves state-of-the-art performance
+on this task. We will now present our model, which is analogous
+to the phrase-based translation model, but in a monolingual setting.
+
 
 % TODO MAYBE THIS
 % Towards Developing Generation Algorithms for Text-to-Text Applications
 % TODO also review Adria's paper
 
 \section{Phrase-Based Translation Model for String Regeneration}
+\label{sec:gyroPhraseBasedModel}
 
 In the previous section, we have reviewed various strategies for string
-regeneration. We now describe our original method, which is inspired from
-phrase-based translation techniques~\citep{koehn:2010:book}. As described
-in (TODO refer to background), we employ a feature based linear model as our
+regeneration. We observe that, in general, the use of syntax was beneficial
+over the exclusive use of $n$-gram language model. We do not take advantage
+of syntactic information, however, we complement an $n$-gram language
+with $n$-gram rules extracted from monolingual data. We now describe our original method, which is inspired from
+phrase-based translation techniques~\citep{koehn:2010:book}.
+We employ a feature based linear model (see \autoref{sec:loglinearModel}) as our
 objective function:
 %
 \begin{equation}
-  \hat{\bm{e}} = \argmax_{\bm{e}} \bm{\lambda} \cdot \bm{\Phi(\bm{e})}
+  \bm{\hat{e}} = \argmax_{\bm{e}} \bm{\lambda} \cdot \bm{h(e)}
   \label{eq:gyroModel}
 \end{equation}
 %
 where:
 %
 \begin{itemize}
-  \item $\hat{\bm{e}}$ is the best possible hypothesis according to the model.
-  \item $\bm{e}$ is a possible hypothesis.
+  \item $\bm{\hat{e}}$ is the best possible hypothesis according to the model.
+  \item $\bm{e}$ is an English sentence.
   \item $\bm{\lambda}$ is a feature weight vector.
-  \item $\bm{\Phi}(\bm{e})$ is a feature vector for the hypothesis $\bm{e}$.
+  \item $\bm{h(e)}$ is a feature vector for the hypothesis $\bm{e}$.
 \end{itemize}
 %
 $\bm{\Phi}(\bm{e})$ contains a language model
-$g(\bm{e})$ and local features $\bm{\varphi}(\bm{e})$ (see TODO refer
-to background). Similarly, $\bm{\lambda}$ has a weight $\lambda_g$ for the language model
+$g(\bm{e})$ as well as local features $\bm{\varphi(e)}$
+that are additive over phrases that compose $\bm{e}$.
+Similarly, $\bm{\lambda}$ has a weight $\lambda_g$ for the language model
 and weights $\bm{\lambda_{\varphi}}$ for local features. As in phrase-based
 translation, a hypothesis
 is decomposed into phrases $\bm{e}_1^I$. We can then rewrite
@@ -193,35 +311,47 @@ is decomposed into phrases $\bm{e}_1^I$. We can then rewrite
 %
 \begin{equation}
   \begin{split}
-    \hat{\bm{e}} &= \argmax_{\bm{e} = \bm{e}_1^I} \lambda_{g} g(\bm{e}) + \bm{\lambda_{\varphi}} \cdot \bm{\varphi}(\bm{e}) \\
-                 &= \argmax_{\bm{e} = \bm{e}_1^I} \lambda_{g} g(\bm{e}) + \bm{\lambda_{\varphi}} \cdot \sum_{i = 1}^I \bm{\varphi}(\bm{e}_i) \\
+    \hat{\bm{e}} &= \argmax_{\bm{e} = \bm{e}_1^I} \lambda_{g} g(\bm{e}) + \bm{\lambda_{\varphi}} \cdot \bm{\varphi(e)} \\
+                 &= \argmax_{\bm{e} = \bm{e}_1^I} \lambda_{g} g(\bm{e}) + \bm{\lambda_{\varphi}} \cdot \sum_{i = 1}^I \bm{\varphi(e_i)} \\
   \end{split}
   \label{eq:gyroModel2}
 \end{equation}
 %
-In this chapter, we will only experiment with the language model feature.
+Experiments to follow only make use of the language model feature but
+our implementation has other features integrated, such as
+word count or rule count and arbitrary features can be added easily.
 %TODO maybe add experiments with additional features
 Our decoder algorithm described subsequently in
 \autoref{sec:gyroDecoderAlgorithm} generates hypotheses left to right
-by concatenating phrases $e_1$, ..., $e_I$. For a phrase index $j \in [1, I]$,
-we define the partial model score $\text{sc}(e_1^j)$ of partial hypothesis $e_1^j$ as:
+by concatenating phrases $e_1$, ..., $e_I$. For a phrase index $i \in [1, I]$,
+we define the partial model score $\text{sc}(e_1^i)$ of partial hypothesis $e_1^i$ as
+in \autoref{eq:gyroPartialScore}:
 %
 \begin{equation}
-  \text{sc}(e_1^j) = \lambda_g g(e_1^j) + \bm{\lambda_{\varphi}} \cdot \sum_{i = 1}^j \bm{\varphi}(\bm{e}_i) \\
+  \text{sc}(e_1^i) = \lambda_g g(e_1^i) + \bm{\lambda_{\varphi}} \cdot \sum_{k = 1}^i \bm{\varphi(e_k)} \\
+  \label{eq:gyroPartialScore}
 \end{equation}
 
 \section{Phrase-Based Translation Rules for String Regeneration}
+\label{sec:gyroPhraseBasedRules}
 
-In the previous section, we introduced our model for string regeneration.
-We assumed that a hypothesis could be segmented into phrases. We will
-now describe how to obtain these phrases.
+In the previous section, we have introduced our model, inspired from
+phrase-based translation, for string regeneration.
+This model assumes that a hypothesis is segmented into phrases.
+In this section, we describe how to obtain these phrases
+from monolingual data. In \autoref{sec:gyroRuleExtraction}, we review
+the $n$-gram rule extraction process, which is based the Hadoop implementation
+of MapReduce. In \autoref{sec:ngramRuleFiltering}, we describe how to obtain
+relevant rules for a given test set.
 
 \subsection{Rule Extraction}
+\label{sec:gyroRuleExtraction}
 
-We first compile a large monolingual corpus. Text is tokenized
-and lowercased. We then employ the MapReduce
-framework (see TODO refer to background) in order to extract
-$n$-grams together with their occurrence counts in the corpus.
+$n$-gram rules are extracted from large corpus of monolingual
+text. The text is tokenized and lowercase. We then
+employ the MapReduce
+framework as implemented by Hadoop in order to extract % TODO refer to background
+$n$-grams together with their occurrence counts from the corpus.
 
 The input key to the \emph{map} function is irrelevant.
 The input value to the \emph{map} function is a line of text.
@@ -229,18 +359,20 @@ The \emph{map} function simply extract all $n$-grams from the
 input line of text and outputs these $n$-grams with a count of
 one. The input to the \emph{reduce} function is an $n$-gram
 and a series of constant values equal to one.
-The \emph{reduce} function simply sums the counts of one
-and output the $n$-gram with its total count. This MapReduce
+The \emph{reduce} function simply sums the counts
+and produces the $n$-gram with its total count. This MapReduce
 job is analogous to the canonical word count example except
 that here $n$-grams of higher order than unigrams are considered.
-For experiments, we extract $n$-grams from order 1 to 5.
+For experiments, we extract $n$-grams from order 1 to 5. % TODO oral examination: in one instance we extracted 6-grams, made no difference
 
 \subsection{Rule Filtering}
 \label{sec:ngramRuleFiltering}
 
 Once we have extracted all $n$-grams from a monolingual corpus, we
 would like to retrieve the $n$-grams relevant to a test set
-that we wish to experiment on.
+that we wish to experiment on. An $n$-gram is relevant if the vocabulary
+of the $n$-gram is included in any of the vocabularies of each
+sentence in the test set.
 
 Contrary to the process described in \autoref{sec:rulextract}, we
 do not generate queries and then seek those queries in an HFile.
@@ -249,9 +381,12 @@ to fit in memory. For a sentence of length $N$ with words distinct
 from each other, the number of possible relevant 5-grams is
 $N \times (N - 1) \times (N - 2) \times (N - 3) \times (N - 4)$.
 For sentence of length 100, this would correspond to approximately
-9B queries.
+9B queries. Even with an alternative implementation where keys in the
+HFile are sorted $n$-gram permutations and values are permutations and counts found in
+the monolingual data, the number of 5-gram queries would be $N \choose 5$, which
+is approximately 75M queries for a 100 word sentence.
 
-We take the alternative approach of scanning the set of $n$-grams
+We therefore take the alternative approach of scanning the set of $n$-grams
 and retaining the relevant ones. For this, we again use a MapReduce
 job. The input key to the \emph{map} function is an $n$-gram and
 the input value is a count. For each test sentence, the \emph{map}
@@ -264,14 +399,18 @@ output key is the $n$-gram together with a sentence id. The \emph{map}
 output value is a coverage and a count. The \emph{reduce} function
 simply removes duplicates in the list of coverages. % TODO explain why
 %TODO explain coverage.
+% TODO maybe say why we have the counts
 
-\section{Decoder Algorithm}
+\section{String Regeneration Search}
 \label{sec:gyroDecoderAlgorithm}
 
-In this section, we present our NgramGen decoder, which reorders
-an input bag of word using techniques inspired from phrase-based
-SMT~\citep{koehn:2010:book}, and which we review in (TODO refer to
-background).
+In \autoref{sec:gyroPhraseBasedModel}, we have described our
+string regeneration model and in \autoref{sec:gyroPhraseBasedRules},
+we have described how to extract $n$-gram rules. We now
+present our search algorithm and introduce our
+string regeneration decoder, \emph{NgramGen}, which
+reorders an input bag of word using the model introduced and
+stack-based decoding techniques reviewed in \autoref{sec:phraseBasedDecoding}.
 
 \subsection{Input}
 
@@ -279,7 +418,8 @@ The input to the decoder consists of:
 %
 \begin{itemize}
   \item A bag of words or multiset $\bm{w}$, represented as a vector.
-    For example, we could have $\bm{w} = [\text{do, you, do}]$
+    For example, we have $\bm{w} = [\text{do, you, do}]$ for the
+    input sentence ``do you do'' to be regenerated.
   \item A set of $n$-grams, where the
     vocabulary of each $n$-gram is a subset of the vocabulary of the
     input bag of words. Each $n$-gram is also associated with
@@ -296,25 +436,27 @@ The input to the decoder consists of:
     to compute possible coverages on the fly, however we choose to precompute those
     at the filtering step described in \autoref{sec:ngramRuleFiltering}.
   \item A $n$-gram language model $\mathcal{G}$. The $n$-gram
-    language model is used as a feature in the model to
+    language model is used as a the main feature in the model to
     encourage fluent output.
 \end{itemize}
 %
-We will now describe how hypotheses are generated by the decoder
-from the input.
+We will now describe how hypotheses, i.e.\ permutations of the
+input, are generated by the decoder from a bag of words.
 
 \subsection{Algorithm}
 
 Our algorithm is inspired from stack based decoding for phrase-based
-translation~\citep{koehn:2010:book}. We first give an overview
+translation, reviewed in \autoref{sec:phraseBasedDecoding}. We
+first give an overview
 before outlining the algorithm details.
 
 \subsubsection{Overview}
 \label{sec:gyroAlgorithmOverview}
 
 In order to represent partial hypotheses, we use a vector
-of \emph{columns}. Each column contains a set of
-\emph{states}. Each state encodes a set of partial hypotheses.
+of \emph{columns} (more commonly called stacks). Each
+column contains a set of
+\emph{states}. Each state represents a set of partial hypotheses.
 All states in a column represent hypotheses that cover
 the same number of words in the input.
 
@@ -325,13 +467,15 @@ hypotheses that have not covered any word in the input.
 The empty hypothesis is then extended with the input
 $n$-gram rules and their coverage. New states are created
 to take into account these extensions. Then, partial
-hypotheses represented by these states are iteratively
+hypotheses represented by these states are repeatedly
 extended until hypotheses that cover the entire input
 are produced.
 
 \subsubsection{Algorithm Details}
+\label{sec:gyroAlgoDetails}
 
 As mentioned in \ref{sec:gyroAlgorithmOverview}, we represent
+the set of
 partial hypotheses with a vector of columns, that we denote
 $M$. For an input $\bm{w}$ of size $|\bm{w}|$, $M$ has a size
 of $|\bm{w}| + 1$. Elements of $M$ are denoted $M_0$, ..., $M_{|\bm{w}|}$.
@@ -339,19 +483,21 @@ The $i$-th column $M_i$ represents hypotheses that have covered
 $i$ words in the input. The columns $M_i$ are the analog of stacks
 in stack based decoding for phrase-based translation.
 
-Each column contains a set of states that encode a set of partial
+Each column contains a set of states that represents a set of partial
 hypothesis. A state contains the information necessary to
 extend a partial hypothesis and represents a set of
-partial hypotheses that can be \emph{recombined}~\citep{koehn:2010:book}.
+partial hypotheses that can
+be \emph{recombined} (see \autoref{sec:phraseBasedHypothesisRecombination}).
 This means that if two partial hypotheses $h_1$ and $h_2$
 are represented by a state $s$ and $h_1$ has a higher model score than
 $h_2$, then if $h_1$ and $h_2$ are extended with the same rules, then
 the extension of $h_1$ will have a higher score than the extension $h_2$.
+In our case, two hypotheses can be recombined if they share the same last
+$n - 1$ words where $n$ is the order of the $n$-gram language model.
 
 The states are sorted by their \emph{score}.
 For a given state, its score is the best model score of any of the partial
 hypotheses that the state represents.
-
 The decoding algorithm is presented in \autoref{alg:gyroDecoder}.
 %
 \begin{figure}
@@ -388,15 +534,15 @@ if the $n$-gram rule $r$ is applicable to state $s$
 (\hyperlink{alg:line:canApply}{line \ref{alg:line:canApply}}). If this
 is the case, we extend the state $s$ with the rule $r$
 (\hyperlink{alg:line:extend}{line \ref{alg:line:extend}}).
+We will now describe what kind of information is contained
+in a state. This will allow use to also describe the last two operations, \textsc{CanApply}
+and \textsc{Extend}.
 
-We will now describe the last two operations, \textsc{CanApply}
-and \textsc{Extend} but before that, we need to describe what kind
-of information a state contains.
-
-\paragraph{State Definition} The states
+\paragraph{State Definition} The states must
 contain enough information
-in order to extend a hypothesis and represent
-all hypotheses that can be recombined. A state therefore
+in order to be able to extend a hypothesis and
+states also represent
+all hypotheses that can be recombined. Thus, a state
 contains the following information:
 %
 \begin{itemize}
@@ -404,18 +550,21 @@ contains the following information:
     which words in the input have been covered. This implies a
     sorting of the input bag of words. The sorting is arbitrary
     and we simply choose to represent the bag of words by the
-    sequence of words to be recovered.
+    sequence of words to be recovered. % TODO put this when defining bag of words ??
   \item History: in order to compute the $n$-gram language model
     score correctly when extending a partial hypothesis, we
     store the last $n-1$ words of the partial hypothesis we want
     to extend. The definition of history is therefore the same
     as the definition of history for an $n$-gram language model.
+    In our implementation, the history is simply encoded as
+    an \texttt{lm::ngram::State} as defined in the KenLM toolkit.
 \end{itemize}
 
 \paragraph{\textsc{CanApply} Operation}
+\label{sec:canApply}
 
 Given a state $s$ with coverage $c(s)$ and an $n$-gram rule $r$ with
-coverage $c(r)$, rule $r$ can be applied to state $s$ iff $c(s)$ and
+coverage $c(r)$, rule $r$ can be applied to state $s$ if $c(s)$ and
 $c(r)$ are disjoint. We will see in \autoref{sec:overlap}
 that this constrain can be relaxed if we allow for overlapping
 $n$-grams.
@@ -443,48 +592,59 @@ $s$ with $r$ into a new state $s'$ as follows:
 %
   \item If $s'$ already exist in the column corresponding to its coverage, then
     the score of the existing state is updated if $\text{sc}(s')$ is better than
-    the existing score. Otherwise, $s'$ is simply added to the column corresponding
+    the existing score. Otherwise, $s'$ is simply added as a new state to the column corresponding
     to its coverage.
 \end{itemize}
 %
 
 \paragraph{Pruning}
-Our algorithm does not solve the issue that the search space for an input
-of size $N$ with distinct words has a size $N!$. We therefore need pruning
-in search.
-We support histogram pruning and threshold pruning~\citep{koehn:2010:book}.
+
+The search space for an input bag of size $N$ is the number of permutations
+of the input, which is $N!$ if all input words are distinct. We therefore need to apply
+pruning during search to make the decoding process tractable.
+We support histogram pruning and threshold
+pruning (see \autoref{sec:phraseBasedPruning}).
 After each extension, if we add a new state, we enforce that the column where
 a state was added satisfies the pruning constraints. This means that for
-histogram pruning with $m$ the maximum number of states per column, if we
+histogram pruning, with $m$ the maximum number of states per column, if we
 add a new state to a column that has $m$ states, then the state with the lowest
 score is removed from that column.
 
 For threshold pruning with a threshold $t$, the situation is
-slightly more complex. When we want to add a state with score $s$ to a column where the best score
+slightly more complex. When we want to add a state $s$ with score $\text{sc}(s)$ to a column where the best score
 is $b$, we consider three cases:
 %
 \begin{itemize}
-  \item $s \leq b$ and $s \geq b - t$: the state is added to the column.
-  \item $s \leq b$ and $s < b - t$: the state is not added to the column.
-  \item $s > b$: the state is added to the column and all states in that
-    column with a score less than $s - t$ are removed from the column.
+  \item $\text{sc}(s) \leq b$ and $\text{sc}(s) \geq b - t$: the state $s$ is added to the column.
+  \item $\text{sc}(s) \leq b$ and $\text{sc}(s) < b - t$: the state $s$ is not added to the column.
+  \item $\text{sc}(s) > b$: the state $s$ is added to the column and all states in that
+    column with a score less than $\text{sc}(s) - t$ are removed from the column.
 \end{itemize}
 
-\subsection{FST Building}
+We have presented the decoding algorithm and various data structures to support
+the algorithm. We will now describe how the set of hypotheses is encoded with
+FSTs.
 
-We mentioned earlier that a state represents partial hypotheses that can
-be recombined. However, since we do not keep back pointer between states,
-we cannot recover hypotheses directly from the column vector $M$.
+\subsection{FST Building}
+\label{sec:gyroFstBuilding}
+
+We mentioned in \autoref{sec:gyroAlgoDetails} that a state
+represents partial hypotheses that can
+be recombined as well as the necessary information to be able
+to extend a partial hypothesis. However, since we do not keep backpointers
+between states,
+we cannot recover hypotheses directly from $M$, the vector of columns.
 Instead, we build an FST that contains all hypotheses. For each extension,
 an arc is added to the output FST. We make use of the OpenFst
 toolkit~\citep{allauzen-riley-schalkwyk-skut-mohri:2007:CIAA}.
 This allows us to rescore the output using tools already integrated
 with OpenFst~\citep{blackwood:2010:PHD}.
-
 Another advantage is that hypotheses that are recombined are
-not deleted and all hypotheses are stored in the FST. This allows hypotheses
-that would be discarded in traditional stack based decoding
-to remain and get a chance to get a better score in rescoring.
+not deleted and all completed hypotheses are stored in the output FST.
+This allows hypotheses
+that would be discarded in recombination
+to remain in the output and get an opportunity to become the best hypothesis
+after rescoring.
 
 \subsection{Example}
 
@@ -511,7 +671,9 @@ Our input consists of:
     \emph{do you} & 110 \\
     \emph{do you} & 011 \\
   \end{tabular}
-  \caption{Input monolingual n-gram rules with their coverage.}
+  \caption{Example of input monolingual n-gram rules with their coverage, corresponding
+    to the example input $[\text{do, you, do}]$. The FST representing the set of hypotheses
+    obtained with these rules is represented in \autoref{fig:exampleAlgoGyro}.}
   \label{tab:monolingualRules}
   \end{center}
 \end{table}
@@ -544,7 +706,10 @@ represented in \autoref{fig:exampleAlgoGyro}.
       \path [line] (doyou) -- node[above, sloped]{do} (doyoudo);
     \end{tikzpicture}
   \end{center}
-  \caption{todo}
+  \caption{Example of output obtained from running the NgramGen decoder
+    on the input $[\text{do, you, do}]$ with the rules listed
+    in \autoref{tab:monolingualRules}. Double circled accepting states
+    represent completed hypotheses.}
   \label{fig:exampleAlgoGyro}
 \end{figure}
 %
@@ -555,15 +720,21 @@ We also note that the hypothesis \emph{do you do} is repeated.
 This is not an issue as we use an operation of determinization
 on the resulting FST.
 
+We will now present various experiments that demonstrate the effectiveness
+of our decoder for the string regeneration task. We will also
+analyze various capabilities of the decoder in order to
+understand which configurations lead to better results.
+
 \section{Experiments}
 
 In this section, we will present various
 string regeneration experiments.  We first present
 a baseline without restriction on the input length.
-Then, for more rapid experimentation, we conduct
-experiments with an input split into chunks of maximum length.
-We then show the effect of pruning, $n$-gram rule
-length, the use of overlap between rules and finally
+Then, we show how
+the input can be split into chunks of maximum length for more rapid experimentation. % TODO mention that this will be done in translation and mention confidence regions
+We then study the effect of pruning, $n$-gram rule
+length, the use of overlap between rules, the benefits of future cost
+estimation and finally
 the benefits of applying rescoring to our first
 pass decoder.
 
@@ -576,15 +747,11 @@ data sets. We use the following data sets:
   \item MT08-nw: the first English reference for the newswire portion of the
     Arabic-English translation task for the NIST Open Machine Translation 2008
     Evaluation.\footnote{\url{http://www.itl.nist.gov/iad/mig/tests/mt/2008}}
-    This data set is used as a tuning set for MT09-nw.
   \item MT09-nw: the first English reference for the newswire portion of the
     Arabic-English translation task for the NIST Open Machine Translation 2009
     Evaluation.\footnote{\url{http://www.itl.nist.gov/iad/mig/tests/mt/2009}}.
-    This data set is used as a testing set and parameters tuned on MT08-nw are used.
-  \item WSJ22: Section 22 from the Penn Treebank. This data set is used
-    as a tuning set for WSJ23.
-  \item WSJ23: Section 23 from the Penn Treebank. This data set is used as a
-    testing set and parameters tuned on WSJ22 are used.
+  \item WSJ22: Section 22 from the Penn Treebank.
+  \item WSJ23: Section 23 from the Penn Treebank.
 \end{itemize}
 %
 The test sets are first tokenized and lowercased.
@@ -595,7 +762,7 @@ for the NIST Open Machine Translation 2012
 Evaluation.\footnote{\url{http://www.nist.gov/itl/iad/mig/openmt12.cfm}}
 This consists of approximately 10.6 billion words.
 For WSJ22 and WSJ23, we use all available monolingual data for the WMT13
-evaluation.\footnote{\url{http://statmt.org/wmt13/translation-task.html}}.
+evaluation, described in \autoref{tab:monolingualStats}.
 This consists of approximately 7.8 billion words.
 For MT08-nw and MT09-nw, we estimate a modified Kneser-Ney 4-gram language model
 on approximately 1.3 billion words of English text, including
@@ -609,54 +776,66 @@ monolingual data for the WMT13 evaluation.
 \label{sec:gyroBaseline}
 
 We first run a baseline on our various test sets with the NgramGen decoder.
-Results are reported in \autoref{tab:gyroBaseline}. No restrictions on the
-input length are imposed. We use a length dependent histogram pruning of
-$\frac{11000}{\text{length(input)}}$. This setting allows the decoding to terminate
-while using all the memory available on the machines.
+Because, there are no constraints on the input length, some long sentences
+need more pruning for the decoder to complete the procedure.
+Therefore, we use a length dependent histogram pruning of
+$\frac{11000}{\text{length(input)}}$. For example, for an input sentence
+of length 100, this means that we use a histogram pruning of 110 for that
+particular sentence. Results are reported in \autoref{tab:gyroBaseline}.
 %
 \begin{table}
   \begin{center}
   \begin{tabular}{l|l}
     Test Set & BLEU \\
     \hline
-    MT08-nw & RUNS \\
-    MT09-nw & RUNS \\
+    MT08-nw & STILL RUNNING \\
+    MT09-nw & 37.29 \\
     WSJ22 & 44.01 \\
     WSJ23 & 45.48 \\
   \end{tabular}
-  \caption{Baseline for the NgramGen Decoder. There are no limits on the input length. Pruning setting are set so that decoding is possible using
-  all the memory available on the machines. Performance is measured with case insensitive BLEU.}
+  \caption{Baseline for the NgramGen Decoder on the various test sets used throughout experimentation. No
+    limits are imposed on the input length, thus pruning setting are set so that decoding is feasible on
+    the given hardware. Performance is measured with case insensitive BLEU.}
   \label{tab:gyroBaseline}
   \end{center}
 \end{table}
-%
+
+
 We also compare the performance obtained by the NgramGen decoder with previous
 work on the data set WSJ23 in \autoref{tab:gyroComparedPreviousWork}. We can
 see that our method, without using any additional information apart from the
-input bag-of-word achieves state-of-the-art performance.
+input bag-of-word, achieves state-of-the-art performance.
+All other methods keep base noun phrases as a single unit and also use additional
+syntactic information such as part-of-speech tags.
 %
 \begin{table}
 \begin{center}
   \begin{tabular}{l|l|l}
-    Work & BLEU & Remark \\
+    Work & BLEU & Additional Input Information \\
     \hline
-    Wan et al. EACL'09 & 33.7 & POS tag info + base noun phrase\\
-    Zhang and Clark EMNLP'11 & 40.1 & POS tag info \\
-    Zhang et al. EACL'12 & 43.8 & POS tag info \\
-    Zhang IJCAI'13 & 44.7 & Base phrase info \\
-    This work & 45.48 & No additional info
+    \citep{wan-dras-dale-paris:2009:EACL} & 33.7 & POS tag + base noun phrases\\
+    \citep{zhang-clark:2011:EMNLP} & 40.1 & POS tag + base noun phrases \\
+    \citep{zhang-blackwood-clark:2012:EACL2012} & 43.8 & POS tag + base noun phrases \\
+    \citep{zhang:2013:IJCAI} & 44.7 & base noun phrases \\
+    This work & \textbf{45.5} & \textbf{none}
   \end{tabular}
 \end{center}
 \caption{Comparing the NgramGen decoder performance with previous work
-  on the WSJ23 data set.}
+  on the WSJ23 data set. Case-insensitive BLEU scores are reported.
+  The NgramGen decoder achieves state-of-the-art
+  performance, without using additional information to the input bag of words.}
 \label{tab:gyroComparedPreviousWork}
 \end{table}
 
+In the section to follow, we impose length restrictions on
+the input bag of words in order to allow more rapid experimentation.
+
 \subsection{Sentence Splitting}
+\label{sec:sentenceSplitting}
 
 %TODO remark about the fact that when input is translation output,
 %sentence splitting is not cheating
-Running our decoder without limiting the length of the input
+Running the NgramGen decoder without limiting the length of the input
 as in \autoref{sec:gyroBaseline} can be time and memory consuming.
 For more rapid experimentation, we only reorder chunks of a limited
 size in the
@@ -664,216 +843,362 @@ input. The input is divided each time a punctuation sign such
 as a comma or a semi-colon is observed or after having seen a maximum
 number of tokens. We also use a histogram pruning of 1000 states
 regardless of the input length.
+
 With this restriction, we obtain the results reported
-in \autoref{tab:gyroBaselineChopping}. We will use this baseline
-for more rapid experimentation and further analysis. Specifically,
+in \autoref{tab:gyroBaselineChopping}. Logically, performance
+increases as the maximum size of chunks decreases.
+For a maximum chunk length of 1, the BLEU score would be 100.
+We will use this baseline
+for more rapid experimentation and further analysis.
+Specifically, in experiments to follow,
 we will conduct experiments with a relatively short maximum chunk
 length of 11 and a more realistic maximum chunk length of 20.
-
+%
 \begin{table}
   \begin{center}
   \begin{tabular}{l|l}
-    Maximum Chunk Length & MT08-nw BLEU \\
+    Maximum Chunk Length & MT08-nw \\
     \hline
-    7 & 82.83 \\
-    9 & 78.53 \\
-    11 & 74.86 \\
-    13 & 71.75 \\
-    15 & 68.95 \\
-    20 & 64.36 \\
+     7 & 82.83 \\
+     9 & 78.53 \\
+     11 & 74.86 \\
+     13 & 71.75 \\
+     15 & 68.95 \\
+     20 & 64.36 \\
   \end{tabular}
-  \caption{NgramGen decoder baseline with restrictions on the input length.}
+  \caption{NgramGen decoder baseline with restrictions on the input length.
+    Case-insensitive BLEU scores are reported. For further experiments, maximum
+    chunk lengths of 11 and 20 will be used to contrast results on shorter or longer
+    inputs. The BLEU score for a maximum chunk length of 1 would evidently be 100.}
   \label{tab:gyroBaselineChopping}
   \end{center}
 \end{table}
+%
+
+It should be emphasized that the purpose of splitting the input bag of words by using
+information from the sentence to be regenerated is only to be able
+to investigate more quickly how to better use the regeneration decoder. This
+method should not be used for evaluating an end-to-end system on the string regeneration
+task. However, we will see in \autoref{chap:gyroTrans} that using this method
+on the output of a translation system is justified since no information from the reference
+translation is used.
 
 \subsection{Pruning}
+\label{sec:gyroPruning}
 
-In this section, we observe the effect of histogram pruning for
-a maximum input length of 11 and 20 in \autoref{tab:gyroPruning}.
-In both these settings,
-increasing the maximum stack size increases performance, but
-more so with maximum input length of 20 since the search space
-is much larger in that case.
+In \autoref{sec:sentenceSplitting}, we have shown how to split the input
+into chunks to allow more rapid experimentation. Using maximum chunk lengths
+of 11 and 20, we will study the effect of various histogram pruning
+thresholds.
+
+Results are reported in \autoref{tab:gyroPruning}.
+In both maximum input
+length settings, performance increases as the maximum number of states per
+column increases. For a maximum input length of 11, performance improves by
+0.39 BLEU (0.5\% relative, row 1 vs.\ row 7). For a maximum input length of 20, performance improves
+by 1.18 BLEU (1.8\% relative, row 8 vs.\ row 14). This is due to a larger search space being
+explored in the case of a maximum input length of 20.
 %
 \begin{table}
   \begin{center}
   \begin{tabular}{l|l|l|l}
-    Pruning & Max Input Length & MT08-nw BLEU \\
+    Row & Histogram Pruning & Max Input Length & MT08-nw \\
     \hline
-    500  & 11 & 74.67 \\
-    1000 & 11 & 74.86 \\
-    1500 & 11 & 74.98 \\
-    2000 & 11 & 75.02 \\
-    3000 & 11 & 75.09 \\
-    4000 & 11 & 75.08 \\
-    5000 & 11 & 75.06 \\
-    6000 & 11 & 75.12 \\
-    7000 & 11 & 75.15 \\
-    8000 & 11 & 75.15 \\
-    9000 & 11 & 75.14 \\
-    10000 & 11 & 75.14 \\
+    1 & 500  & 11 & 74.67 \\
+    2 & 1000 & 11 & 74.86 \\
+    3 & 1500 & 11 & 74.98 \\
+    4 & 2000 & 11 & 75.02 \\
+    5 & 3000 & 11 & 75.09 \\
+    6 & 4000 & 11 & 75.08 \\
+    7 & 5000 & 11 & 75.06 \\
+%    6000 & 11 & 75.12 \\
+%    7000 & 11 & 75.15 \\
+%    8000 & 11 & 75.15 \\
+%    9000 & 11 & 75.14 \\
+%    10000 & 11 & 75.14 \\
     \hline
-    500  & 20 & 64.21 \\
-    1000 & 20 & 64.36 \\
-    1500 & 20 & 64.85 \\
-    2000 & 20 & 64.94 \\
-    3000 & 20 & 65.17 \\
-    4000 & 20 & 65.33 \\
-    5000 & 20 & 65.39 \\
-    6000 & 20 & RUNS \\
-    7000 & 20 & RUNS \\
-    8000 & 20 & RUNS \\
-    9000 & 20 & RUNS \\
-    10000 & 20 & RUNS \\
+    8 & 500  & 20 & 64.21 \\
+    9 & 1000 & 20 & 64.36 \\
+    10 & 1500 & 20 & 64.85 \\
+    11 & 2000 & 20 & 64.94 \\
+    12 & 3000 & 20 & 65.17 \\
+    13 & 4000 & 20 & 65.33 \\
+    14 & 5000 & 20 & 65.39 \\
+%    6000 & 20 & RUNS \\
+%    7000 & 20 & RUNS \\
+%    8000 & 20 & RUNS \\
+%    9000 & 20 & RUNS \\
+%    10000 & 20 & RUNS \\
   \end{tabular}
   \caption{Effect of histogram pruning on performance with a maximum input length
-  of 11 and 20.}
+    of 11 and 20. Case-insensitive BLEU scores are reported. 
+    In both maximum input length settings,
+    increasing the maximum column size increases performance, but
+    more so with maximum input length of 20 since the search space
+    is much larger in that case.}
   \label{tab:gyroPruning}
   \end{center}
 \end{table}
 
-\subsection{Impact of Rules}
+% TODOFINAL make this a graph
+% TODOFINAL finish 6000 and above
 
+\subsection{$n$-gram Order for $n$-gram Rules}
+\label{sec:gyroEffectNgramOrder}
+
+As mentioned in \autoref{sec:gyroBackground}, previous
+work complements the use of $n$-gram language models with
+syntactic information for the string regeneration task or for the tree
+linearization task. In this work, $n$-gram language models are complemented
+by the use of $n$-gram rules extracted from large amounts of monolingual text.
 In this section, we observe the impact of using all rules from unigrams
-up to 5-grams or only using rules with specific lengths. Results
+up to 5-grams or only using rules with specific lengths.
+Specifically, we compare the following configurations:
+%
+\begin{itemize}
+  \item All $n$-gram orders: this is the default used in experiments so far.
+  \item Unigrams, 4-grams and 5-grams only: our motivation for this configuration
+    is to only use rules that are likely to produce a fluent output, namely 4-grams
+    and 5-grams. We always use unigrams in order to obtain complete hypotheses.
+    For example, if we only used 4-grams and 5-grams, an
+    input bag of words of size 6 could
+    never be covered, unless overlapping rules were allowed (see \autoref{sec:overlap}).
+  \item Unigrams and 5-grams only: our motivation is identical to using
+    only unigrams, 4-grams and 5-grams.
+  \item Unigrams only: in this setting, only the language model
+    informs the decoder. This setting is similar to the one mentioned
+    in \autoref{sec:gyroBackground} where all permutations are considered
+    and ranked by the language model. Our motivation for this setting is to
+    investigate whether $n$-gram rules are at all useful for string regeneration.
+\end{itemize}
+%
+Results
 are reported in \autoref{tab:gyroVaryNgramLength}.
 We can see that for a relatively short maximum of 11 on the input length,
-using more $n$-gram orders is always better whereas when we use
-a more realistic maximum input length of 20, using more $n$-gram orders
-can hurt performance. However, in both cases, it is always beneficial
-to not only use unigrams.
+using more $n$-gram orders is always beneficial.
+Because the maximum input length is short, the search space is always
+explore more thoroughly and this benefits configuration that generate
+larger search spaces.
+For a more realistic maximum input length of 20, results are more in line
+with our initial motivation for each configuration. Comparing row 6 vs.\ row 5,
+we can observe that removing lower order $n$-grams is slightly beneficial.
+The same trend is observed when comparing row 7 vs.\ row 5.
+Finally, for both maximum input length configurations of 11 and 20, it is always
+beneficial to use $n$-gram rules with $n > 1$.
 %
 \begin{table}
   \begin{center}
-  \begin{tabular}{l|l|l}
-    Rule Configuration & Max Input Length & MT08-nw BLEU \\
+  \begin{tabular}{l|l|l|l}
+    Row & Rule Configuration & Max Input Length & MT08-nw \\
     \hline
-    All rules & 11 & 74.86 \\
-    1g/4g/5g & 11 & 74.85 \\
-    1g/5g & 11 & 74.82 \\
-    1g only & 11 & 74.13 \\
+    1 & all rules & 11 & 74.86 \\
+    2 & 1g/4g/5g & 11 & 74.85 \\
+    3 & 1g/5g & 11 & 74.82 \\
+    4 & 1g only & 11 & 74.13 \\
     \hline
-    All rules & 20 & 64.36 \\
-    1g/4g/5g & 20 & 64.42 \\
-    1g/5g & 20 & 64.74 \\
-    1g only & 20 & 63.36 \\
+    5 & all rules & 20 & 64.36 \\
+    6 & 1g/4g/5g & 20 & 64.42 \\
+    7 & 1g/5g & 20 & 64.74 \\
+    8 & 1g only & 20 & 63.36 \\
   \end{tabular}
-  \caption{Effect of using $n$-gram rules with various length.}
+  \caption{Effect of selecting $n$-gram rules based on their $n$-gram order.
+    Case-insensitive BLEU scores are reported.
+    For a short maximum input length, using more orders is always beneficial
+    because this increases a tractable search space. For a maximum input length
+    of 20, retaining only $n$-gram rules with higher order $n$-gram produces
+    better results.}
   \label{tab:gyroVaryNgramLength}
   \end{center}
 \end{table}
 
-\subsection{Overlap}
+\subsection{Overlapping $n$-gram Rules}
 \label{sec:overlap}
 
-We saw in \autoref{sec:canApply} that when we extend
-a state with a rule, the state coverage and the rule
-coverage have to be disjoint. In this section, we relax
+%TODO cite this:
+%Tribble, Alicia, Stephan Vogel, and Alex Waibel. ``Overlapping phrase-level translation rules in an SMT engine.'' Natural Language Processing and Knowledge Engineering, 2003. Proceedings. 2003 International Conference on. IEEE, 2003.
+
+In \autoref{sec:canApply}, we defined the \textsc{CanApply}
+operation by requiring that the state coverage and the coverage
+of the rule used to extend the state be disjoint.
+In this section, we relax
 this constraint to allow for a coverage intersection
-of a maximum length. Results are presented in
-\autoref{tab:overlap}. Overall, we can see
-that allowing for overlap has no impact on performance.
+of a certain maximum overlapping length.
+The idea of allowing overlapping rules has been used previously
+in phrase-based translation for creating phrase tables with
+longer rules~\citep{tribble2003overlapping} % TODO read this paper more carefully
+but not in decoding. % TODO check this claim
+
+Results are presented in
+\autoref{tab:overlap}. Configurations for overlapping rules
+include no overlap, a maximum overlap of 1 or a maximum overlap of 2.
+As in previous experiments, we contrast the effect of overlapping
+rules with a maximum input length of either 11 or 20.
+We also study the effect of overlapping rules when
+all $n$-gram orders are included (rule configuration ``all'') or
+when only unigrams and 5-grams are allowed (rule configuration ``1g/5g'').
+We hypothesize that overlapping rules may be more beneficial
+when lower $n$-gram orders are missing.
+However, we observe that
+that allowing for overlapping rules does not improve performance, apart from 
+increasing the search space and decoding time.
 We do not use this decoder capability in future experiments.
-% TODO look at effect when no unigrams are used
+% TODO look at effect when no unigrams are used in terms of coverage
 
 \begin{table}
   \begin{center}
-  \begin{tabular}{l|l|l|l}
-    Overlap & Max Chop &  Configurations & MT08-nw BLEU \\
+  \begin{tabular}{l|l|l|l|l}
+    Row & Overlap & Max Input Length &  Rule Configuration & MT08-nw \\
     \hline
-    No overlap & 11 & All & 74.86 \\
-    1          & 11 & All & 74.87 \\
-    2          & 11 & All & 74.85 \\
+    1 & no overlap & 11 & all & 74.86 \\
+    2 & 1          & 11 & all & 74.87 \\
+    3 & 2          & 11 & all & 74.85 \\
     \hline
-    No overlap & 11 & 1g/5g & 74.82 \\
-    1          & 11 & 1g/5g & 74.81 \\
-    2          & 11 & 1g/5g & 74.80 \\
+    4 & no overlap & 11 & 1g/5g & 74.82 \\
+    5 & 1          & 11 & 1g/5g & 74.81 \\
+    6 & 2          & 11 & 1g/5g & 74.80 \\
     \hline
-    No overlap & 20 & All & 64.36 \\
-    1          & 20 & All & 64.39 \\
-    2          & 20 & All & 64.28 \\
+    7 & no overlap & 20 & all & 64.36 \\
+    8 & 1          & 20 & all & 64.39 \\
+    9 & 2          & 20 & all & 64.28 \\
     \hline
-    No overlap & 20 & 1g/5g & 64.74 \\
-    1          & 20 & 1g/5g & 64.72 \\
-    2          & 20 & 1g/5g & 64.63 \\
+    10 & no overlap & 20 & 1g/5g & 64.74 \\
+    11 & 1          & 20 & 1g/5g & 64.72 \\
+    12 & 2          & 20 & 1g/5g & 64.63 \\
   \end{tabular}
-  \caption{Effect of allowing for overlapping rules.}
+  \caption{Effect of allowing for overlapping rules. Case-insensitive BLEU
+    scores are reported. In all configurations, allowing for overlapping
+    rules does not improve performance.}
   \label{tab:overlap}
   \end{center}
 \end{table}
 
-\subsection{Rescoring}
-
-Because our decoder outputs a lattice of hypotheses, this
-allows us to apply various lattice rescoring
-techniques~\citep{blackwood:2010:PHD}.
-We demonstrate in \autoref{tab:gyroRescoring}
-that those rescoring techniques are also effective in the
-string regeneration task setting.
-%
-\begin{table}
-  \begin{center}
-  \begin{tabular}{l|l|l|l|l}
-    Config & MT08-nw & MT09-nw & WSJ22 & WSJ23 \\
-    \hline
-    1st Pass & 64.36 & 60.91 & 62.76 & 64.39 \\
-    5g       & 66.11 & 63.26 & 63.18 & 65.04 \\
-    LMBR     & 67.37 & 64.53 & 64.28 & 65.85 \\
-  \end{tabular}
-  \caption{Effect of lattice rescoring on the first pass lattices obtained
-  by the NgramGen decoder.}
-  \label{tab:gyroRescoring}
-  \end{center}
-\end{table}
-
 \subsection{Future Cost}
-\label{sec:gytoFutureCost}
+\label{sec:gyroFutureCost}
 
-Hypotheses that cover the same number of words in the input
+The justification for adding a future cost estimate to the partial
+hypothesis score is analogous to the one provided for phrase-based
+translation in \autoref{sec:phraseBasedFutureCost}.
+Hypotheses that
+cover the same number of words in the input
 bag of words are grouped together in a stack and
 hypotheses with costs that are too high are pruned out.
 However, these hypotheses may not be directly comparable, because
 some hypotheses cover very frequent words that are favored by the
 language model while other hypotheses may cover infrequent words.
+We therefore estimate a future cost for each hypothesis.
+This future cost is added to the partial hypothesis cost for pruning
+purposes.
 
-Thus we estimate a future cost for each hypothesis and that future
-cost is added to the hypothesis cost for pruning. Because there
-is no notion of word ordering in the input, we use a unigram
+We investigate the effect of using a unigram language model to estimate
+the future cost. Given a partial hypothesis, its future cost is defined
+by the unigram language model score of the words from the input
+bag of words that are not covered by the partial hypothesis.
+Because there is no notion of word ordering in the input, we
+cannot use a higher order $n$-gram language model
 language model to estimate future cost.
 
-\autoref{tab:futureCost} shows that adding a unigram language model
-future cost estimate to the cost for pruning is beneficial.
+We compare the use of future cost estimates with maximum input lengths
+of 11 and 20, as in previous experimentation. Results are reported in \autoref{tab:futureCost}.
+In both settings, adding a unigram language model as
+future cost estimate to the cost of a partial hypothesis for pruning is beneficial.
 For a short maximum length of 11 on the input length, we
 obtain a gain of 0.24 BLEU while for a maximum input length
 of 20, we obtain a gain of 0.69 BLEU.
 %
 \begin{table}
   \begin{center}
-    \begin{tabular}{lll}
-      Configuration & Max Chop & MT08-nw BLEU \\
-      No Future Cost & 11 & 74.86 \\
-      Future Cost & 11 & 75.10 \\
-      No Future Cost & 20 & 64.36 \\
-      Future Cost & 20 & 65.05 \\
+    \begin{tabular}{l|l|l}
+      Configuration & Max Input Length & MT08-nw \\
+      \hline
+      no future cost estimate & 11 & 74.86 \\
+      future cost estimate & 11 & 75.10 \\
+      \hline
+      no future cost estimate & 20 & 64.36 \\
+      future cost estimate & 20 & 65.05 \\
     \end{tabular}
     \caption{Effect of using a future cost estimate for pruning.
-    Future cost is estimated with a unigram language model.
-    Future cost is beneficial for a relatively short maximum input
-    length of 11 and for a more realistic maximum input length of 20.}
+      Case-insensitive BLEU scores are reported.
+      Future cost is estimated with a unigram language model.
+      Future cost is beneficial for both a relatively short maximum input
+      length of 11 and for a more realistic maximum input length of 20, with
+      respective improvements of 0.24 BLEU and 0.69 BLEU.}
     \label{tab:futureCost}
+  \end{center}
+\end{table}
+
+\subsection{Rescoring}
+\label{gyro:rescoring}
+
+In \autoref{sec:gyroFstBuilding}, we described how the NgramDecoder
+generates an FST that encodes a set of hypotheses.
+We choose this output format in order to be able to apply
+various lattice rescoring techniques that also utilize this format
+as input (see \autoref{sec:background5gRescoring}, \autoref{sec:lmbr}
+and \autoref{sec:lmbrSysComb}).
+
+In this section, we show that these rescoring techniques
+are not only effective on the output of a first pass translation decoder
+but also in our string regeneration setting.
+Specifically, we run 5-gram language model lattice rescoring as well
+as LMBR lattice rescoring experiments. LMBR applied to hypothesis combination,
+described in \autoref{sec:lmbr}, will be applied in \autoref{chap:gyroTrans}.
+
+Results are reported in \autoref{tab:gyroRescoring}, on all our test sets.
+The MT08-nw set is used to tune LMBR parameters, and these parameters are
+tested on the MT09-nw set. Similarly, WSJ22 is used as a tuning set for WSJ23.
+Because we only use a single language feature and because in all decoder
+hypotheses, the length is identical, there is no tuning or testing set
+for first-pass decoding or 5-gram language mode rescoring.
+
+We can see that large BLEU gains are obtained in 5-gram rescoring: +1.29 BLEU
+on average across all test sets. LMBR rescoring also provides
+an average gain of 2.54 BLEU with respect to first pass decoding over the
+test sets MT09-nw and WSJ23.
+%
+\begin{table}
+  \begin{center}
+  \begin{tabular}{l|l|l|l|l}
+    Configuration & MT08-nw & MT09-nw & WSJ22 & WSJ23 \\
+    \hline
+    first pass & 64.36 & 60.91 & 62.76 & 64.39 \\
+    +5g       & 66.11 & 63.26 & 63.18 & 65.04 \\
+    +LMBR     & 67.37 & 64.53 & 64.28 & 65.85 \\
+  \end{tabular}
+  \caption{Effect of lattice rescoring on the first pass lattices obtained
+    by the NgramGen decoder. Case-insensitive BLEU scores are reported.
+    Rows ``+5g'' and ``+LMBR'' show large BLEU gains with respect to
+    first pass decoding, demonstrating the effectiveness of these lattice
+    rescoring techniques across various tasks, including translation and
+    string regeneration.}
+  \label{tab:gyroRescoring}
   \end{center}
 \end{table}
 
 \section{Conclusion}
 
 In this chapter, we have presented a novel approach to the string regeneration
-task, inspired from phrase-based SMT. Our decoder NgramGen achieves state-of-the-art
-performance on string regeneration from a simple bag of word on the Penn Treebank
+task, inspired from phrase-based models for SMT.
+We have implemented a decoder, NgramGen, that operates in a similar fashion to phrase-based
+stack-based decoders and achieves state-of-the-art
+performance on the string regeneration task from a simple bag of word on the Penn Treebank
 Section 23 data set.
 
-In this following chapter, we will explore potential application of our decoder
-to word reordering in machine translation.
+We have also analyzed various capabilities of our decoder.
+From this analysis, we draw the following conclusions:
+%
+\begin{itemize}
+  \item Lower order $n$-gram rules are not needed for best possible performance.
+  \item Allowing for overlapping rules slows down the decoding procedure and
+    does not provide gains.
+  \item Future cost estimates improve the pruning procedure and overall performance.
+  \item Lattice rescoring techniques are applicable and provide gains in the string
+    regeneration setting.
+\end{itemize}
+
+
+In the following chapter, we will explore potential application of our decoder
+to word reordering in machine translation. We will consider the output of
+a machine translation decoder as the input bag of words for the regeneration decoder.
 
 %TODO dep lm
 % TODO      \item analysis of when the input is lost

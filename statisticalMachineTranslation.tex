@@ -1,6 +1,7 @@
 \chapter{Statistical Machine Translation}
 \label{chap:smt}
 
+% TODO grep for paragraph and replace by sub or subsubsection where appropriate
 % TODO if time, add more hiero rule types, e.g. oov, deletions, etc.
 % TODO if time, expand the hiero rule extraction section with the actual implementation
 % TODO review all equations and make sure preceded by colon rather than period.
@@ -1336,6 +1337,7 @@ than both \autoref{eq:consistent} and \autoref{eq:atLeastOneLink}.
 \end{figure}
     
 \subsection{Phrase-Based Decoding}
+\label{sec:phraseBasedDecoding}
 
 %notes on knight 1999 NP complete
 %blabla on cryptograph and pos tagging
@@ -1409,6 +1411,7 @@ the state will encode the cost of the partial hypothesis
 and the last $n - 1$ words of the partial hypothesis.
 
 \paragraph{Hypothesis Recombination}
+\label{sec:phraseBasedHypothesisRecombination}
 
 When two partial hypotheses share the same $n - 1$
 words, only the partial hypothesis with the lower
@@ -1418,6 +1421,7 @@ alternatively, it is possible to make these two partial
 hypotheses share the same state for rescoring purposes.
 
 \paragraph{Stack Based Decoding and Pruning}
+\label{sec:phraseBasedPruning}
 
 The decoding search space is very large
 as seen above. Approximations
@@ -1434,6 +1438,7 @@ and discards all partial hypotheses in that stack whose cost
 is greater than the best cost plus a threshold.
 
 \paragraph{Future Cost}
+\label{sec:phraseBasedFutureCost}
 
 Partial hypotheses that cover the same number of source
 words are grouped together for pruning purposes. However,
@@ -2164,6 +2169,7 @@ and build very large language models (see \autoref{sec:hfileIntro}).
 \label{sec:optimization}
 
     \subsection{Evaluation Metrics}
+    \label{sec:evaluationMetrics}
 
     Evaluating the quality of machine translation output is a challenge in that very often many possible
     translations are acceptable and of equal quality. Human experts seem to be the most qualified for this task, however
@@ -2252,6 +2258,7 @@ is challenging in terms of memory use. 5-gram language model rescoring and latti
 Bayes' risk rescoring are two such methods.
 
 \subsection{5-gram Language Model Lattice Rescoring}
+\label{sec:background5gRescoring}
 
 \citet{brants-popat-xu-och-dean:2007:EMNLP-CoNLL} showed that using vast
 amounts of data for training language models can improve translation. However,
