@@ -1,128 +1,21 @@
 \documentclass[oneside, 12pt]{book}
 
-% TODO make a separate preamble
-% TODO look at compilation with xelatex or lualatex (xeCJK or luatexja for Chinese)
-\usepackage[table]{xcolor}
-\usepackage{graphicx}
-\usepackage{rotating}
-\usepackage{algorithm}
-\usepackage{algpseudocode}
-\usepackage{fixltx2e}
-\usepackage{varwidth}
-\usepackage{amsmath}
-\usepackage{amsfonts}
-\usepackage{bbding}
-\usepackage[round]{natbib}
-\usepackage{bm}
-\usepackage[utf8]{inputenc}
-\usepackage[T1,T2A]{fontenc} % T2A is for Russian
-\usepackage{CJKutf8}
-\def\pgfsysdriver{pgfsys-dvipdfm.def}
-\usepackage{tikz}
-\usetikzlibrary{calc,fit,shapes,arrows,positioning,automata}
-\usepackage[dvipdfm,a4paper,pagebackref,hyperindex=true]{hyperref}
-\usepackage[all]{hypcap}
-\usepackage{footnotebackref}
+% TODOFINAL look at compilation with xelatex or lualatex (xeCJK or luatexja for Chinese)
+% TODOFINAL clean up preamble
+% TODO remove aspell files and rerun (also choose between British and US spelling)
 
-% number subsubsections
-\setcounter{secnumdepth}{3}
-
-\newcommand{\red}[1]{\textcolor{red}{#1}}
-\def \RT [#1][#2][#3]{#1$\rightarrow${\tt $\langle$}#2,#3{\tt $\rangle$}}
-\def \SR [#1]{ {\tt $\langle$}#1}
-\def \TR [#1]{ #1{\tt $\rangle$}}
-\def \RU [#1][#2]{ {\tt $\langle$}#1,#2{\tt $\rangle$}}
-
-%\makeatletter
-%\renewcommand{\ALG@beginalgorithmic}{\footnotesize}
-%\makeatother
-
-\MakeRobust{\Call}
-
-\renewcommand{\eqref}[1]{Equation~(\ref{#1})}
-
-\newcommand{\secref}[1]{Section~(\ref{#1})}
-
-% Links in pdf
-\definecolor{linkcol}{rgb}{0,0,0.4} 
-\definecolor{citecol}{rgb}{0.5,0,0} 
-
-\hypersetup
-{
-%bookmarks=true,
-bookmarksopen=true,
-pdftitle="Refinements in Hierarchical Phrase-Based Translation",
-pdfauthor="Juan Pino", 
-pdfsubject="Hierarchical phrase-based translation and some enhancements", %subject of the document
-%pdftoolbar=false, % toolbar active
-pdfmenubar=true, %menubar shown
-pdfhighlight=/O, %effect of clicking on a link
-colorlinks=true, %couleurs sur les liens hypertextes
-pdfpagemode=None, %aucun mode de page
-pdfpagelayout=SinglePage, %ouverture en simple page
-pdffitwindow=true, %pages ouvertes entierement dans toute la fenetre
-linkcolor=linkcol, %couleur des liens hypertextes internes
-citecolor=citecol, %couleur des liens pour les citations
-urlcolor=linkcol %couleur des liens pour les url
-}
-
-\def\chapterautorefname{Chapter}
-\def\sectionautorefname{Section}
-\def\subsectionautorefname{Section}
-\def\subsubsectionautorefname{Section}
-\def\paragraphautorefname{Section}
-\def\algorithmautorefname{Algorithm}
-
-\DeclareMathOperator*{\argmin}{argmin}
-\DeclareMathOperator*{\argmax}{argmax}
-
-%\includeonly{introduction}
-%\includeonly{statisticalMachineTranslation}
-%\includeonly{hadoopExtraction}
-%\includeonly{extractionFromPosteriors}
-%\includeonly{systemDevelopment}
-%\includeonly{gyroRegeneration,gyroTranslation}
-%\includeonly{gyroRegeneration}
-\includeonly{gyroTranslation}
+\input{preamble.tex}
 
 \begin{document}
 
 \frontmatter
-
-% Matt's version
-% title
-% blank page
-% abstract
-% blank page
-% declaration
-% blank page
-% acknowledgments
-% contents (with hyperlinks)
-% blank page
-% notation
-% blank page
-% chapters
-% bibliography
-
-% Graeme's version
-% title
-% declaration
-% summary
-% acknowledgments
-% acronyms
-% notation
-% contents
-% list of figures
-% list of tables
-% chapters
-% bibliography
 
 % title page
 \include{titlepage}
 % declaration
 \include{declaration}
 % acknowledgments
-\include{acknowledgments} %TODO check orthography
+\include{acknowledgments}
 % abstract
 \include{abstract}
 

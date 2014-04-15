@@ -1,4 +1,4 @@
-personal_ws-1.1 en 852 
+personal_ws-1.1 en 879 
 MapReduce
 mapreduce
 hildebrand
@@ -13,6 +13,7 @@ determinization
 apw
 algo
 pdfmenubar
+tribble
 parallelizable
 rubinfeld
 gyroTransConfidenceRegions
@@ -147,6 +148,7 @@ ith
 pgfsys
 emptyMiddleGrammarLm
 xshift
+gyroPhraseBasedModel
 humanAndSystemBLEU
 argmin
 multiset
@@ -161,6 +163,7 @@ stupidBackoffScheme
 demi
 alignmentConstraintsLinkHierarchical
 phrasePairPosteriorHMMDenominator
+utilize
 deng
 TOREDO
 realize
@@ -174,6 +177,7 @@ schwartz
 Morgens
 degispert
 lll
+burundi
 yshift
 stupidBackoffSchemeReminder
 LOF
@@ -193,11 +197,13 @@ avis
 atLeastOneLink
 ney
 gyroBiasedLmEffect
+subtrees
 stolcke
 preprocessing
 sunsequence
 macherey
 dataset
+phraseBasedPruning
 optimizing
 waite
 canApply
@@ -207,6 +213,7 @@ motwani
 abbas
 domainAdaptationSMTrelatedWork
 loopState
+NgramDecoder
 ruleAllFeatures
 manku
 becaused
@@ -321,6 +328,7 @@ TotalOrderPartitioner
 WithGloss
 targetPhrase
 underperform
+phraseBasedDecoding
 HmmAlignmentDefinition
 tromble
 harvard
@@ -330,6 +338,7 @@ COLING
 dodoyou
 phrasePairPosteriorModel
 UTF
+gyroBackground
 newstest
 symmetrisationHeuristics
 dorr
@@ -338,6 +347,7 @@ precomputing
 gammaForInterp
 xia
 loopNgram
+enda
 StatisticalMachineTranslationKneserNey
 rescoring
 YAY
@@ -357,6 +367,11 @@ gbsn
 backoffModel
 NAACL
 gyroBaseline
+gyroAlgoDetails
+backoffModel
+NAACL
+gyroBaseline
+phraseBasedFutureCost
 MTSumm
 koehn
 techreport
@@ -407,6 +422,7 @@ lx
 loglinearModel
 pe
 mapIllustrationRuleXtraction
+anecdotally
 eidelman
 saintamand
 nw
@@ -414,6 +430,7 @@ nx
 Config
 bookmarksopen
 sc
+jerzy
 viterbiCriterion
 unigrams
 Giga
@@ -430,6 +447,7 @@ patternconfig
 introduceAlignment
 vo
 BiLingual
+gRescoring
 weese
 wu
 CountriesGloss
@@ -507,6 +525,7 @@ lexicalFeature
 gytoFutureCost
 sobremesa
 middleEsIs
+gamingBLEUexample
 franz
 linkcol
 étaient
@@ -514,6 +533,7 @@ gVsKN
 pouzyrevsky
 repas
 popat
+analyzed
 generalize
 exps
 notAlreadyAligned
@@ -554,6 +574,7 @@ monolingualData
 center
 salle
 gyroDecoder
+gyroRuleExtraction
 exampleSentenceNewswire
 citecolor
 rankingCountingHierarchicalPhrasePairPosterior
@@ -568,6 +589,7 @@ organized
 phraseBasedTranslation
 linearization
 wang
+tomalin
 growHeuristic
 blabliblubla
 hierruleextract
@@ -580,6 +602,7 @@ alignmentTemplateTranslationModel
 Google
 gyroTransErrorAnalysis
 Salut
+gyroEffectNgramOrder
 ganitkevitch
 hypothesize
 BigTable
@@ -634,6 +657,7 @@ Yonggang's
 INLG
 kneser
 ngramMLE
+linearize
 Hiero
 blunsom
 huck
@@ -688,6 +712,7 @@ maxnontermlen
 OpenFst
 JNLE
 Xeon
+gyroPhraseBasedRules
 bojar
 wordalignment
 rescore
@@ -717,6 +742,11 @@ mille
 multi
 OneOfZh
 PROMT
+subtree
+multi
+OneOfZh
+PROMT
+Ndayizeye's
 parameterise
 IsZh
 blackwood
@@ -739,6 +769,7 @@ clark
 NAAC
 wong
 linkPosteriorHMM
+phraseBasedHypothesisRecombination
 lookup
 blabliblu
 lmSizes
@@ -748,6 +779,7 @@ tillmann
 ngramRuleFiltering
 lafferty
 CoreNLP
+realizer
 brunning
 JRSS
 modifiedForwardConstraints
@@ -764,6 +796,10 @@ extractionFromPosteriorsLink
 resampling
 rulesPlusS
 rulesPlusT
+gyroPartialScore
+rulesPlusS
+rulesPlusT
+january
 substring
 lmbr
 gyroComparedPreviousWork
@@ -790,6 +826,7 @@ boolean
 graff
 fredkin
 historicalBackground
+burundi's
 OneOf
 extractionFromPosteriors
 datastructure
@@ -839,6 +876,7 @@ extractionFromPosteriorsComparisonWPPP
 aime
 oconnell
 aho
+evaluationMetrics
 linkposdef
 LREC
 alg
@@ -847,6 +885,7 @@ matusov
 newssyscomb
 CCG
 relatedwork
+gyroFstBuilding
 talbot
 Als
 SEPLN
