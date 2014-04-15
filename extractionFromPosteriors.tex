@@ -2,6 +2,10 @@
 \chaptermark{Hiero Extraction from Posteriors}
 \label{chap:extractionFromPosteriors}
 
+% TODO fix table g1-g4 margin right
+% TODO check about G1-G4
+% TODO check too much blank space
+% TODO notation for phrase pairs brackets (grep for '(f' for example)
 % TODO do something about G_3 and G_4 used sometimes and sometimes not
 % TODO grep for {\ (to detect for example {\it )
 % TODO grep for output used as a verb and correct
@@ -426,7 +430,7 @@ With this notation, we obtain the revised extraction procedure in
     \EndFunction
   \end{algorithmic}
   \caption{General procedure for phrase-based rule extraction. This version
-  is more practical and closer to a possible implementation.
+  is more practical and closer to a possible implementation than the algorithm in \autoref{alg:generalRuleXtract}.
   Source phrases are first considered. Only if source constraints $\mathcal{C}_S$ are satisfied, then
   target phrases are considered. Targets that satisfy alignment constraints $\mathcal{C}_A$ with
   their
@@ -547,7 +551,8 @@ $p_{\text{HMM}}(a_{j_0} = i_0 \mid f_1^J, e_1^I)$ for the HMM model.
 
 Let us derive $p_{M_1}(a_{j_0} = i_0 \mid f_1^J, e_1^I)$,
 the link posterior probability under Model 1. We use the notation
-from~\citep{brown-dellapietra-dellapietra-mercer-1993}. We compute the
+from~\citep{brown-dellapietra-dellapietra-mercer-1993}, where $t$ is
+the word-to-word translation table and $\varepsilon$ is a constant. We compute the
 numerator from
 \autoref{eq:linkposdef} by marginalising over all possible alignments and
 inverting sum and product signs to obtain \autoref{eq:linkposM1Numerator}:
@@ -589,7 +594,7 @@ We compute the numerator from \autoref{eq:linkposdef} in
   & p_{M_2}(a_{j_0}=i_0,f_1^J \mid e_1^I) \nonumber \\
   &= \sum_{a_1 = 0}^{I} ... \sum_{a_{j_0-1} = 0}^{I} \sum_{a_{j_0+1} = 0}^{I} ... \sum_{a_J = 0}^{I} p_{M_2}(a_1 ... a_{j_0-1} i_0 a_{j_0+1} ... a_J,f_1^J \mid e_1^I) \nonumber \\
   &= \sum_{a_1 = 0}^{I} ... \sum_{a_{j_0-1} = 0}^{I} \sum_{a_{j_0+1} = 0}^{I} ... \sum_{a_J = 0}^{I} \varepsilon \ p_a(i_0 \mid j_0, J, I) \ t(f_{j_0} \mid e_{i_0}) \nonumber \\
-  & \prod_{\substack{j = 1 \\ j \neq j_0}}^J p_a(a_j \mid j, J, I) \ t(f_j \mid e_{a_j}) \nonumber \\
+  & \; \; \qquad \qquad \qquad \qquad \qquad \qquad \prod_{\substack{j = 1 \\ j \neq j_0}}^J p_a(a_j \mid j, J, I) \ t(f_j \mid e_{a_j}) \nonumber \\
   &= \varepsilon \ p_a(i_0 \mid j_0, J, I) \ t(f_{j_0} \mid e_{i_0}) \prod_{\substack{j = 1 \\ j \neq j_0}}^J \sum_{i=0}^I p_a(i \mid j, J, I) \ t(f_j \mid e_i) \label{eq:linkposM2Numerator}
 \end{align}
 %
@@ -688,19 +693,17 @@ This is the same constraint as defined for standard Viterbi extraction in
 \autoref{sec:extractionFromPosteriorsViterbi}.
   \item alignment constraints $\mathcal{C}_A(f_{j_1}^{j_2}, e_{i_1}^{i_2}, \bm{a})$:
 %
-\begin{equation}
-  \begin{split}
-    & \exists (j,i) \in [j_1,j_2] \times [i_1,i_2], p(a_j = i \mid f_1^J,e_1^I) > \lambda \\
-    & \forall (j,i) \in [1, J] \times [1, I] \cap \{(j,i): p(a_j = i \mid f_1^J,e_1^I) > \lambda\} \\
-    & \hspace{3em} j \in [j_1, j_2] \Leftrightarrow i \in [i_1, i_2]
-  \end{split}
-\end{equation}
+\begin{align}
+ & \exists (j,i) \in [j_1,j_2] \times [i_1,i_2], p(a_j = i \mid f_1^J,e_1^I) > \lambda \label{eq:firstAlignmentConstraintHmmLinkPosterior} \\
+ & \forall (j,i) \in [1, J] \times [1, I] \cap \{(j,i): p(a_j = i \mid f_1^J,e_1^I) > \lambda\} \label{eq:secondAlignmentConstraintHmmLinkPosterior} \\
+ & \hspace{3em} j \in [j_1, j_2] \Leftrightarrow i \in [i_1, i_2] \nonumber
+\end{align}
 %
 where $\lambda$ is a threshold defined experimentally. Intuitively,
 $\lambda$ is a high link posterior probability.
-The first constraint means that we require at least one link with a
+The first constraint (\autoref{eq:firstAlignmentConstraintHmmLinkPosterior}) means that we require at least one link with a
 high posterior probability in the phrase pair considered. The second
-constraint means that there should be no link with a high posterior probability
+constraint (\autoref{eq:secondAlignmentConstraintHmmLinkPosterior}) means that there should be no link with a high posterior probability
 that be inconsistent with the phrase pair. Note that these constraints are
 identical to the Viterbi alignment constraints defined
 in \autoref{sec:extractionFromPosteriorsViterbi} if we choose $\bm{L}$ to be the
@@ -729,7 +732,7 @@ This ranking function is very similar to the score used for lexical features
 described in \autoref{sec:features}. Here,
 we use link posteriors instead of Model 1 translation probabilities. This
 function favours short target phrases, therefore we do not use it as a counting
-function. Preliminary experiments show that this function is not appropriate for
+function. Preliminary experiments found that this function is not appropriate for
 counting rules and that it gives poor results. We therefore use the same counting
 function as in standard practice described in
 \autoref{sec:extractionFromPosteriorsViterbi}.
@@ -1192,7 +1195,7 @@ and then by measuring translation quality.
 In this section, we carry out experiments in order to demonstrate
 the effectiveness of our original grammar extraction method. We will
 assess the quality of the grammars extracted in terms of how expressive
-these grammars are and in terms of translation quality.
+these grammars are, and in terms of translation quality.
 In \autoref{sec:extractionFromPosteriorsGrammarDefinition}, we
 define the patterns to be included in the grammars used for experiments.
 In \autoref{sec:extractionFromPosteriorsExperimentalSetup}, we describe
