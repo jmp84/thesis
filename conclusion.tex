@@ -1,6 +1,6 @@
 \chapter{Summary and Future Work}
 
-% TODO maybe link to specific experiments on blue in each experimental sections
+% TODONEVER maybe link to specific experiments on blue in each experimental sections
 
 Statistical Machine Translation was originally framed as a source-channel
 model with two main components, the translation model and the
@@ -148,7 +148,7 @@ can exploit parallelization in two ways for further
 speed improvements. First, source pattern instances
 can be generated for each test set source sentence individually; then
 each source sentence can processed in parallel. Because
-the HFile format does not multithreaded reads, % TODO check this on the newest versions
+the HFile format does not multithreaded reads, % TODOFINAL check this on the newest versions
 one way to implement this solution is to reuse the multiprocessing
 capability of the MapReduce framework.
 Another opportunity for parallelization similar to the one just described

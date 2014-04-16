@@ -2,14 +2,14 @@
 \chaptermark{Hiero System Development}
 \label{chap:wmt}
 
-% TODO check tabular or table without center
-% TODO search for figure and remove colon. similarly search for equation and put colon instead of period.
-% TODO search replace lowercase/lower-case by case-insensitive
-% TODO include shallow-2 in background
-% TODO harmonize table layout (e.g. bold header, horizontal and vertical lines)
-% TODO check bib through online tool
-% TODO add row numbers in exp tables
-% TODO probably need to mention lattice mert in background
+% TODOFINAL check tabular or table without center
+% TODOFINAL search for figure and remove colon. similarly search for equation and put colon instead of period.
+% TODOFINAL search replace lowercase/lower-case by case-insensitive
+% TODOFINAL include shallow-2 in background
+% TODONEVER harmonize table layout (e.g. bold header, horizontal and vertical lines)
+% TODOFINAL check bib through online tool
+% TODONEVER add row numbers in exp tables
+% TODOFINAL probably need to mention lattice mert in background
 
 In \autoref{chap:hfile}, we have demonstrated improvements in scalability
 for generation of and retrieval from hierarchical phrase-based grammar.
@@ -148,7 +148,7 @@ Stanford CoreNLP toolkit.\footnote{http://nlp.stanford.edu/software/corenlp.shtm
 The English side of the parallel corpus is tokenised with a standard English tokeniser,
 which splits sentences into tokens using white space and punctuation, and retains
 abbreviations as single tokens.
-Both sides of the parallel corpus are then lowercased. % TODO say somewhere that BLEU scores are lowercase
+Both sides of the parallel corpus are then lowercased. % TODOFINAL say somewhere that BLEU scores are lowercase
 Corpus statistics after filtering and tokenization are summarised in
 \autoref{tab:parallelStatsWMT13}.
 %
@@ -238,7 +238,7 @@ Total & 7766.9M \\
 \caption{Statistics for English monolingual corpora used to train language models.
   Abbreviations are used for the following corpora: Europarl (EU), News Commentary (NC), United Nations (UN), Czech-English corpus (CzEng), Yandex (Yx),
   $10^9$ French-English corpus (Giga), Common Crawl (CC), Wikipedia Headlines (Wiki). Corpora ``afp'' and below are the various news agency from the
-  GigaWord corpus.} % TODO cite GigaWord
+  GigaWord corpus.} % TODOFINAL cite GigaWord
 \label{tab:monolingualStats}
 \end{table}
 
@@ -255,7 +255,7 @@ obtain a tuning set \emph{newstest2012.tune}. Even numbered sentences from \emph
 form a test set \emph{newstest2012.test}. The \emph{newstest2013} set is used as an additional test set.
 \emph{newstest2012.tune}, \emph{newstest2012.test} and \emph{newstest2013} are respectively
 shortened to \emph{tune}, \emph{test1} and \emph{test2}.
-% TODO mention baseline features as well as lattice mert. should be baseline feature section in background. should be lattice mert section in background.
+% TODOFINAL mention baseline features as well as lattice mert. should be baseline feature section in background. should be lattice mert section in background.
 
 We report our baseline experiment
 in \autoref{tab:baselineWMT}. We indicate case-insensitive BLEU
@@ -345,7 +345,7 @@ the sentence in \autoref{fig:exampleSentenceNewswire}.
   \label{fig:exampleSentenceNewswire}
 \end{figure}
 %
-% TODO fix space here
+% TODOFINAL fix space here
 
 For domain adaptation, we assume a out-of-domain distribution
 $\mathcal{D}_O$ and a in-domain distribution $\mathcal{D}_I$.
@@ -367,7 +367,7 @@ come from newspaper articles.
 
 % orthogonal axes: language model, translation model, linear mixture, loglinear mixture
 
-%TODO: distinguish lm, tm, linear, loglinear
+%TODOSUBMIT: distinguish lm, tm, linear, loglinear
 
 In machine translation, we can distinguish two types of domain
 adaptation problem: \emph{cross-domain} adaptation and \emph{dynamic}
@@ -414,7 +414,7 @@ In this chapter, we explore very similar techniques.
 %phrase table is the union and the translation features are smoothed by some
 %lexical prob in case one phrase is not extracted from one of the // corpora
 
-% TODO add this
+% TODOSUBMIT add this
 %\citet{bertoldi-federico:2009:WMT} show how to exploit
 %a monolingual corpus for machine translation domain
 %adaptation. An in-domain monolingual corpus is available
@@ -497,7 +497,7 @@ In this chapter, we explore very similar techniques.
 \label{sec:domainAdaptationLM}
 
 In this section, we contrast two simple language model adaptations
-techniques for machine translation. Experiments are carried out % TODO what's different about previous work
+techniques for machine translation. Experiments are carried out % TODOFINAL what's different about previous work
 on the Russian-English system described in \autoref{sec:wmt13ExperimentalSetup}.
 
 We use the KenLM toolkit to
@@ -572,7 +572,7 @@ for first pass decoding and for 5g-rescored results, on \emph{test1} and \emph{t
 BLEU scores superscripted with a star indicate that the difference with respect to the
 baseline is statistically significant at the 0.05 level with 3000 samples.
 
-% TODO IF TIME do exp that compares linear and loglinear interp of ONLY 2 lms.
+% TODOFINAL IF TIME do exp that compares linear and loglinear interp of ONLY 2 lms.
 
 \section{Domain Adaptation with Provenance Features}
 \label{sec:domainAdaptationGrammar}
@@ -597,7 +597,7 @@ features. The concept of provenance was introduced
 previously~\citep{matsoukas-rosti-zhang:2009:EMNLP} and
 provides metadata information such as genre or collection for each
 sentence pair in parallel text.
-% TODO add this to background + refer to background
+% TODOSUBMIT add this to background + refer to background
 %The lexical feature $t(\bm{e} \mid \bm{f})$ for a phrase
 %pair $(\bm{f}, \bm{e})$ is defined in \autoref{eq:lexicalFeature}:
 %
@@ -613,7 +613,7 @@ sentence pair in parallel text.
 %where $t(e_i \mid f_j)$ is a word translation table computed from the
 %word aligned parallel text.
 Word translation tables and
-lexical features are computed for each provenance. % TODO ref lex feature background
+lexical features are computed for each provenance. % TODOSUBMIT ref lex feature background
 Finally, for each provenance, the ratio of the provenance specific
 lexical feature with the global lexical feature is added as a feature
 to the translation system.
@@ -639,7 +639,7 @@ corpus. This gives an additional 16 features to our system: source-to-target
 and target-to-source translation and lexical features for each provenance.
 This configuration is called ``provenance''.
 
-When retrieving relevant rules for a particular test set, various thresholds are applied, such % TODO as described in section...
+When retrieving relevant rules for a particular test set, various thresholds are applied, such % TODOSUBMIT as described in section...
 as number of targets per source or translation probability cutoffs.
 Thresholds involving source-to-target translation scores are applied separately for each
 provenance and the union of all surviving rules for each provenance is kept. This 
@@ -696,7 +696,7 @@ demonstrates that the provenance union strategy is optimal in this set of experi
 and that the gains provided are not only due to having additional translation
 rules.
 
-% TODO significance testing
+% TODOSUBMIT significance testing
 
 \section{Interaction between First Pass Language Model and Rescoring Language Model}
 \label{sec:bestPossibleRescoring}
@@ -787,13 +787,13 @@ in rescoring experiments.
   \end{center}
 \end{table}
 
-% TODO if time make the large 5g first pass interpolated by using restricted vocab.
-% TODO check 1st pass lattice sizes
+% TODOFINAL if time make the large 5g first pass interpolated by using restricted vocab.
+% TODOFINAL check 1st pass lattice sizes
 
 \section{Language Model Smoothing in Language Model Lattice Rescoring}
 \label{sec:sbVSkn}
 
-%TODO: refer back to background section on 5g rescoring
+%TODOFINAL: refer back to background section on 5g rescoring
 
 In \autoref{sec:bestPossibleRescoring}, we have given recommendations
 about the best strategy to adopt in first-pass decoding in order
@@ -882,7 +882,7 @@ is to build an interpolated
 language model and tune the interpolation weights in order
 to minimize the perplexity on a development set in the
 target domain, as opposed to tuning the language model
-weights with MERT. % TODO result not in line with Koehn 2004 but this was with 9 lms so need to redo with 2 lms
+weights with MERT. % TODOFINAL result not in line with Koehn 2004 but this was with 9 lms so need to redo with 2 lms
 We also have examined the effect of provenance features in the
 translation model. We found that the use provenance features
 is beneficial only when these features are used to discriminate

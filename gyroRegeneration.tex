@@ -2,25 +2,25 @@
 \chaptermark{String Regeneration as Phrase-Based MT}
 \label{chap:gyro}
 
-% TODO grep for <s> and </s> and use texttt
-% TODO British vs US spelling
-% TODO grep config grep -v configuration and replace
+% TODOFINAL grep for <s> and </s> and use texttt
+% TODOSUBMIT British vs US spelling
+% TODOFINAL grep config grep -v configuration and replace
 % TODOFINAL do a kitchen sink exp with all goodies (either with chop or not)
-% TODO grep for mentions of BLEU without case
-% TODO check if mentioned that columns are sorted by score
-% TODO point to github
-% TODO maybe say somewhere that unigrams not found in the n-grams are added
-% TODO score intermediate system for NIST 12 (see email Gonzalo for the references)
-% TODO grep for natural language generation and replace by nlg
-% TODO finish sig tests for wmt chapter
-% TODO maybe do sig tests for this chapter
-% TODO grep for sec:optimization and replace with sec:evaluationMetrics where appropriate
-% TODO background: lmbr applied to get the oracle
-% TODO future work idea: more sophisticated future cost language model for gyro trans
-% TODO normalize ngram n-gram $n$-gram etc.
-% TODO shorter name for the chapter
-% TODO make subsubsection numbered
-% TODO discuss look ahead
+% TODOFINAL grep for mentions of BLEU without case
+% TODOFINAL check if mentioned that columns are sorted by score
+% TODOSUBMIT point to github
+% TODOFINAL maybe say somewhere that unigrams not found in the n-grams are added
+% TODOFINAL score intermediate system for NIST 12 (see email Gonzalo for the references)
+% TODOFINAL grep for natural language generation and replace by nlg
+% TODOSUBMIT finish sig tests for wmt chapter
+% TODOFINAL maybe do sig tests for this chapter
+% TODOSUBMIT grep for sec:optimization and replace with sec:evaluationMetrics where appropriate
+% TODOFINAL background: lmbr applied to get the oracle + grep for oracle
+% TODOFINAL (already done) future work idea: more sophisticated future cost language model for gyro trans
+% TODOFINAL normalize ngram n-gram $n$-gram etc.
+% TODOFINAL (done already ?) shorter name for the chapter
+% TODOFINAL (done already ?) make subsubsection numbered
+% TODOFINAL (done already ?) discuss look ahead
 
 In the previous chapters, we have proposed various improvements to hierarchical
 phrase-based translation systems, in terms of
@@ -50,7 +50,7 @@ is inspired by phrase-based translation techniques and
 achieves state-of-the-art performance on the string regeneration
 task.
 
-% TODO end of abstract too quick
+% TODOFINAL end of abstract too quick
 
 \section{Introduction}
 
@@ -112,7 +112,7 @@ is also critical at the surface realisation
 step~\citep{reiter-dale:1997:JNLE}.
 Word ordering is also one possible type of grammatical
 error, especially for foreign language
-learners~\citep{yu-chen:2012:COLING}. % TODO do something with this last crazy sentence
+learners~\citep{yu-chen:2012:COLING}. % TODOFINAL do something with this last crazy sentence
 
 In this chapter, we address the word ordering problem in
 isolation through the task of
@@ -153,10 +153,10 @@ $n$-gram rules to overlap; in \autoref{sec:gyroFutureCost}, we introduce
 future cost estimation using a unigram language model; finally, in
 \autoref{gyro:rescoring}, we demonstrate how SMT rescoring techniques
 are also applicable to the output of our decoder.
-% TODO read gyro paper eacl
+% TODOFINAL read gyro paper eacl
 
 
-% TODO ?
+% TODONEVER ?
 %In addition, we present
 %an alternative version that incorporates a dependency language
 %model~\citep{shen-xu-weischedel:2008:ACL,shen-xu-weischedel:2010:CL}.
@@ -164,8 +164,8 @@ are also applicable to the output of our decoder.
 \section{Background}
 \label{sec:gyroBackground}
 
-% TODO probably need to cite these guys: (Bangalore and Rambow, 2000; Langkilde, 2000),
-% TODO describe dependency tree linearization
+% TODOFINAL probably need to cite these guys: (Bangalore and Rambow, 2000; Langkilde, 2000),
+% TODOFINAL describe dependency tree linearization
 
 \citet{brown-cocke-dellapietra-dellapietra-jelinek-lafferty-mercer-roossin:1990:CL}
 anecdotally mention the string regeneration task, or \emph{bag of word translation},
@@ -176,10 +176,11 @@ over all permutations. This is of course impractical for longer
 sentences. For a loose comparison, our system is able to recover
 60\% of the tokenized and lowercased sentences with less than 11 words
 on Section 23 of the Penn Treebank.
-%TODO compare our system to this performance
-%TODO update this performance with a better system or with rescored system
-%TODO maybe: run regeneration with base noun phrase together
-%TODO run gyro with unigrams only for the baseline and try to beat it
+% TODONEVER sys comb with MT posteriors (same as eacl paper)
+% TODOSUBMIT compare our system to this performance update this performance with a better system or with rescored system
+% TODOFINAL maybe: run regeneration with base noun phrase together
+% TODOFINAL run gyro with unigrams only for the baseline and try to beat it
+% TODOFINAL or TODONEVER manual oracle for word reordering ?
 
 String regeneration has recently gained interest as
 a standalone
@@ -188,7 +189,7 @@ task.%~\citep{wan-dras-dale-paris:2009:EACL,he-wang-guo-liu:2009:ACLIJCNLP,zhang
 %wan et al:
 %find the best dep tree
 %related work: statistical surface realisation Langkilde and Knight
-%text to text generation TODO check for papers with that title
+%text to text generation TODOFINAL check for papers with that title
 %use string regeneration as surrogate for grammaticality test
 %content selection is abstracted out
 %training on the ptb
@@ -271,9 +272,9 @@ on this task. We will now present our model, which is analogous
 to the phrase-based translation model, but in a monolingual setting.
 
 
-% TODO MAYBE THIS
+% TODOFINAL MAYBE THIS
 % Towards Developing Generation Algorithms for Text-to-Text Applications
-% TODO also review Adria's paper
+% TODOFINAL (already done ?) also review Adria's paper
 
 \section{Phrase-Based Translation Model for String Regeneration}
 \label{sec:gyroPhraseBasedModel}
@@ -321,7 +322,7 @@ is decomposed into phrases $\bm{e}_1^I$. We can then rewrite
 Experiments to follow only make use of the language model feature but
 our implementation has other features integrated, such as
 word count or rule count and arbitrary features can be added easily.
-%TODO maybe add experiments with additional features
+%TODONEVER maybe add experiments with additional features
 Our decoder algorithm described subsequently in
 \autoref{sec:gyroDecoderAlgorithm} generates hypotheses left to right
 by concatenating phrases $e_1$, ..., $e_I$. For a phrase index $i \in [1, I]$,
@@ -351,7 +352,7 @@ relevant rules for a given test set.
 $n$-gram rules are extracted from large corpus of monolingual
 text. The text is tokenized and lowercase. We then
 employ the MapReduce
-framework as implemented by Hadoop in order to extract % TODO refer to background
+framework as implemented by Hadoop in order to extract % TODOSUBMIT refer to background
 $n$-grams together with their occurrence counts from the corpus.
 
 The input key to the \emph{map} function is irrelevant.
@@ -364,7 +365,7 @@ The \emph{reduce} function simply sums the counts
 and produces the $n$-gram with its total count. This MapReduce
 job is analogous to the canonical word count example except
 that here $n$-grams of higher order than unigrams are considered.
-For experiments, we extract $n$-grams from order 1 to 5. % TODO oral examination: in one instance we extracted 6-grams, made no difference
+For experiments, we extract $n$-grams from order 1 to 5. % TODOFINAL : in one instance we extracted 6-grams, made no difference
 
 \subsection{Rule Filtering}
 \label{sec:ngramRuleFiltering}
@@ -398,9 +399,9 @@ indicates the positions of the words covered by the $n$-gram
 in the input sentence. The \emph{map}
 output key is the $n$-gram together with a sentence id. The \emph{map}
 output value is a coverage and a count. The \emph{reduce} function
-simply removes duplicates in the list of coverages. % TODO explain why
-%TODO explain coverage.
-% TODO maybe say why we have the counts
+simply removes duplicates in the list of coverages. % TODOFINAL explain why
+% TODOFINAL explain coverage.
+% TODOFINAL maybe say why we have the counts
 
 \section{String Regeneration Search}
 \label{sec:gyroDecoderAlgorithm}
@@ -475,7 +476,7 @@ are produced.
 \subsubsection{Algorithm Details}
 \label{sec:gyroAlgoDetails}
 
-As mentioned in \ref{sec:gyroAlgorithmOverview}, we represent
+As mentioned in \autoref{sec:gyroAlgorithmOverview}, we represent
 the set of
 partial hypotheses with a vector of columns, that we denote
 $M$. For an input $\bm{w}$ of size $|\bm{w}|$, $M$ has a size
@@ -554,7 +555,7 @@ contains the following information:
     which words in the input have been covered. This implies a
     sorting of the input bag of words. The sorting is arbitrary
     and we simply choose to represent the bag of words by the
-    sequence of words to be recovered. % TODO put this when defining bag of words ??
+    sequence of words to be recovered. % TODOFINAL put this when defining bag of words ??
   \item History: in order to compute the $n$-gram language model
     score correctly when extending a partial hypothesis, we
     store the last $n-1$ words of the partial hypothesis we want
@@ -736,7 +737,7 @@ In this section, we will present various
 string regeneration experiments.  We first present
 a baseline without restriction on the input length.
 Then, we show how
-the input can be split into chunks of maximum length for more rapid experimentation. % TODO mention that this will be done in translation and mention confidence regions
+the input can be split into chunks of maximum length for more rapid experimentation. % TODOFINAL mention that this will be done in translation and mention confidence regions
 We then study the effect of pruning, $n$-gram rule
 length, the use of overlap between rules, the benefits of future cost
 estimation and finally
@@ -838,7 +839,7 @@ the input bag of words in order to allow more rapid experimentation.
 \subsection{Sentence Splitting}
 \label{sec:sentenceSplitting}
 
-%TODO remark about the fact that when input is translation output,
+%TODOFINAL (already done ?) remark about the fact that when input is translation output,
 %sentence splitting is not cheating
 Running the NgramGen decoder without limiting the length of the input
 as in \autoref{sec:gyroBaseline} can be time and memory consuming.
@@ -1019,7 +1020,7 @@ beneficial to use $n$-gram rules with $n > 1$.
 \subsection{Overlapping $n$-gram Rules}
 \label{sec:overlap}
 
-%TODO cite this:
+%TODOFINAL (already done ?) cite this:
 %Tribble, Alicia, Stephan Vogel, and Alex Waibel. ``Overlapping phrase-level translation rules in an SMT engine.'' Natural Language Processing and Knowledge Engineering, 2003. Proceedings. 2003 International Conference on. IEEE, 2003.
 
 In \autoref{sec:canApply}, we defined the \textsc{CanApply}
@@ -1030,8 +1031,8 @@ this constraint to allow for a coverage intersection
 of a certain maximum overlapping length.
 The idea of allowing overlapping rules has been used previously
 in phrase-based translation for creating phrase tables with
-longer rules~\citep{tribble2003overlapping} % TODO read this paper more carefully
-but not in decoding. % TODO check this claim
+longer rules~\citep{tribble2003overlapping} % TODOFINAL read this paper more carefully
+but not in decoding. % TODOSUBMIT check this claim
 
 Results are presented in
 \autoref{tab:overlap}. Configurations for overlapping rules
@@ -1047,7 +1048,7 @@ However, we observe that
 that allowing for overlapping rules does not improve performance, apart from 
 increasing the search space and decoding time.
 We do not use this decoder capability in future experiments.
-% TODO look at effect when no unigrams are used in terms of coverage
+% TODOFINAL look at effect when no unigrams are used in terms of coverage
 
 \begin{table}
   \begin{center}
@@ -1205,9 +1206,9 @@ In the following chapter, we will explore potential application of our decoder
 to word reordering in machine translation. We will consider the output of
 a machine translation decoder as the input bag of words for the regeneration decoder.
 
-%TODO dep lm
-% TODO      \item analysis of when the input is lost
-% TODO for translation column about translation results + oracle for 1-best or 10-best. show get same score with combination or biased lm.
+%TODONEVER dep lm
+% TODOFINAL (done ?)      \item analysis of when the input is lost
+% TODOFINAL for translation column about translation results + oracle for 1-best or 10-best. show get same score with combination or biased lm.
 
 %There is a separate report on all experiments (attached).
 %Here are possible experiments:
