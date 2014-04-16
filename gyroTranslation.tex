@@ -2,19 +2,19 @@
 \chaptermark{String Regeneration for Translation}
 \label{chap:gyroTrans}
 
-% TODO review preamble and correct pdfinfo
-% TODO grep for chunk and maybe rephrase
-% TODO grep for lmbr and harmonize capitalization
-% TODO grep for data and replace by text where appropriate
-% TODO grep for stupid and put capital S
-% TODO grep for CUED and Cambridge University Engineering Department
-% TODO harmonize notation for NIST openMT etc.
-% TODO grep for config and replace with configuration
-% TODO harmonize notation 1st pass vs. first pass first-pass
-% TODO remove mismatch between 34.92 and 34.96
-% TODO add row numbers to all tables
-% TODO replace 1-best by 1st-best where appropriate
-% TODO make short running title
+% TODOFINAL review preamble and correct pdfinfo
+% TODOFINAL grep for chunk and maybe rephrase
+% TODOFINAL grep for lmbr and harmonize capitalization
+% TODOFINAL grep for data and replace by text where appropriate
+% TODOFINAL grep for stupid and put capital S
+% TODOFINAL grep for CUED and Cambridge University Engineering Department
+% TODOFINAL harmonize notation for NIST openMT etc.
+% TODOFINAL grep for config and replace with configuration
+% TODOFINAL harmonize notation 1st pass vs. first pass first-pass
+% TODOSUBMIT remove mismatch between 34.92 and 34.96
+% TODOFINAL add row numbers to all tables
+% TODOFINAL replace 1-best by 1st-best where appropriate
+% TODOFINAL (done ?) make short running title
 
 In \autoref{chap:gyro}, we have introduced
 techniques for string regeneration inspired from
@@ -53,7 +53,7 @@ in \autoref{sec:gyroTransSysComb}, we show two ways of incorporating
 information from the translation system in order to match
 the translation system quality; in some instances,
 we obtain very slight improvements over the MT baseline.
-%Finally, in \autoref{sec:gyroTransConfidenceRegions} (TODO section being written
+%Finally, in \autoref{sec:gyroTransConfidenceRegions} (TODONEVER section being written
 %because still waiting for results), we show
 %how to exploit confidence regions in
 %the translation system lattice output in order to segment
@@ -85,7 +85,7 @@ Parallel data is aligned using a word-to-phrase
 HMM model with the MTTK
 toolkit (see \autoref{sec:statisticalMachineTranslationHmmAlignmentModel}).
 In the source-to-target direction, the maximum size of a Chinese phrase is 2 while
-in the target-to-source direction, the maximum size of an English phrase is 4. % TODO ask Bill for confirmation and/or any justification (citation ?)
+in the target-to-source direction, the maximum size of an English phrase is 4. % TODOFINAL ask Bill for confirmation and/or any justification (citation ?)
 The final alignments are obtained by taking
 the union of Viterbi alignments obtained
 in both source-to-target and target-to-source directions.
@@ -95,7 +95,7 @@ in \autoref{sec:rulextractMapReduce}.
 
 We build a first-pass language model using the target side
 of the parallel text and the AFP and Xinhua agencies of the
-GigaWord~\citep{parker-graff-kong-chen-maeda:2009:LDC}. % TODO review bibtex entry
+GigaWord~\citep{parker-graff-kong-chen-maeda:2009:LDC}. % TODOSUBMIT review bibtex entry
 We first build separate modified Kneser-Ney smoothed 4-gram language
 models (see \autoref{sec:StatisticalMachineTranslationKneserNey})
 on each of these three corpora. The language models built on AFP
@@ -145,7 +145,7 @@ regeneration decoder.
 \section[Regeneration Decoder Baseline on MT Output]{Regeneration Decoder Baseline \\ on MT Output}
 \label{sec:gyroTransBaseline}
 
-% TODO check NgramGen naming (vs. gyro and capitalization also)
+% TODOFINAL check NgramGen naming (vs. gyro and capitalization also)
 
 In this section, we describe how the first-pass output
 of the SMT system described in \autoref{sec:gyroTransExpSetting}
@@ -439,7 +439,7 @@ using this technique.
   \end{center}
 \end{table}
 
-% TODO maybe redo with less pruning ??
+% TODOFINAL maybe redo with less pruning ??
 
 %biased lm union
 %\begin{table}
@@ -448,7 +448,7 @@ using this technique.
 %      Config      & BLEU & Oracle BLEU \\
 %      MT Baseline & 34.96 & 56.12 \\
 %      union       & 0.3285 & 43.96 \\
-%      union 0.4   & TODO
+%      union 0.4   & TODONEVER
 %      union 0.5
 %      union 0.6
 %      union 0.7
@@ -517,7 +517,7 @@ Using the biased language model described in the
 previous section, we are able to match and obtain
 a very slight gain over the LMBR rescored translation
 hypotheses.
-%TODO add row numbers
+%TODOFINAL add row numbers
 \begin{table}
   \begin{center}
     \begin{tabular}{l|l|l}
@@ -556,7 +556,7 @@ hypotheses.
 %      beta 0.3 & 32.93 &  \\
 %      beta 0.4 & 32.94 & \\
 %    \end{tabular}
-%    \caption{TODO caption}
+%    \caption{TODONEVER caption}
 %  \end{center}
 %\end{table}
 

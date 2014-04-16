@@ -2,28 +2,28 @@
 \chaptermark{Data Structures for Hiero Grammars}
 \label{chap:hfile}
 
-% TODO grep map, reduce and italicize
-% TODO bottom margin too big, make it smaller
-% TODO for viva: reread hbase book doc on hfile
-% TODO grep for model (in this chapter) and clarify if needed
-% TODO grep for backoff back-off
-% TODO grep for gram. use $n$-gram consistently
-% TODO grep for filter filtering usage
-% TODO grep for future and add it to future work in conclusion
-% TODO check with Bill the 2000 words per minute ??????
-% TODO check abbreviation space after dot (i.e. e.g. etc.)
-% TODO grep for corpus (parallel corpus) and replace with parallel text
-% TODO grep for MapReduce feature
-% TODO grep for collection specific and add hyphen
-% TODO subsubsections to be numbered
-% TODO grep for word alignment and add or not hyphen
-% TODO grep for Hfile wrongly capitalized
-% TODO try to remove all mentions of hbase
-% TODO check for duplicates in bibliography
-% TODO introduce MapReduce in background chapter
-% TODO check title casing
-% TODO check usage of word ``model''
-% TODO check usage of past tense and present tense
+% TODOFINAL grep map, reduce and italicize
+% TODOFINAL bottom margin too big, make it smaller
+% TODOFINAL for viva: reread hbase book doc on hfile
+% TODOFINAL grep for model (in this chapter) and clarify if needed
+% TODOFINAL grep for backoff back-off
+% TODOFINAL grep for gram. use $n$-gram consistently
+% TODOFINAL grep for filter filtering usage
+% TODOFINAL grep for future and add it to future work in conclusion
+% TODOFINAL check with Bill the 2000 words per minute ??????
+% TODOFINAL check abbreviation space after dot (i.e. e.g. etc.)
+% TODOFINAL grep for corpus (parallel corpus) and replace with parallel text
+% TODOFINAL grep for MapReduce feature
+% TODOFINAL grep for collection specific and add hyphen
+% TODOFINAL (done ?) subsubsections to be numbered
+% TODOFINAL grep for word alignment and add or not hyphen
+% TODOFINAL grep for Hfile wrongly capitalized
+% TODOFINAL try to remove all mentions of hbase
+% TODOFINAL check for duplicates in bibliography
+% TODOSUBMIT introduce MapReduce in background chapter
+% TODOFINAL check title casing
+% TODOFINAL check usage of word ``model''
+% TODOFINAL check usage of past tense and present tense
 
 We have seen in \autoref{chap:smt} that the main components of an SMT
 system are the translation model and the language model. The translation
@@ -45,7 +45,7 @@ able to retrieve information, such as $n$-gram conditional
 probabilities or translation grammar rules, efficiently from these models to be able to
 translate an input sentence or a set of input sentences in a reasonable amount
 of time. For online systems such as the commercial systems
-mentioned in \autoref{chap:intro}, translation even needs to be carried out in % TODO for online systems: maybe refer to intro (Google Translate, etc.)
+mentioned in \autoref{chap:intro}, translation even needs to be carried out in % TODOFINAL for online systems: maybe refer to intro (Google Translate, etc.)
 \emph{real time}, i.e.\ for example with a speed of 2000 words translated per minute.
 
 Therefore SMT models need to be stored in a data structure
@@ -84,9 +84,9 @@ tokens over the same period.
 \end{figure}
 %
 Along with growing amounts of data, the use of more powerful computers
-and distributed computing models such as % TODO maybe refer to background
+and distributed computing models such as
 % rather than to paper
-MapReduce~\citep{dean-ghemawat:2008:ACM,lin-dyer:2010:book} has enabled machine
+MapReduce~\citep{dean-ghemawat:2008:ACM,lin-dyer:2010:book} has enabled machine % TODOSUBMIT refer to background
 translation researchers to build larger statistical machine translation models.
 %Indeed, MapReduce was originally designed to process large datasets for parallelizable
 %algorithms.
@@ -160,7 +160,7 @@ are retained: source sides of phrase-based rules have to match
 an $n$-gram from the test set and consecutive terminals
 in source sides of hierarchical rules also have to match
 an $n$-gram from the test set. As a consequence, some hierarchical
-rules are never used in decoding. % TODO give an example
+rules are never used in decoding. % TODOFINAL give an example
 Source sides and rules together with their counts are kept
 in memory using hash map datastructures, target sides with counts
 are loaded from disk as precomputed in the first step, so that
@@ -237,14 +237,14 @@ for the non backed-off score and the backed-off score
 scaling parameter is independent of
 the $n$-gram history.
 Therefore this scheme does not define a conditional probability
-distribution % TODO add the word conditional in background
+distribution % TODOFINAL add the word conditional in background
 over a word given its history.
 
 The Stupid Backoff language model building and application fit the
 MapReduce framework well. The input to language model building
 is a large monolingual corpus. The first step is to build
 a vocabulary. This is done with the canonical example of word
-counting with MapReduce (see TODO refer to background). Counts
+counting with MapReduce. Counts % (see TODOSUBMIT refer to background)
 are needed in order to remove words occurring less than a threshold
 from the vocabulary. The second step is to obtain $n$-grams and their
 count. This is done again with MapReduce, and the \emph{map} and \emph{reduce}
@@ -307,7 +307,7 @@ on-disk storage, however only smaller models will fit in memory.
 In-memory storage has been used to store model
 parameters between iterations of expectation-maximisation for word
 alignment~\citep{dyer-cordova-mont-lin:2008:WMT,lin-dyer:2010:book}.
-% TODO somehow cite work by matei zaharia
+% TODOFINAL somehow cite work by matei zaharia
 
 For larger models, the set of key-value pairs can be stored as a table in a
 single text file on local disk. Values for keys in the query set can be retrieved
@@ -362,7 +362,7 @@ functions on a set, Bloomier filters support arbitrary functions, in this case
 a mapping between an $n$-gram and its statistics. False positives can still occur
 but for true positives, correct statistics are retrieved.
 
-% TODO explain this better
+% TODOFINAL explain this better
 %talbot-brants acl
 %represent ngrams, proba, backoff with hash
 %randomized language model
@@ -424,7 +424,7 @@ to address the grammar extraction and estimation of hierarchical rules.
 Note that the use of suffix arrays for translation model estimation only
 allows to compute the source-to-target probability.
 
-% TODO explain suffix array better
+% TODOFINAL explain suffix array better
 %suffixarray callisonburch
 %suffix array for source corpus
 %suffix array for target corpus
@@ -470,8 +470,8 @@ lexicographically by the key byte string for efficient record retrieval by key.
 
 \subsection{HFile Internal Structure}
 
-% TODO read SSTable description
-% TODO check whether blocks are plural or singular
+% TODOFINAL read SSTable description
+% TODOFINAL check whether blocks are plural or singular
 
 \paragraph{High Level Structure} As can be seen in \autoref{fig:hfile},
 the HFile internal structure is divided into blocks. There are various types of
@@ -501,10 +501,10 @@ confused with Hadoop Distributed File System (HDFS) blocks whose default size is
 \paragraph{Block Compression} The HFile format allows for
 the blocks to be compressed. The choice of compression codec is selected when
 the file is created. We choose the GZip compression
-codec~\citep{Deutsch:1996:ZCD:RFC1950} for all our % TODO check that the gzip cite is correct
+codec~\citep{Deutsch:1996:ZCD:RFC1950} for all our % TODOFINAL check that the gzip cite is correct
 experiments.
 %Block compression is also used in other related
-%software~\citep{pauls-klein:2011:HLTACL}. % TODO reread paper and elaborate
+%software~\citep{pauls-klein:2011:HLTACL}. % TODOFINAL reread paper and elaborate
 
 \begin{figure}
   \begin{center}
@@ -596,7 +596,7 @@ For fast existence check queries, the HFile format allows
 the inclusion of an optional Bloom filter~\citep{bloom:1970:ACM}. A Bloom filter
 provides a probabilistic, memory efficient representation of the key set with a
 $\mathcal{O}(1)$ membership test operation. The Bloom filter may provide a false
-positive, % TODO expand on Bloom filters somewhere either background or here
+positive, % TODOFINAL expand on Bloom filters somewhere either background or here
 but never a false negative, for existence of a key in the HFile.
 Therefore, it is safe to use in our setting as some keys will be looked
 up in the HFile even though they are not present, but the situation
@@ -654,7 +654,7 @@ extension of \emph{Method 3} described by
 \citet{dyer-cordova-mont-lin:2008:WMT}, which was originally developped
 to estimate translation probabilities for phrase-based models.
 Using the MapReduce notation introduced
-in \autoref{sec:mapReduceInSMT} (TODO: still missing mapreduce background section),
+in \autoref{sec:mapReduceInSMT} (TODOSUBMIT: still missing mapreduce background section),
 we can describe the grammar extraction and estimation
 as a series of MapReduce jobs, summarized in
 \autoref{fig:ruleXtractionPipeline}.
@@ -783,7 +783,7 @@ inverting the role played by source and target, the \emph{map} and \emph{reduce}
 function also need to change the rule format for
 rules that invert the order of nonterminals in the source
 and the target, for example \RT[$X$][$X_1 a X_2$][$X_2 b X_1$].
-%\emph{hierarchical reordering rules}. % TODO mention this in background
+%\emph{hierarchical reordering rules}. % TODOFINAL mention this in background
 %A hierarchical reordering rule is a rule with two nonterminals that inverts the
 %order of the nonterminals in the source and in the target. For example,
 %\RT[$X$][$X_1 a X_2$][$X_2 b X_1$] is a hierarchical reordering rule.
@@ -828,7 +828,7 @@ data so that it may be feasible to carry out rule extraction with only one
 reducer in the merge step. We use the output of this small scale extraction as
 input to an \emph{InputSampler}. The sampler will generate a partition file for
 the partitioner. The use of a \emph{TotalOrderPartitioner} will guarantee that
-all keys are sorted after the reduce step. % TODO clear as mud, expand
+all keys are sorted after the reduce step. % TODOFINAL clear as mud, expand
 
 \section{Hierarchical Rule Filtering for Translation}
 \label{sec:rulextract}
@@ -860,9 +860,9 @@ of the test sentence and similarly for \emph{X toi}.
 \subsection{HFile for Hierarchical Phrase-Based Grammars}
 \label{sec:hfileForHiero}
 
-% TODO explain better the source pattern instantiation business with an example.
+% TODOFINAL explain better the source pattern instantiation business with an example.
 
-% TODO maybe refer to background for pattern definition
+% TODOFINAL maybe refer to background for pattern definition
 
 Given a test set and an HFile storing a hierarchical phrase-based grammar, we
 first generate queries from the test set, then retrieve relevant rules along
@@ -902,7 +902,7 @@ The source pattern instances are then sorted for more efficient HFile lookup
 (see \autoref{sec:querySortingOptimization}). Each
 query is then looked up in the HFile and if
 present, an HFile record is retrieved.
-% TODO include this somewhere
+% TODOFINAL include this somewhere
 %We typically run this retrieval step on one machine only.
 We now compare our approach to similar approaches whose aim is
 to obtain rules which are relevant to a test set.
@@ -955,7 +955,7 @@ time and memory measurements.
 %
 \paragraph{Parallel Text} We use a small parallel corpus of 750,950 word-aligned sentence
     pairs and a larger corpus of 9,221,421 word-aligned sentence pairs from the
-    NIST'12 Chinese-English evaluation, in order to investigate how systems perform % TODO footnote or cite for nist
+    NIST'12 Chinese-English evaluation, in order to investigate how systems perform % TODOFINAL footnote or cite for nist
     with varying amounts of parallel text and whether those systems are robust
     when dealing with larger data sets.
 %
@@ -979,8 +979,8 @@ time and memory measurements.
 \begin{itemize}
   \item $ s_{\text{max}}= 9$
   \item $s_{\text{max elements}} = 5$
-  \item $s_{\text{max terminals}} = 5$ % TODO explain why it's redundant or change value
-  \item $s_{\text{max NT}} = 10$ % TODO harmonize notation with extraction from posteriors and from background
+  \item $s_{\text{max terminals}} = 5$ % TODOFINAL explain why it's redundant or change value
+  \item $s_{\text{max NT}} = 10$ % TODOFINAL (done ?) harmonize notation with extraction from posteriors and from background
 \end{itemize}
 %
 With these settings, the small grammar contains approximately 60M rules while the 
@@ -995,14 +995,14 @@ rule retrieval from the same grammar.
     \begin{itemize}
       \item $ s_{\text{max}} = 9$
       \item $s_{\text{max elements}} = 5$
-      \item $s_{\text{max terminals}} = 5$ % TODO explain why redundant with max source elements
+      \item $s_{\text{max terminals}} = 5$ % TODOFINAL explain why redundant with max source elements
       \item $s_{\text{max NT}} = \infty$
-      \item $s_{\text{max span}} = \infty$ % TODO explain diff between hrmaxheight and max nt: max nt is the max span of an X on the rhs whereas hrmaxheight is the max span of the source of a rule, i.e. max span of X on the lhs
+      \item $s_{\text{max span}} = \infty$ % TODOFINAL (done ?) explain diff between hrmaxheight and max nt: max nt is the max span of an X on the rhs whereas hrmaxheight is the max span of the source of a rule, i.e. max span of X on the lhs
     \end{itemize}
     %
     These settings are chosen so that the number of rules obtained after filtering is identical between
     \emph{ruleXtract} and \emph{Joshua}. Thus, time and memory measurements
-    are comparable. % TODO explain better.
+    are comparable. % TODOFINAL explain better.
 %
 \paragraph{Measurements} We report time measurements for query processing and query
     retrieval and the total time used to obtain a set specific rule file for a
@@ -1030,12 +1030,12 @@ strategies for grammar filtering. In practice, an end-to-end translation
 system need not use this exact setup. For example the grammar extracted by \emph{Joshua} is
 in general smaller than the grammar extracted by \emph{ruleXtract} because \emph{Joshua}
 includes target side constraints. On the other hand, \emph{ruleXtract} uses threshold
-cutoffs, such as a minimum source-to-target translation probability, % TODO refer to background, TODO in background, actually talk about these cutoffs
+cutoffs, such as a minimum source-to-target translation probability, % TODOSUBMIT refer to background, TODOSUBMIT in background, actually talk about these cutoffs
 in order to reduce the size of the test set specific grammar.
 
 \subsection{Results and Discussion}
 
-%TODO center the double rows rather than adding empty rows
+% TODOFINAL center the double rows rather than adding empty rows
 \begin{table}[htbp]
   \footnotesize
   \begin{center}
@@ -1109,7 +1109,7 @@ in order to reduce the size of the test set specific grammar.
 Results are summarized in \autoref{tab:ruleXtract}, from which we can draw the
 following observations:
 %
-  % TODO when pointing at rows, use hyperlinks
+  % TODONEVER when pointing at rows, use hyperlinks
 \paragraph{Speed} The \emph{Total Time} column shows that \emph{ruleXtract} is
     competitive with alternative strategies in terms of speed.
 \paragraph{Memory} The \emph{Peak Memory} column shows that both \emph{ruleXtract} and
@@ -1155,7 +1155,7 @@ as rule extraction and source-to-target probability estimation, that has
 already been precomputed in the case of \emph{Joshua} and \emph{ruleXtract},
 making direct comparison difficult.
 
-% TODO need to compare apples to apples: stick in numbers for cdec and
+% TODOFINAL (done ?) need to compare apples to apples: stick in numbers for cdec and
 % the larger corpus
 Despite this apparent slowness, the use of suffix array methods for rule extraction
 favors rapid experimentation because no time consuming precomputation is required.
@@ -1169,9 +1169,9 @@ into a suffix array takes 84m29s and extracting a grammar for our test set
 takes 569m54s. This gives an indication of the total
 time needed to extract a grammar for an arbitrary corpus and an arbitrary test
 set.
-% TODO expand a bit and maybe make a table to compare timings
+% TODOFINAL expand a bit and maybe make a table to compare timings
 
-% TODO add subsections
+% TODOFINAL add subsections
 
 In our case, even though HFile generation might be relatively
 time consuming (5 hours for the larger corpus), once
@@ -1211,7 +1211,7 @@ machine. We have demonstrated that its performance in terms of speed and memory
 usage is competitive with other current alternative approaches.
 
 There are several possible extensions to our current infrastructure.
-First, rule retrieval can be parallelized by source sentence in order
+First, rule retrieval can be parallelized by source sentence in order % TODOFINAL these are separate
 to provide sentence specific grammars rather than test set specific
 grammar. Rule retrieval can also be parallelized by
 processing queries in parallel. The HFile format does not support
