@@ -2,6 +2,8 @@
 \chaptermark{String Regeneration for Translation}
 \label{chap:gyroTrans}
 
+% TODOFINAL crowdflower eval
+% TODOFINAL grep bag-of-word and add s where needed
 % TODOFINAL review preamble and correct pdfinfo
 % TODOFINAL grep for chunk and maybe rephrase
 % TODOFINAL grep for lmbr and harmonize capitalization
@@ -205,7 +207,7 @@ The main observation is that for all regeneration configurations, there
 is a substantial drop in performance with respect
 to the machine translation baseline. This is not unexpected
 since we are only using the language model feature for regeneration:
-except for the bag-of-word obtained from the translation hypothesis and
+except for the bag-of-words obtained from the translation hypothesis and
 the splitting points for more efficient decoding, all information coming from the translation system
 is discarded.
 
@@ -318,7 +320,7 @@ has been lost.
 \autoref{fig:whenLostInput} illustrates the proportion of MT hypotheses
 lost vs.\ the proportion of input words covered.
 The plot shows that
-that MT hypotheses can be lost quite early in the process, as early as
+MT hypotheses can be lost quite early in the process, as early as
 when 20\% of the size of the input bag-of-word has been covered.
 Using future cost estimates produces a very similar graph and does not
 alleviate the problem of losing MT hypotheses early in the decoding process.
@@ -333,14 +335,14 @@ alleviate the problem of losing MT hypotheses early in the decoding process.
 %  \includegraphics[scale = 0.6]{figures/whenLostInput/Tune.text.nw.v3x08.1stpass.10best.exp.allrules.mmap.nbest1000.1.futurecost.whenlostinput.eps}
 %\end{minipage}
 \caption{Analysis of when the MT hypothesis is lost. The x-axis represents bins of 10\% for the relative size of the input bag-of-word.
-The y-axis is simply the count of instances. Future cost estimates are used in decoding for the right hand side figure.}
+The y-axis is simply the count of instances.}
 \label{fig:whenLostInput}
 \end{center}
 \end{figure}
 %
 
 From this analysis, we conclude that using the language model score as
-a single feature is not appropriate for the task of regeneration from
+a single feature is not adequate for the task of regeneration from
 translation output. Designing and implementing additional features is
 a worthwhile opportunity for future work. In the sections to follow, while
 keeping a single feature for regeneration, we will study
@@ -484,6 +486,8 @@ using this technique.
 \section[Translation and Regeneration Hypothesis Combination]{Translation and Regeneration \\ Hypothesis Combination}
 \label{sec:gyroTransSysComb}
 
+% TODOFINAL this transition is too concised, expand
+
 In \autoref{sec:gyroTransBiasedLm}, we have described
 a first solution to bringing the quality of regeneration
 to the level of translation: biasing the language model using
@@ -587,8 +591,8 @@ One possible avenue for future work is to design and implement additional
 features in the decoder. The use of a few simple features, such as word and rule count, was
 already investigated but these features were not found to be beneficial.
 Because the regeneration system was introduced into translation with no loss
-in performance, another interesting next step will be to keep identical performance
-and improve fluency.
+in performance, another interesting next goal will be to keep identical performance
+and use the NgramGen system in order to improve fluency.
 
 %\begin{itemize}
 %  \item Experiment with bag of word made of 1-best translation. Show oracle scores. OK
