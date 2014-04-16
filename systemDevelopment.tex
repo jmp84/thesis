@@ -2,6 +2,10 @@
 \chaptermark{Hiero System Development}
 \label{chap:wmt}
 
+% TODOFINAL grep for a + space + vowel and replace by an (also reverse)
+% TODOFINAL grep for remind and replace by recall
+% TODOFINAL search replace mix-cased/mix cased/mix case by case-sensitive
+% TODOFINAL grep for best
 % TODO check tabular or table without center
 % TODO search for figure and remove colon. similarly search for equation and put colon instead of period.
 % TODO search replace lowercase/lower-case by case-insensitive
@@ -35,7 +39,7 @@ the interaction between a first pass language model used in decoding and a secon
 pass language model used in rescoring. Finally, we compare two smoothing
 strategies for large language model rescoring.
 The techniques presented in this chapter may be used in order
-to build the best possible system for a
+to build high quality systems for a
 translation evaluation or to customize a translation system
 for a client in the industry setting.
 \autoref{fig:modulesToBeImproved} indicates which modules we attempt
@@ -87,7 +91,7 @@ to improve.
 Experiments are based on a system submitted to the WMT13
 Russian-English translation shared
 task~\citep{pino-waite-xiao-degispert-flego-byrne:2013:WMT}.
-Because we developed the best possible system for this competition, % TODO rephrase, and also pinpoint the system submitted
+Because we developed a very competitive system for this evaluation,
 refinements on that system give a good indication of which techniques
 are worthwhile applying to SMT systems.
 We briefly summarize the system building in
@@ -99,7 +103,7 @@ on a specific domain such as newswire text.
 In \autoref{sec:domainAdaptationGrammar}, we show how additional
 grammar rule features related to specific domains may help in translation.
 In \autoref{sec:bestPossibleRescoring}, we investigate
-the best possible strategy for combining first pass translation
+the various strategies for combining first pass translation
 and language model rescoring in terms of language model
 training data size and $n$-gram language model order.
 Finally, in \autoref{sec:sbVSkn}, we compare two smoothing
@@ -112,7 +116,7 @@ The experiments reported in this chapter are based
 on the system submitted to the WMT13 Russian-English translation shared
 task~\citep{pino-waite-xiao-degispert-flego-byrne:2013:WMT}.
 19 systems were submitted to this particular task. The
-CUED system obtained the best mix-cased BLEU
+CUED system obtained the best case-sensitive BLEU
 score and the second best human judgment score
 amongst constrained-track
 systems~\citep{bojar-buck-callisonburch-federmann-haddow-koehn-monz-post-soricut-specia:2013:WMT}.\footnote{http://matrix.statmt.org/matrix/systems\_list/1738}
@@ -139,9 +143,10 @@ In addition, sentence pairs where the source sentence has no Russian character, 
 Perl regular expression [{\textbackslash}x{0400}-{\textbackslash}x{04ff}], are discarded.
 This regular expression corresponds to the unicode block for Cyrillic
 characters (in hexadecimal notation, code 0400 to code 04ff).
-This further discards 19000 sentence pairs. We hypothesize
+This further discards 19000 sentence pairs. We take the view
 that discarding a small portion of training data in order to
-obtain cleaner data is beneficial in translation.
+obtain cleaner data is beneficial in translation, when such cues are easily and
+reliably available.
 
 The Russian side of the parallel corpus is tokenised with the
 Stanford CoreNLP toolkit.\footnote{http://nlp.stanford.edu/software/corenlp.shtml}
@@ -198,7 +203,7 @@ We are using a shallow-$1$ hierarchical
 grammar (see \autoref{sec:constraintsOnHierarhicalGrammars}) in our
 experiments.
 This model is constrained enough that the decoder can build exact search spaces,
-i.e. there is no pruning in search that may lead to spurious undergeneration errors.
+i.e. there is no pruning in search that may lead to search errors under the model. % TODO (note that we still use hiero grammar threshold filtering)
 
 We use the KenLM toolkit~\citep{heafield-pouzyrevsky-clark-koehn:2013:ACL} to estimate
 a single modified Kneser-Ney smoothed 4-gram language
@@ -313,13 +318,13 @@ Machine translation
 can be seen as a multi-class classification problem where $\mathcal{X}$
 is the set of all possible source sentences and $\mathcal{Y}$ is the set of
 all possible target sentences. The multi-class classification framework is not very intuitive
-for machine translation. First, at least in theory, there is an
+for machine translation. First, at least in theory, there are an
 infinite number of possible target sentences to choose from in translation.
 In addition, many possible translations are correct
 or acceptable in general.
 However, the multi-class classification setting is assumed by the original objective
 function (see \autoref{sec:sourceChannelModel}), which we
-remind in \autoref{eq:originalSMTobjectiveReminder}. This objective
+recall in \autoref{eq:originalSMTobjectiveReminder}. This objective
 function minimizes the number of misclassifications.
 %
 \begin{equation}
@@ -347,7 +352,7 @@ the sentence in \autoref{fig:exampleSentenceNewswire}.
 %
 % TODO fix space here
 
-For domain adaptation, we assume a out-of-domain distribution
+For domain adaptation, we assume an out-of-domain distribution
 $\mathcal{D}_O$ and a in-domain distribution $\mathcal{D}_I$.
 A model is trained on
 a sample drawn from $\mathcal{D}_O$ but the model performance
@@ -550,11 +555,11 @@ becomes unstable with more features~\citep{foster-kuhn:2009:WMT}.
     \end{tabular}
     \caption{Performance comparison, measured by case-insensitive BLEU, between an uninterpolated language model (baseline), a
     linearly interpolated language model (linear) and a log-linearly interpolated language model (loglinear).
-    Off-line linear interpolation is the best strategy. The loglinear configuration performs worst, however this
+    Off-line linear interpolation (rows 3 and 4) is the best strategy. The loglinear configuration performs worst, however this
     may be due to the MERT optimization algorithm not being able to find a high quality
     set of parameters with 20 features. Statistically significant differences at the
     0.05 level as measured by bootstrap resampling on \emph{test1} and \emph{test2}
-    with respect to the baseline are marked with a start superscript.}
+    with respect to the baseline are marked with a star superscript.}
     \label{tab:lmInterpolationBestStrategy}
   \end{center}
 \end{table}
@@ -673,7 +678,9 @@ Results are presented in \autoref{tab:noprovVsProvVsProvunion}.
       provenance union. Because the ``no provenance union'' does
       not improve over the baseline, we conclude that the gains
       obtained by the provenance union strategy are not only due
-      to additional rules. Statistical significant differences on \emph{test1}
+      to additional rules; instead, they are due to the conjunction
+      of additional rules with provenance features for better discrimination.
+      Statistical significant differences on \emph{test1}
       and \emph{test2} with respect to the baseline are marked
       with a superscript star.}
     \label{tab:noprovVsProvVsProvunion}
@@ -694,7 +701,9 @@ features (row 7 and row 8). The performance of the ``no provenance union''
 configuration is worse or equal to the ``no provenance'' configuration, which
 demonstrates that the provenance union strategy is optimal in this set of experiments
 and that the gains provided are not only due to having additional translation
-rules.
+rules. The effectiveness of the provenance union strategy is due to
+additional rules in conjunction with additional features for better discrimination
+between rules.
 
 % TODO significance testing
 
@@ -738,18 +747,22 @@ configuration from \autoref{tab:lmInterpolationBestStrategy}.
 
 Results are presented in \autoref{tab:lmSizes}.
 Comparing row 1 and row 3, we can see that for a 4-gram
-language model, more training data is beneficial.
+language model, more training data is beneficial in first-pass decoding.
 This conclusion is confirmed after 5-gram rescoring (row 2 vs.\ row 4).
-However, when comparing row 5 vs.\ row 7 and row 6 vs.\ row, we conclude that
+However, when comparing row 5 vs.\ row 7 and row 6 vs.\ row 8, we conclude that
 in the case of a first-pass 5-gram language model, more training
 data is only helpful in first-pass decoding.
+It is possible that even more monolingual data is required for a 5-gram
+language model to generate a lattice of sufficient quality in first-pass
+decoding so as to obtain improvements in rescoring.
 
 Comparing row 2 vs.\ row 6 and row 4 vs.\ row 8, we see
 that for equal amounts of training data, the best strategy
 is to use a first-pass 4-gram language model followed by
 large 5-gram language model rescoring. One possible reason
-is that a first pass 5-gram language model may not be robust enough
-to produce a of high quality translations to be rescored whereas
+is that a first pass 5-gram language model may not have enough training
+data to be reliably estimated and therefore may not
+produce a first-pass lattice of high quality translations to be rescored, whereas
 a first pass 4-gram language model is able to discard poor translations in first pass
 decoding.
 One caveat with this
@@ -796,7 +809,7 @@ in rescoring experiments.
 %TODO: refer back to background section on 5g rescoring
 
 In \autoref{sec:bestPossibleRescoring}, we have given recommendations
-about the best strategy to adopt in first-pass decoding in order
+about what strategy to adopt in first-pass decoding in order
 to obtain optimal results in rescoring. The conclusion was to use
 a 4-gram language model trained on large amounts of data.
 In this section, we attempt to improve on the 5-gram rescoring
@@ -876,7 +889,7 @@ In this chapter, we have investigated various refinements
 on translation system building.
 We have explored domain adaptation techniques in order
 to refine the language model and the translation model.
-For language model building, we conclude that the best
+For language model building, we find that the best
 strategy for cross-domain adaptation
 is to build an interpolated
 language model and tune the interpolation weights in order
