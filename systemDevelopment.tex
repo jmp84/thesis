@@ -40,7 +40,7 @@ pass language model used in rescoring. Finally, we compare two smoothing
 strategies for large language model rescoring.
 The techniques presented in this chapter may be used in order
 to build high quality systems for a
-translation evaluation or to customize a translation system
+translation evaluation or to customise a translation system
 for a client in the industry setting.
 \autoref{fig:modulesToBeImproved} indicates which modules we attempt
 to improve.
@@ -94,7 +94,7 @@ task~\citep{pino-waite-xiao-degispert-flego-byrne:2013:WMT}.
 Because we developed a very competitive system for this evaluation,
 refinements on that system give a good indication of which techniques
 are worthwhile applying to SMT systems.
-We briefly summarize the system building in
+We briefly summarise the system building in
 \autoref{sec:wmt13ExperimentalSetup}.
 In \autoref{sec:domainAdaptationMT}, we review domain adaptation
 techniques for machine translation. In \autoref{sec:domainAdaptationLM},
@@ -117,10 +117,10 @@ on the system submitted to the WMT13 Russian-English translation shared
 task~\citep{pino-waite-xiao-degispert-flego-byrne:2013:WMT}.
 19 systems were submitted to this particular task. The
 CUED system obtained the best case-sensitive BLEU
-score and the second best human judgment score
+score and the second best human judgement score
 amongst constrained-track
 systems~\citep{bojar-buck-callisonburch-federmann-haddow-koehn-monz-post-soricut-specia:2013:WMT}.\footnote{http://matrix.statmt.org/matrix/systems\_list/1738}
-In this section, we summarize the system building.
+In this section, we summarise the system building.
 
 We use all the Russian-English parallel data available in the constrained track.
 We filter out non Russian-English sentence pairs with the
@@ -141,7 +141,7 @@ Sur base des précédents avis, il semble que l'hôtel a fait un effort.
 %
 In addition, sentence pairs where the source sentence has no Russian character, defined by the
 Perl regular expression [{\textbackslash}x{0400}-{\textbackslash}x{04ff}], are discarded.
-This regular expression corresponds to the unicode block for Cyrillic
+This regular expression corresponds to the Unicode block for Cyrillic
 characters (in hexadecimal notation, code 0400 to code 04ff).
 This further discards 19000 sentence pairs. We take the view
 that discarding a small portion of training data in order to
@@ -154,7 +154,7 @@ The English side of the parallel corpus is tokenised with a standard English tok
 which splits sentences into tokens using white space and punctuation, and retains
 abbreviations as single tokens.
 Both sides of the parallel corpus are then lowercased. % TODOFINAL say somewhere that BLEU scores are lowercase
-Corpus statistics after filtering and tokenization are summarised in
+Corpus statistics after filtering and tokenisation are summarised in
 \autoref{tab:parallelStatsWMT13}.
 %
 \begin{table}[htbp]
@@ -173,9 +173,9 @@ EN & 50.4M & 0.7M \\
 \end{tabular}
 \end{center}
 \caption{Russian-English parallel corpus statistics after filtering
-  and tokenization.
+  and tokenisation.
   Parallel text contains approximately 50M tokens on each side. This translation
-  task can be characterized as a \emph{medium size} translation task.}
+  task can be characterised as a \emph{medium size} translation task.}
 \label{tab:parallelStatsWMT13}
 \end{table}
 %
@@ -305,7 +305,7 @@ in SMT in \autoref{sec:domainAdaptationSMTrelatedWork}.
 \subsection{Domain Adaptation}
 \label{sec:domainAdaptationGeneralProblem}
 
-Let us first formalize the problem of domain adapatation.
+Let us first formalise the problem of domain adaptation.
 In a standard multi-class classification problem, we are
 given a training set
 $\{(x_i, y_i) \in \mathcal{X} \times \mathcal{Y}, i \in [1, N]\}$
@@ -313,7 +313,7 @@ where $\mathcal{X}$ is a set of instances to be labelled and
 $\mathcal{Y}$ is a finite set of labels. The multi-class classification
 learning problem
 is to find a function $f : \mathcal{X} \rightarrow \mathcal{Y}$
-that minimizes the number of prediction errors.
+that minimises the number of prediction errors.
 Machine translation
 can be seen as a multi-class classification problem where $\mathcal{X}$
 is the set of all possible source sentences and $\mathcal{Y}$ is the set of
@@ -325,7 +325,7 @@ or acceptable in general.
 However, the multi-class classification setting is assumed by the original objective
 function (see \autoref{sec:sourceChannelModel}), which we
 recall in \autoref{eq:originalSMTobjectiveReminder}. This objective
-function minimizes the number of misclassifications.
+function minimises the number of misclassifications.
 %
 \begin{equation}
   \bm{\hat{e}} = \argmax_{\bm{e}} p(\bm{e} \mid \bm{f})
@@ -372,7 +372,7 @@ come from newspaper articles.
 
 % orthogonal axes: language model, translation model, linear mixture, loglinear mixture
 
-%TODOSUBMIT: distinguish lm, tm, linear, loglinear
+%TODOFINAL: distinguish lm, tm, linear, loglinear
 
 In machine translation, we can distinguish two types of domain
 adaptation problem: \emph{cross-domain} adaptation and \emph{dynamic}
@@ -399,9 +399,9 @@ for in-domain training data. Training the language model
 on in-domain training data gives an improvement of 0.8 BLEU
 with respect to the baseline. Training two separated language models
 on the in-domain and out-of-domain training data and interpolating
-them with weights set to minimize perplexity on the tuning set
+them with weights set to minimise perplexity on the tuning set
 gives an improvement of 0.4 BLEU. Using these two language models
-as separate features to be optimized by MERT~\citep{och:2003:ACL}
+as separate features to be optimised by MERT~\citep{och:2003:ACL}
 gives an improvement of 0.6 BLEU. Finally, using two separate
 translation models trained on the in-domain and out-of-domain
 data and tuning the weights with MERT gives an improvement
@@ -419,7 +419,7 @@ In this chapter, we explore very similar techniques.
 %phrase table is the union and the translation features are smoothed by some
 %lexical prob in case one phrase is not extracted from one of the // corpora
 
-% TODOSUBMIT add this
+% TODOFINAL add this
 %\citet{bertoldi-federico:2009:WMT} show how to exploit
 %a monolingual corpus for machine translation domain
 %adaptation. An in-domain monolingual corpus is available
@@ -521,19 +521,19 @@ are trained on, e.g. weights are larger for larger corpora in the news
 genre~\citep{foster-chen-kuhn:2013:MTSummit}.
 Thus we obtain a linear mixture of language models. We call this configuration ``linear''.
 As a contrast, we also keep the individual language models as separate features
-in optimization. We call this configuration ``loglinear''.
+in optimisation. We call this configuration ``loglinear''.
 
 We compare the baseline, the linear and the loglinear configurations
 in \autoref{tab:lmInterpolationBestStrategy}.
 We observe that the best strategy for
-building a language model is to do offline linear interpolation to minimize
+building a language model is to do offline linear interpolation to minimise
 perplexity on a development set that has the same genre as the translation
 test sets (row 3). The second best strategy is to use an uninterpolated
 language model (row 1). The worst strategy is to do a log-linear interpolation
 of the various language model components by tuning these language
 language models as separate features with lattice MERT (row 5). Note that
 these observations are confirmed even after rescoring with a large
-stupid-backoff 5-gram language model (rows 2, 4 and 6).
+Stupid Backoff 5-gram language model (rows 2, 4 and 6).
 It is possible that the loglinear configuration, which has 20 features as opposed
 to 12 features for the baseline and the linear configuration, performs worst because
 the MERT algorithm
@@ -547,35 +547,33 @@ becomes unstable with more features~\citep{foster-kuhn:2009:WMT}.
       1 & baseline 1st pass & 33.22 & 32.01 & 25.35 \\
       2 & baseline +5g & 33.33 & 32.26 & 25.53 \\
       \hline
-      3 & linear 1st pass & 33.71 & $32.26^*$ & 25.47 \\
-      4 & linear +5g & 33.74 & $32.51^*$ & 25.58 \\
+      3 & linear 1st pass & 33.71 & 32.26 & 25.47 \\
+      4 & linear +5g & 33.74 & 32.51 & 25.58 \\
       \hline
       5 & loglinear 1st pass & 33.23 & 31.75 & 25.37 \\
-      6 & loglinear +5g & 33.28 & $31.85^*$ & 25.48
+      6 & loglinear +5g & 33.28 & 31.85 & 25.48
     \end{tabular}
     \caption{Performance comparison, measured by case-insensitive BLEU, between an uninterpolated language model (baseline), a
     linearly interpolated language model (linear) and a log-linearly interpolated language model (loglinear).
     Off-line linear interpolation (rows 3 and 4) is the best strategy. The loglinear configuration performs worst, however this
-    may be due to the MERT optimization algorithm not being able to find a high quality
-    set of parameters with 20 features. Statistically significant differences at the
-    0.05 level as measured by bootstrap resampling on \emph{test1} and \emph{test2}
-    with respect to the baseline are marked with a star superscript.}
+    may be due to the MERT optimisation algorithm not being able to find a high quality
+    set of parameters with 20 features.}
     \label{tab:lmInterpolationBestStrategy}
   \end{center}
 \end{table}
 %
 
-We note that the differences in BLEU between the various configurations are
-relatively small. Therefore, we perform a statistical significance analysis
-using bootstrap resampling~\citep{koehn:2004:EMNLP}.\footnote{implementation at \url{http://www.ark.cs.cmu.edu/MT/paired_bootstrap_v13a.tar.gz}}
-We do not use a more
-recent significance testing analysis~\citep{clark-dyer-lavie-smith:2011:ACL} that
-accounts for random restarts in MERT simply because we do not use
-random restarts. % justify why no random restarts ?
-We carry out the following tests: baseline vs.\ linear and baseline vs.\ loglinear, both
-for first pass decoding and for 5g-rescored results, on \emph{test1} and \emph{test2}.
-BLEU scores superscripted with a star indicate that the difference with respect to the
-baseline is statistically significant at the 0.05 level with 3000 samples.
+%We note that the differences in BLEU between the various configurations are
+%relatively small. Therefore, we perform a statistical significance analysis
+%using bootstrap resampling~\citep{koehn:2004:EMNLP}.\footnote{implementation at \url{http://www.ark.cs.cmu.edu/MT/paired_bootstrap_v13a.tar.gz}}
+%We do not use a more
+%recent significance testing analysis~\citep{clark-dyer-lavie-smith:2011:ACL} that
+%accounts for random restarts in MERT simply because we do not use
+%random restarts. % justify why no random restarts ?
+%We carry out the following tests: baseline vs.\ linear and baseline vs.\ loglinear, both
+%for first pass decoding and for 5g-rescored results, on \emph{test1} and \emph{test2}.
+%BLEU scores superscripted with a star indicate that the difference with respect to the
+%baseline is statistically significant at the 0.05 level with 3000 samples.
 
 % TODOFINAL IF TIME do exp that compares linear and loglinear interp of ONLY 2 lms.
 
@@ -602,7 +600,7 @@ features. The concept of provenance was introduced
 previously~\citep{matsoukas-rosti-zhang:2009:EMNLP} and
 provides metadata information such as genre or collection for each
 sentence pair in parallel text.
-% TODOSUBMIT add this to background + refer to background
+% TODOFINAL add this to background + refer to background
 %The lexical feature $t(\bm{e} \mid \bm{f})$ for a phrase
 %pair $(\bm{f}, \bm{e})$ is defined in \autoref{eq:lexicalFeature}:
 %
@@ -618,7 +616,7 @@ sentence pair in parallel text.
 %where $t(e_i \mid f_j)$ is a word translation table computed from the
 %word aligned parallel text.
 Word translation tables and
-lexical features are computed for each provenance. % TODOSUBMIT ref lex feature background
+lexical features are computed for each provenance. % TODOFINAL ref lex feature background
 Finally, for each provenance, the ratio of the provenance specific
 lexical feature with the global lexical feature is added as a feature
 to the translation system.
@@ -644,7 +642,7 @@ corpus. This gives an additional 16 features to our system: source-to-target
 and target-to-source translation and lexical features for each provenance.
 This configuration is called ``provenance''.
 
-When retrieving relevant rules for a particular test set, various thresholds are applied, such % TODOSUBMIT as described in section...
+When retrieving relevant rules for a particular test set, various thresholds are applied, such % TODOFINAL as described in section...
 as number of targets per source or translation probability cutoffs.
 Thresholds involving source-to-target translation scores are applied separately for each
 provenance and the union of all surviving rules for each provenance is kept. This 
@@ -679,17 +677,17 @@ Results are presented in \autoref{tab:noprovVsProvVsProvunion}.
       not improve over the baseline, we conclude that the gains
       obtained by the provenance union strategy are not only due
       to additional rules; instead, they are due to the conjunction
-      of additional rules with provenance features for better discrimination.
-      Statistical significant differences on \emph{test1}
-      and \emph{test2} with respect to the baseline are marked
-      with a superscript star.}
+      of additional rules with provenance features for better discrimination.}
+      %Statistical significant differences on \emph{test1}
+      %and \emph{test2} with respect to the baseline are marked
+      %with a superscript star.}
     \label{tab:noprovVsProvVsProvunion}
   \end{center}
 \end{table}
 %
 We can see that adding provenance features slightly degrades
 performance (row 3 vs.\ row 1, row 4 vs. row 2). This again
-may be due to the inability of the MERT optimization algorithm to
+may be due to the inability of the MERT optimisation algorithm to
 tune more than the 12 basic features.
 However, if we use the provenance union strategy, we can see that having additional
 rules together with provenance features is the best
@@ -705,7 +703,7 @@ rules. The effectiveness of the provenance union strategy is due to
 additional rules in conjunction with additional features for better discrimination
 between rules.
 
-% TODOSUBMIT significance testing
+% TODOFINAL significance testing
 
 \section{Interaction between First Pass Language Model and Rescoring Language Model}
 \label{sec:bestPossibleRescoring}
@@ -816,7 +814,7 @@ In this section, we attempt to improve on the 5-gram rescoring
 procedure by exploring two alternative smoothing strategies for the
 5-gram language model used for rescoring.
 
-We train a stupid-backoff 5-gram language
+We train a Stupid Backoff 5-gram language
 model (see \autoref{sec:stupidBackoffSmoothing}
 and \autoref{sec:applicationsMapReduceSMT})
 and a modified Kneser-Ney 5-gram language model on all available
@@ -893,7 +891,7 @@ For language model building, we find that the best
 strategy for cross-domain adaptation
 is to build an interpolated
 language model and tune the interpolation weights in order
-to minimize the perplexity on a development set in the
+to minimise the perplexity on a development set in the
 target domain, as opposed to tuning the language model
 weights with MERT. % TODOFINAL result not in line with Koehn 2004 but this was with 9 lms so need to redo with 2 lms
 We also have examined the effect of provenance features in the

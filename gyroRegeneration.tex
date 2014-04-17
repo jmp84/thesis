@@ -4,18 +4,18 @@
 
 % TODOFINAL canonical word count: refer to background
 % TODOFINAL grep for <s> and </s> and use texttt
-% TODOSUBMIT British vs US spelling
+% TODOFINAL British vs US spelling
 % TODOFINAL grep config grep -v configuration and replace
 % TODOFINAL do a kitchen sink exp with all goodies (either with chop or not)
 % TODOFINAL grep for mentions of BLEU without case
 % TODOFINAL check if mentioned that columns are sorted by score
-% TODOSUBMIT point to github
+% TODOFINAL point to github for thesis source
 % TODOFINAL maybe say somewhere that unigrams not found in the n-grams are added
 % TODOFINAL score intermediate system for NIST 12 (see email Gonzalo for the references)
 % TODOFINAL grep for natural language generation and replace by nlg
-% TODOSUBMIT finish sig tests for wmt chapter
+% TODOFINAL finish sig tests for wmt chapter
 % TODOFINAL maybe do sig tests for this chapter
-% TODOSUBMIT grep for sec:optimization and replace with sec:evaluationMetrics where appropriate
+% TODOFINAL (done) grep for sec:optimization and replace with sec:evaluationMetrics where appropriate
 % TODOFINAL background: lmbr applied to get the oracle + grep for oracle
 % TODOFINAL (already done) future work idea: more sophisticated future cost language model for gyro trans
 % TODOFINAL normalize ngram n-gram $n$-gram etc.
@@ -52,7 +52,8 @@ word order has been scrambled, how difficult is it
 to recover the original sentence ? Our approach
 is inspired by phrase-based translation techniques and
 achieves state-of-the-art performance on the string regeneration
-task.
+task. Software written for this chapter is available
+online.\footnote{\url{https://github.com/jmp84/NgramGen}}
 
 % TODOFINAL end of abstract too quick
 
@@ -124,7 +125,7 @@ the original sentence. This task can be seen as one of the
 steps in surface realisation for language generation where
 the input is a list of content words and function words and
 the output a grammatical sentence. It also allows us to study
-the realization task independently of the translation task.
+the realisation task independently of the translation task.
 
 We use a simple but extensible approach, inspired from
 stack-based decoding for phrase-based
@@ -146,7 +147,7 @@ measured by BLEU (\autoref{sec:evaluationMetrics}) in the string regeneration
 task. We also study various capabilities of our decoder: in
 \autoref{sec:phraseBasedDecoding}, we show how to
 split the input into chunks for more rapid experimentation;
-in \autoref{sec:gyroPruning}, we analyze the effect of stack-based pruning;
+in \autoref{sec:gyroPruning}, we analyse the effect of stack-based pruning;
 in \autoref{sec:gyroEffectNgramOrder}, we study
 the effect of including $n$-gram rules with a larger $n$-gram order;
 in \autoref{sec:overlap}, we relax decoding constraints by allowing
@@ -179,7 +180,7 @@ sentences. % TODOFINAL run WSJ23 with 5g and LMBR and recompute this number
 %60\% of the tokenized and lowercased sentences with less than 11 words
 %on Section 23 of the Penn Treebank.
 % TODONEVER sys comb with MT posteriors (same as eacl paper)
-% TODOSUBMIT compare our system to this performance
+% TODOFINAL compare our system to this performance
 % TODOFINAL update this performance with a better system or with rescored system
 % TODOFINAL maybe: run regeneration with base noun phrase together
 % TODOFINAL run gyro with unigrams only for the baseline and try to beat it
@@ -227,14 +228,14 @@ indicated by the Penn Treebank are kept together for experimentation.
 
 
 \citet{he-wang-guo-liu:2009:ACLIJCNLP} also use the dependency tree
-formalism for string realization. They describe a sentence
-realizer that takes as input an unordered dependency tree, i.e.\ a dependency
+formalism for string realisation. They describe a sentence
+realiser that takes as input an unordered dependency tree, i.e.\ a dependency
 tree that only encode head-modifier relations but not the surface
 string ordering. Because an exhaustive search is intractable (due to
 the number of possible children permutations at each node), \citet{he-wang-guo-liu:2009:ACLIJCNLP}
-adopt a divide-and-conquer approach that recursively linearizes
+adopt a divide-and-conquer approach that recursively linearises
 subtrees in a bottom-up fashion. A log-linear model is used
-to select the best possible linearization for each subtree.
+to select the best possible linearisation for each subtree.
 Features include dependency relations, $n$-gram language models
 for the surface string and for the sequence of heads.
 
@@ -251,10 +252,10 @@ metric.
 %Dependency-based language model have also been used for the
 %string realisation task~\citep{guo-wang-vanGenabith:2011:JNLE}.
 %Given an unordered
-Some of the works described so far are instances of \emph{tree linearization}: given
+Some of the works described so far are instances of \emph{tree linearisation}: given
 a set of unordered dependency, reconstruct a dependency tree which gives
 the word ordering~\citep{belz-bohnet-mille-wanner-white:2012:INLG}.
-\citet{zhang:2013:IJCAI} extends this task to partial tree linearization: the
+\citet{zhang:2013:IJCAI} extends this task to partial tree linearisation: the
 input is a set of possibly missing POS tags and possibly missing unordered
 dependencies. This last work achieves state-of-the art performance on string regeneration
 on the Penn Treebank, when using dependency information on the input.
@@ -356,9 +357,9 @@ relevant rules for a given test set.
 \label{sec:gyroRuleExtraction}
 
 $n$-gram rules are extracted from large collections of monolingual
-text. The text is tokenized and lowercased. We then
+text. The text is tokenised and lowercased. We then
 employ the MapReduce
-framework as implemented by Hadoop in order to extract % TODOSUBMIT refer to background
+framework as implemented by Hadoop in order to extract % TODOFINAL refer to background
 $n$-grams together with their occurrence counts from the corpus.
 
 The input key to the \emph{map} function is irrelevant.
@@ -527,12 +528,12 @@ The decoding algorithm is presented in \autoref{alg:gyroDecoder}.
   \end{algorithmic}
   \caption{NgramGen decoding algorithm. The input is a bag of words $\bm{w}$,
   a set $\mathcal{N}$ of $n$-gram rules with their coverage and a language model
-  $\mathcal{G}$. The column vector $M$ is first initialized with a state representing
+  $\mathcal{G}$. The column vector $M$ is first initialised with a state representing
   the empty hypothesis. Then, the initial state is iteratively extended.}
   \label{alg:gyroDecoder}
 \end{figure}
 %
-We first initialize the matrix $M$ to be a vector of empty
+We first initialise the matrix $M$ to be a vector of empty
 columns of size $|\bm{w}| + 1$ (\hyperlink{alg:line:initM}{line \ref{alg:line:initM}}).
 The first column is filled with an initial state representing an empty hypothesis.
 Then, we loop over the column indices
@@ -732,12 +733,12 @@ We can see that the same state \{111, do\} is reused for
 the two hypotheses \emph{do you do}, \emph{you do do}, because
 these hypotheses have the same coverage and the same history.
 We also note that the hypothesis \emph{do you do} is repeated.
-This is not an issue as we use an operation of determinization
+This is not an issue as we use an operation of determinisation
 on the resulting FST.
 
 We will now present various experiments that demonstrate the effectiveness
 of our decoder for the string regeneration task. We will also
-analyze various capabilities of the decoder in order to
+analyse various capabilities of the decoder in order to
 understand which configurations lead to better results.
 
 \section{Experiments}
@@ -769,7 +770,7 @@ data sets. We use the following data sets:
   \item WSJ23: Section 23 from the Penn Treebank.
 \end{itemize}
 %
-The test sets are first tokenized and lowercased.
+The test sets are first tokenised and lowercased.
 Then, $n$-gram rules up to length 5 for each of the processed test sets
 are extracted from a large monolingual text collection.
 For MT08-nw and MT09-nw, we use all available monolingual data
@@ -781,7 +782,7 @@ evaluation, described in \autoref{tab:monolingualStats}.
 This consists of approximately 7.8 billion words.
 For MT08-nw and MT09-nw, we estimate a modified Kneser-Ney 4-gram language model
 on approximately 1.3 billion words of English text, including
-the AFP and Xinhua portions of the GigaWord corpus
+the AFP and Xinhua portions of the Gigaword corpus
 version 4 and the English side of various Arabic-English
 parallel corpora used in MT evaluations. For WSJ22 and WSJ23, we
 estimate a modified Kneser-Ney 4-gram language model on all available
@@ -895,7 +896,7 @@ length of 11 and a more realistic maximum chunk length of 20.
 \end{table}
 %
 
-It should be emphasized that the purpose of splitting the input bag of words by using
+It should be emphasised that the purpose of splitting the input bag of words by using
 information from the sentence to be regenerated is only to be able
 to investigate more quickly how to better use the regeneration decoder. This
 method should not be used for evaluating an end-to-end system on the string regeneration
@@ -969,7 +970,7 @@ explored in the case of a maximum input length of 20.
 As mentioned in \autoref{sec:gyroBackground}, previous
 work complements the use of $n$-gram language models with
 syntactic information for the string regeneration task or for the tree
-linearization task. In this work, $n$-gram language models are complemented
+linearisation task. In this work, $n$-gram language models are complemented
 by the use of $n$-gram rules extracted from large amounts of monolingual text.
 In this section, we observe the impact of using all rules from unigrams
 up to 5-grams or only using rules with specific lengths.
@@ -1046,7 +1047,7 @@ of a certain maximum overlapping length.
 The idea of allowing overlapping rules has been used previously
 in phrase-based translation for creating phrase tables with
 longer rules~\citep{tribble2003overlapping} % TODOFINAL read this paper more carefully
-but not in decoding. % TODOSUBMIT check this claim
+but not in decoding. % TODOFINAL check this claim
 
 Results are presented in
 \autoref{tab:overlap}. Configurations for overlapping rules
@@ -1059,7 +1060,7 @@ on each job.
 We also study the effect of overlapping rules when
 all $n$-gram orders are included (rule configuration ``all'') or
 when only unigrams and 5-grams are allowed (rule configuration ``1g/5g'').
-We hypothesize that overlapping rules may be more beneficial
+We hypothesise that overlapping rules may be more beneficial
 when lower $n$-gram orders are missing.
 However, we observe that
 that allowing for overlapping rules does not improve performance, apart from 
@@ -1107,7 +1108,7 @@ cover the same number of words in the input
 bag of words are grouped together in a stack and
 hypotheses with costs that are too high are pruned out.
 However, these hypotheses may not be directly comparable, because
-some hypotheses cover very frequent words that are favored by the
+some hypotheses cover very frequent words that are favoured by the
 language model while other hypotheses may cover infrequent words.
 We therefore estimate a future cost for each hypothesis.
 This future cost is added to the partial hypothesis cost for pruning
@@ -1153,10 +1154,10 @@ of 20, we obtain a gain of 0.69 BLEU.
 \subsection{Rescoring}
 \label{gyro:rescoring}
 
-In \autoref{sec:gyroFstBuilding}, we described how the NgramDecoder
+In \autoref{sec:gyroFstBuilding}, we described how the NgramGen decoder
 generates an FST that encodes a set of hypotheses.
 We choose this output format in order to be able to apply
-various lattice rescoring techniques that also utilize this format
+various lattice rescoring techniques that also utilise this format
 as input (see \autoref{sec:background5gRescoring}, \autoref{sec:lmbr}
 and \autoref{sec:lmbrSysComb}).
 
@@ -1207,7 +1208,7 @@ stack-based decoders and achieves state-of-the-art
 performance on the string regeneration task from a simple bag of word on the Penn Treebank
 Section 23 data set.
 
-We have also analyzed various capabilities of our decoder.
+We have also analysed various capabilities of our decoder.
 From this analysis, we draw the following conclusions:
 %
 \begin{itemize}

@@ -8,11 +8,11 @@
 % TODOFINAL if time, add more hiero rule types, e.g. oov, deletions, etc.
 % TODONEVER if time, expand the hiero rule extraction section with the actual implementation where holes are poled
 % TODOFINAL review all equations and make sure preceded by colon rather than period.
-% TODOSUBMIT rule filtering
+% TODOFINAL rule filtering
 % TODOFINAL grep for mbox and replace by text
 % TODOFINAL grep for | and replace by \mid
 % TODOFINAL grep footnote and replace by citation when appropriate
-% TODOSUBMIT grep for ?? in pdf
+% TODOFINAL grep for ?? in pdf
 % TODOFINAL check space after argmax
 % TODOFINAL (done ?) ask Bill if MTTK and/or GIZA can be used for word based decoding
 % TODOFINAL check word alignment vs. word-alignment
@@ -22,7 +22,7 @@
 % TODOFINAL review all source to target target to source and add hyphens
 % TODOFINAL review all itemize and use consistent punctuation
 % TODOFINAL add urls to thesis.bib where possible
-% TODOSUBMIT (done !) grep for \cite and correct into \citet or \citep
+% TODOFINAL (done !) grep for \cite and correct into \citet or \citep
 % TODOFINAL review all transitions between sections
 % TODOFINAL check title capitalization
 % TODOFINAL review and expand all captions
@@ -32,7 +32,7 @@
 % TODOFINAL check use of hierarchical phrase-based and replace with synchr gram where appropriate
 % TODOFINAL check acronym MT and SMT
 % TODOFINAL grep for source channel and put a hyphen
-% TODOSUBMIT (done !) (remove "and colleagues")
+% TODOFINAL (done !) (remove "and colleagues")
 % TODOFINAL or TODONEVER add some related work for reparameterization of model 2 and maybe discriminative alignment ?
 % TODOFINAL remove vertical bar for conditional proba
 % TODOFINAL replace \ by \, in multiplications
@@ -73,7 +73,7 @@
 % TODOFINAL grep for hyphen (phrase-based etc.)
 % TODOFINAL harmonize notation \bm{f} vs. f_1^J
 % TODOFINAL (done) grep for cite grep -v citep or citet
-% TODOSUBMIT (done) grep for noindent
+% TODOFINAL (done) grep for noindent
 % TODOFINAL grep for {\em}, grep for {\bf}
 % TODOFINAL grep for mbox
 % TODOFINAL (done) grep for linebreak
@@ -146,7 +146,7 @@ possible sentences in a target language are assigned a probability, a
 score, or a cost and the best translation is picked according to a certain
 decision criterion that relates to these probabilities, scores or costs.
 The research challenge is to develop models that assign scores that
-reflect human judgments of translation quality.
+reflect human judgements of translation quality.
 
 % TODOFINAL TODONEVER ? add some blabla paragraph
 
@@ -174,7 +174,7 @@ examine various features employed in state-of-the-art decoders in
 \autoref{sec:features}. The target language model, which
 is one of the most important features in translation, is explored in
 more detail in \autoref{sec:languageModelling}. In
-\autoref{sec:optimization}, we review optimization techniques that
+\autoref{sec:optimization}, we review optimisation techniques that
 are employed in order to tune the decoder parameters. We finally present
 how finite state transducers can be used in decoding
 in \autoref{sec:hifst}. Various rescoring
@@ -220,7 +220,7 @@ in machine translation. He was also
 the first to frame machine translation as a source-channel
 model by considering that a sentence in a foreign language
 is some form of code that needs to be broken, in analogy
-to the field of cryptography. Finally, he also emphasized the
+to the field of cryptography. Finally, he also emphasised the
 statistical aspect of machine translation. However, he also
 predicted that the most successful approaches to machine
 translation would take advantage of language invariants by
@@ -705,7 +705,7 @@ The \emph{grow} heuristic algorithm is presented in
 \autoref{alg:growHeuristic}. The input is a sentence
 pair $(f_1^J, e_1^I)$, a source-to-target
 alignment $\bm{a}_{f2e}$ and a target-to-source alignment
-$\bm{a}_{e2f}$. The resulting alignment $\bm{a}$ is initialized
+$\bm{a}_{e2f}$. The resulting alignment $\bm{a}$ is initialised
 with the
 intersection (\hyperlink{alg:line:initGrow}{line \ref{alg:line:initGrow}}).
 Then alignment links that are in the union and that are neighbours of already existing
@@ -745,7 +745,7 @@ This is repeated until no more links are added.
   %\end{footnotesize}
   \caption{Algorithm for the \emph{grow} symmetrisation
     heuristic~\citep{koehn:2010:book}.
-    The alignment is initialized from the intersection and alignment links
+    The alignment is initialised from the intersection and alignment links
     that are neighbours to existing alignment links are iteratively added if the source
     or the target is not already aligned.}
   \label{alg:growHeuristic}
@@ -816,7 +816,7 @@ to the expected value of $f$ with respect to the model $p$. Finally, $p$
 is chosen among all models that satisfy the constraints defined by the
 features and such that its entropy is maximum.
 \citet{berger-dellapietra-dellapietra:1996:CL} show how a maximum entropy
-model can be parameterized as an exponential, or log-linear model. They
+model can be parameterised as an exponential, or log-linear model. They
 apply this model to three machine translation related tasks. First, they
 use a maximum entropy model to predict the translation of a word using
 the context for that word. Then, they use a maximum entropy model to
@@ -867,7 +867,7 @@ criterion, which precisely makes them equivalent to maximum entropy
 models~\citep{berger-dellapietra-dellapietra:1996:CL}. However,
 more effective training techniques such as minimum error rate
 training~\citep{och:2003:ACL} were introduced subsequently, that do
-not require the computation of a normalization constant
+not require the computation of a normalisation constant
 (see \autoref{sec:mert}).
 Thus, in practice, SMT models are effectively simply linear models, with the objective
 function presented in \autoref{eq:linearModel}:
@@ -1138,7 +1138,7 @@ a bijective mapping between source phrases and target phrases where
 $\tilde{f}_{\pi_k}$ is mapped to $\tilde{e}_{k}$ for $k \in [1,K]$.
 The alignment templates $z_1^K$ are constrained in such a way that
 the alignment template classes match the word classes.
-The alignment template translation model is summarized
+The alignment template translation model is summarised
 in \autoref{fig:alignmentTemplateTranslationModel}.
 %
 \begin{figure}
@@ -1465,7 +1465,7 @@ partial hypothesis.
 \label{sec:hierarchicalPhraseBasedTranslation}
 
 % TODOFINAL reread from here
-% TODOSUBMIT or TODOFINAL rework outline:
+% TODOFINAL rework outline:
 % make a separate section on features after hiero section
 % last subsection of hiero should be decoding with hifst
 
@@ -1485,7 +1485,7 @@ beneficial~\citep{huck-EtAl:2013:WMT}.
 A closely related formalism, inversion
 transduction grammars, was previously
 introduced~\citep{wu:1995:IJCAI,wu:1997:CL}, however, because hierarchical
-phrase-based grammar only contain lexicalized rules, translation decoding
+phrase-based grammar only contain lexicalised rules, translation decoding
 is more practical.
 An alternative to hierarchical phrase-based
 translation that also models discontinuous
@@ -1943,7 +1943,7 @@ in turn the most beneficial patterns for Arabic-English translation.
         whether a rule occurs once, twice or more in the parallel data~\citep{bender:07}. Thus it indicates how reliable a rule is.
     \end{itemize}
 
-    The feature weights are optimized using minimum error rate training~\citep{och:2003:ACL} under the BLEU
+    The feature weights are optimised using minimum error rate training~\citep{och:2003:ACL} under the BLEU
     score~\citep{papineni-roukos-ward-zhu:2002:ACL} (see
     also \autoref{sec:evaluationMetrics}).
     %Minimum error rate training is described in more detail in Section \ref{sec:syscombmert}.
@@ -1969,7 +1969,7 @@ has been conducted~\citep{shen-xu-weischedel:2008:ACL} to overcome this issue. %
 We first review $n$-gram language models, then review different smoothing techniques, we finally
 describe in more detail two smoothing techniques
 that are used for experiments in this thesis: Kneser-Ney smoothing
-and Stupid-Backoff smoothing.
+and Stupid Backoff smoothing.
 
 \subsection{$n$-gram language models}
 \label{sec:ngramLanguageModels}
@@ -2185,13 +2185,13 @@ scheme:
   \item As a result, the Stupid Backoff does not define a probability distribution.
 \end{itemize}
 %
-Stupid-Backoff smoothing was designed to fit the MapReduce framework
+Stupid Backoff smoothing was designed to fit the MapReduce framework
 and build very large language models (see \autoref{sec:hfileIntro}).
 %\subsection{Good-Turing Smoothing}
 
 %TODONEVER section describing good-turing smoothing (becaused used in biased lm).
 
-\section{Optimization}
+\section{Optimisation}
 \label{sec:optimization}
 
     \subsection{Evaluation Metrics}
@@ -2236,7 +2236,7 @@ and build very large language models (see \autoref{sec:hfileIntro}).
     \end{equation}
 %
     The maximum $n$-gram order is usually $N=4$. The BLEU metric can be computed efficiently, is language
-    independent and correlates well with human judgments, especially for statistical translation systems.
+    independent and correlates well with human judgements, especially for statistical translation systems.
 
     \subsection{Minimum Error Rate Training}
     \label{sec:mert}
@@ -2289,7 +2289,7 @@ Bayes' risk rescoring are two such methods.
 \citet{brants-popat-xu-och-dean:2007:EMNLP-CoNLL} showed that using vast
 amounts of data for training language models can improve translation. However,
 using high order $n$-gram language models trained on
-a large dataset in decoding can create memory problems. % TODOSUBMIT verify this with last chap
+a large dataset in decoding can create memory problems. % TODOFINAL verify this with last chap
 A solution is to use such models to rescore the output
 lattice of a first-pass translation. These first-pass lattices are generated
 using a lower
@@ -2302,7 +2302,7 @@ are extracted in parallel from the monolingual data, resulting in an $n$-gram co
 Then, $n$-grams from the first-pass translation lattice 
 are extracted using counting transducers~\citep{allauzen:03}.
 Finally, $n$-grams from the count file are filtered according to the $n$-grams from the first-pass 
-translation lattice. A sentence specific stupid backoff~\citep{brants-popat-xu-och-dean:2007:EMNLP-CoNLL}
+translation lattice. A sentence specific Stupid Backoff~\citep{brants-popat-xu-och-dean:2007:EMNLP-CoNLL}
 5-gram language model is built using these $n$-grams and constitutes a feature along with the first-pass
 language model, the translation model, and a length penalty in a log-linear model that is used
 for lattice rescoring. The weights are optimised for BLEU on a development set.
@@ -2461,36 +2461,7 @@ $p(u|\mathcal{E})$ are computed by interpolation. The decoding equation becomes:
 %
 The weights $(\lambda_1,\lambda_2)$ are such that $\lambda_1+\lambda_2 = 1$ and are tuned for BLEU on a development set.
 
-\section{MapReduce in SMT}
-\label{sec:mapReduceInSMT}
-
-TODO
-
-canonical example of word count
+%canonical example of word count
 
 % TODO move this to background section
 % TODO change the notation to use sets, use \times, and ^N notation for sequences, etc., do something clean
-MapReduce~\citep{dean-ghemawat:2008:ACM} is a framework designed for processing
-large amounts of data in a distributed fashion on a computer cluster. In this
-framework, the programmer needs to implement a function called \emph{map} and
-a function called \emph{reduce}. The \emph{map} function is defined in
-\autoref{eq:mapFunction}:
-%
-\begin{equation}
-  \text{map} : (k_1, v_1) \longmapsto [(k_2, v_2)]
-  \label{eq:mapFunction}
-\end{equation}
-%
-where $(k_1, v_1)$ is a key-value pair and $[(k_2, v_2)]$ is a list of
-key-value pairs. We use the $[ \, ]$ notation to denote a list. Keys and values are arbitrary byte sequences. As the key-value
-pairs $(k_2, v_2)$ are computed by the \emph{map function}, the MapReduce framework groups all values $v_2$ by key $k_2$ in order
-to provide an input $(k_2, [v_2])$ to the \emph{reduce} function, defined in
-\autoref{eq:reduceFunction}:
-%
-\begin{equation}
-  \text{reduce} : (k_2, [v_2]) \longmapsto [(k_3, v_3)]
-  \label{eq:reduceFunction}
-\end{equation}
-%
-The input to the \emph{reduce} function is a key and a list of values. The
-\emph{reduce} function generates a list of key-value pairs.

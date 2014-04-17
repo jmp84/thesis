@@ -24,13 +24,13 @@ This thesis demonstrated various refinements in
 hierarchical phrase-based translation systems.
 A scalable infrastructure was developed for generating
 and retrieving from hierarchical grammars. We also
-developped an original training method for hierarchical
+developed an original training method for hierarchical
 phrase-based models. Other SMT pipeline components
 were refined: we studied the effect of additional
 grammar features for domain adaptation and provided recommendations
 for language model building in first-pass decoding and rescoring.
-Finally, we developped a string regeneration system from the
-ground up, analyzed its competitive performance in
+Finally, we developed a string regeneration system from the
+ground up, analysed its competitive performance in
 the string regeneration task and its potential application to
 rescoring machine translation output. We now review each of
 these contributions.
@@ -39,7 +39,7 @@ these contributions.
 
 In order to enable more rapid experimentation and to ensure
 scalability for hierarchical phrase-based grammar extraction
-and retrieval, we developped a flexible MapReduce implementation
+and retrieval, we developed a flexible MapReduce implementation
 of the grammar extraction and estimation
 algorithm~\citep{dyer-cordova-mont-lin:2008:WMT}.
 Our implementation described in \autoref{chap:hfile} includes
@@ -50,7 +50,7 @@ corpus-level features can be added very easily to our framework.
 
 A framework relying on the HFile format
 for efficient retrieval of hierarchical rules to
-be used in test set decoding was also developped.
+be used in test set decoding was also developed.
 Comprehensive time and memory measurements demonstrated
 that our system is competitive with respect to linearly
 scanning, possibly concurrently, the datastructure containing
@@ -88,7 +88,7 @@ performance in our experiments.
 \subsection{Hierarchical Phrase-Based System Development}
 
 The translation model, refined in \autoref{chap:extractionFromPosteriors},
-is one of the main features in the loglinear model for translation.
+is one of the main features in the log-linear model for translation.
 In \autoref{chap:wmt}, we studied the effect of provenance
 features~\citep{chiang-deneefe-pust:2011:ACL} for domain adaptation.
 The concept of provenance feature was extended from provenance lexical translation
@@ -101,7 +101,7 @@ in first-pass translation and rescoring. In the context of
 domain adaptation, we found that the best strategy for language modelling
 was off-line linear interpolation of various language models with
 weights tuned for perplexity on a held-out development set as opposed
-to loglinear interpolation with weights tuned by MERT.
+to log-linear interpolation with weights tuned by MERT.
 We also observed that when a few billion words of monolingual data were
 available, a two-pass strategy of first-pass decoding with a 4-gram
 language model trained on all data followed by 5-gram rescoring
@@ -125,7 +125,7 @@ model inspired from the phrase-based translation model. We also
 built a regeneration decoder
 analogous to a stack-based decoder for translation.
 We achieved state-of-the-art performance on the string regeneration
-task. Finally, we analyzed various capabilities of the decoder.
+task. Finally, we analysed various capabilities of the decoder.
 
 In \autoref{chap:gyroTrans}, we applied string regeneration
 to the output of a translation system in a 10-best rescoring setting.
@@ -144,16 +144,16 @@ able to match the quality of the translation output.
 % real time at the sentence level
 
 The retrieval framework presented in \autoref{chap:hfile}
-can exploit parallelization in two ways for further
+can exploit parallelisation in two ways for further
 speed improvements. First, source pattern instances
 can be generated for each test set source sentence individually; then
 each source sentence can processed in parallel. Because
 the HFile format does not multithreaded reads, % TODOFINAL check this on the newest versions
 one way to implement this solution is to reuse the multiprocessing
 capability of the MapReduce framework.
-Another opportunity for parallelization similar to the one just described
+Another opportunity for parallelisation similar to the one just described
 is to process queries in parallel. Again, care has to be taken to use
-a multiprocessing approach rather than a multhreading approach.
+a multiprocessing approach rather than a multithreading approach.
 Finally, the source pattern instance creation step can be fine-tuned
 in order to approach the speed of a real time system at the sentence
 level.

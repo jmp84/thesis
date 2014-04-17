@@ -20,7 +20,7 @@
 % TODOFINAL grep for Hfile wrongly capitalized
 % TODOFINAL try to remove all mentions of hbase
 % TODOFINAL check for duplicates in bibliography
-% TODOSUBMIT introduce MapReduce in background chapter
+% TODOFINAL introduce MapReduce in background chapter
 % TODOFINAL check title casing
 % TODOFINAL check usage of word ``model''
 % TODOFINAL check usage of past tense and present tense
@@ -88,7 +88,7 @@ tokens over the same period.
 Along with growing amounts of data, the use of more powerful computers
 and distributed computing models such as
 % rather than to paper
-MapReduce~\citep{dean-ghemawat:2008:ACM,lin-dyer:2010:book} has enabled machine % TODOSUBMIT refer to background
+MapReduce~\citep{dean-ghemawat:2008:ACM,lin-dyer:2010:book} has enabled machine % TODOFINAL refer to background
 translation researchers to build larger statistical machine translation models.
 %Indeed, MapReduce was originally designed to process large datasets for parallelizable
 %algorithms.
@@ -246,7 +246,7 @@ The Stupid Backoff language model building and application fit the
 MapReduce framework well. The input to language model building
 is a large monolingual corpus. The first step is to build
 a vocabulary. This is done with the canonical example of word
-counting with MapReduce. Counts % (see TODOSUBMIT refer to background)
+counting with MapReduce. Counts % (see TODOFINAL refer to background)
 are needed in order to remove words occurring less than a threshold
 from the vocabulary. The second step is to obtain $n$-grams and their
 count. This is done again with MapReduce, and the \emph{map} and \emph{reduce}
@@ -267,7 +267,7 @@ smoothing has been improved in recent work~\citep{heafield-pouzyrevsky-clark-koe
 
 \citet{dyer-cordova-mont-lin:2008:WMT}
 observe that translation model estimation has become prohibitive
-on a single core and that existing \emph{ad hoc} parallelization
+on a single core and that existing \emph{ad hoc} parallelisation
 algorithms may be more fragile than using an existing framework such
 as the Hadoop implementation of
 MapReduce.\footnote{\url{https://hadoop.apache.org/}}
@@ -276,7 +276,7 @@ estimation and translation rule extraction and estimation using MapReduce
 and demonstrate the scalability of their method.
 
 The convenience
-of the MapReduce framework for parallelization has led to the building
+of the MapReduce framework for parallelisation has led to the building
 of end-to-end toolkits for entire phrase-based~\citep{gao-vogel:2010:PBML} and
 hierarchical phrase-based models~\citep{venugopal-zollmann:2009:PBML}
 for translation using the MapReduce framework.
@@ -333,7 +333,7 @@ encoded in the structure of the trie itself. Querying the trie is a
 $\mathcal{O}(\log(n))$ operation, where $n$ is the number of keys in the
 dataset. The trie may also be small enough to fit in physical memory to further
 reduce querying time. \citet{zens-ney:2007:HLTNAACL} use tries
-to store a phrase-based grammmar. All the source phrases are represented
+to store a phrase-based grammar. All the source phrases are represented
 in a trie stored on disk. Only relevant parts of the trie are loaded into
 memory when a source phrase is sought.
 \citet{ganitkevitch-cao-weese-post-callisonburch:2012:WMT} extend this
@@ -347,13 +347,13 @@ It is also possible to create a much smaller approximate version of the model.
 filter~\citep{bloom:1970:ACM}.
 They first use a standard Bloom filter to define a binary feature that
 indicates whether an $n$-gram was seen in a monolingual corpus. They
-also use a Bloom filter to encode $n$-grams together with quantized counts
+also use a Bloom filter to encode $n$-grams together with quantised counts
 in order to define a multinomial feature, that is a feature
-with a finite set of possible values---in this case the quantized values. Both these data structure can
+with a finite set of possible values---in this case the quantised values. Both these data structure can
 substantially reduce the disk space and memory usage with respect to lossless
 representations of language models. However, they allow
 false positives for $n$-gram
-membership queries and overestimates of $n$-gram quantized counts. The authors
+membership queries and overestimates of $n$-gram quantised counts. The authors
 demonstrate that the features they introduce are useful in translation, despite
 this lack of exactness.
 In a related publication~\citep{talbot-osborne:2007:EMNLP-CoNLL}, the authors
@@ -375,7 +375,7 @@ but for true positives, correct statistics are retrieved.
 %bloomier filter allows for arbitrary function as opposed to binary function
 
 \citet{guthrie-hepple:2010:EMNLP} propose an extension to previous work
-on randomized language models~\citep{talbot-osborne:2007:EMNLP-CoNLL} which prevents
+on randomised language models~\citep{talbot-osborne:2007:EMNLP-CoNLL} which prevents
 the random corruption of model parameters but does not stop the random
 assignment of parameters to unseen $n$-grams.
 \citet{levenberg-osborne:2009:EMNLP} extend randomised language models to
@@ -422,7 +422,7 @@ sentence number. During decoding, all occurrences of a source phrase
 are located in the suffix array representing the source side of the corpus.
 This produces a source marginal count. For each of these occurrences, the corresponding
 sentence pair and word alignment are retrieved and rules are extracted. This produces
-a rule count, which is normalized with the source marginal count to produce a
+a rule count, which is normalised with the source marginal count to produce a
 source-to-target probability. \citet{lopez:2007:EMNLP-CoNLL} extends this approach
 to address the grammar extraction and estimation of hierarchical rules.
 Note that the use of suffix arrays for translation model estimation only
@@ -448,7 +448,7 @@ partition function that hashes on the last two words of an $n$-gram is applied
 so that backoff operations can be done withing the same partition.
 At decoding time, the decoder architecture is modified in order
 to request a batch of $n$-grams rather than a single $n$-gram.
-The stupid backoff language model building can be scaled
+The Stupid Backoff language model building can be scaled
 to a corpus of 2 trillion tokens and the language model distributed
 application can be made real time.
 
@@ -579,7 +579,7 @@ data block that contains the key. The identified data block is then loaded off t
 into memory and the key-value record is retrieved by scanning the data block
 sequentially.
 
-\subsection{Bloom Filter Optimization for Query Retrieval}
+\subsection{Bloom Filter Optimisation for Query Retrieval}
 \label{sec:bloomFilterOptimization}
 
 It is possible to query for a key that is not contained in the HFile. This very
@@ -622,7 +622,7 @@ still be carried out. During the execution of a query, two keys may
 reference the same index or Bloom blocks. To prevent these blocks from being
 repeatedly loaded from disk, the blocks are cached after reading.
 
-\subsection{Local Disk Optimization}
+\subsection{Local Disk Optimisation}
 
 The HFile format is designed to be used with HDFS, a distributed file system
 based on the Google File System~\citep{ghemawat-gobioff-leung:2003:OSP}. Large
@@ -633,7 +633,7 @@ disk of one machine and accessed through the machine's local file system. We
 report in \autoref{sec:rulextract} that using local disk
 is faster than using HDFS.
 
-\subsection{Query sorting optimization}
+\subsection{Query sorting optimisation}
 \label{sec:querySortingOptimization}
 
 Prior to HFile lookup, we sort keys in the query set lexicographically. If two
@@ -655,12 +655,37 @@ that represents the grammar.
 We describe a MapReduce implementation of hierarchical grammar
 extraction and estimation. The implementation is an
 extension of \emph{Method 3} described by
-\citet{dyer-cordova-mont-lin:2008:WMT}, which was originally developped
+\citet{dyer-cordova-mont-lin:2008:WMT}, which was originally developed
 to estimate translation probabilities for phrase-based models.
-Using the MapReduce notation introduced
-in \autoref{sec:mapReduceInSMT} (TODOSUBMIT: still missing mapreduce background section),
+
+MapReduce~\citep{dean-ghemawat:2008:ACM} is a framework designed for processing
+large amounts of data in a distributed fashion on a computer cluster. In this
+framework, the programmer needs to implement a function called \emph{map} and
+a function called \emph{reduce}. The \emph{map} function is defined in
+\autoref{eq:mapFunction}:
+%
+\begin{equation}
+  \text{map} : (k_1, v_1) \longmapsto [(k_2, v_2)]
+  \label{eq:mapFunction}
+\end{equation}
+%
+where $(k_1, v_1)$ is a key-value pair and $[(k_2, v_2)]$ is a list of
+key-value pairs. We use the $[ \, ]$ notation to denote a list. Keys and values are arbitrary byte sequences. As the key-value
+pairs $(k_2, v_2)$ are computed by the \emph{map function}, the MapReduce framework groups all values $v_2$ by key $k_2$ in order
+to provide an input $(k_2, [v_2])$ to the \emph{reduce} function, defined in
+\autoref{eq:reduceFunction}:
+%
+\begin{equation}
+  \text{reduce} : (k_2, [v_2]) \longmapsto [(k_3, v_3)]
+  \label{eq:reduceFunction}
+\end{equation}
+%
+The input to the \emph{reduce} function is a key and a list of values. The
+\emph{reduce} function generates a list of key-value pairs.
+
+Using this notation, % TODOFINAL refere to background
 we can describe the grammar extraction and estimation
-as a series of MapReduce jobs, summarized in
+as a series of MapReduce jobs, summarised in
 \autoref{fig:ruleXtractionPipeline}.
 %
 \begin{figure}
@@ -688,11 +713,11 @@ as a series of MapReduce jobs, summarized in
     \node [MapReduceJob, below left = 1cm and -1.5cm of rules, text width = 6.5cm] (s2t) {
       \textbf{Source-to-target Probability} \\
       \emph{map} : output (\emph{src}, (\emph{trg}, 1)) \\
-      \emph{reduce} : sum \emph{trg} counts, normalize};
+      \emph{reduce} : sum \emph{trg} counts, normalise};
     \node [MapReduceJob, below right = 1cm and -1.5cm of rules, text width = 6.5cm] (t2s) {
       \textbf{Target-to-source Probability} \\
       \emph{map} : output (\emph{trg}, (\emph{src}, 1)) \\
-      \emph{reduce} : sum \emph{src} counts, normalize};
+      \emph{reduce} : sum \emph{src} counts, normalise};
 %    \node [MapReduceJob, below = 1.2cm of rules] (other) {\textbf{Other MapReduce Feature}};
     \node [JobInputOutput, below = 0.7cm of s2t, text width = 4.4cm] (rulesPlusS2t) {
       $k_1$ : rule \\
@@ -778,7 +803,7 @@ target of the rule together with a count of one as a value $v_2$. Targets (and
 counts) corresponding to the same source are grouped together by the MapReduce
 framework. The input to the \emph{reduce} function is a source ($k_2$) and
 a list of targets with counts ($[v_2]$). The \emph{reduce} function aggregates
-the counts for the distinct targets and then normalizes those counts with the
+the counts for the distinct targets and then normalises those counts with the
 total count corresponding to the source $k_2$. The output of the \emph{reduce}
 function is a list of pairs (rule, probability).
 
@@ -975,7 +1000,7 @@ time and memory measurements.
     parameters, we could simply replace multiple features in the translation
     model by a single value representing the dot product of the features with
     the parameter vector. However, we need to keep separate feature values for
-    optimization (see \autoref{sec:mert}).
+    optimisation (see \autoref{sec:mert}).
 
     The rule extraction constraints described in \autoref{sec:hfileForHiero}
     are set as follows:
@@ -1034,7 +1059,7 @@ strategies for grammar filtering. In practice, an end-to-end translation
 system need not use this exact setup. For example the grammar extracted by \emph{Joshua} is
 in general smaller than the grammar extracted by \emph{ruleXtract} because \emph{Joshua}
 includes target side constraints. On the other hand, \emph{ruleXtract} uses threshold
-cutoffs, such as a minimum source-to-target translation probability, % TODOSUBMIT refer to background, TODOSUBMIT in background, actually talk about these cutoffs
+cutoffs, such as a minimum source-to-target translation probability, % TODOFINAL refer to background, TODOFINAL in background, actually talk about these cutoffs
 in order to reduce the size of the test set specific grammar.
 
 \subsection{Results and Discussion}
@@ -1115,7 +1140,7 @@ in order to reduce the size of the test set specific grammar.
   \end{center}
 \end{table}
 
-Results are summarized in \autoref{tab:ruleXtract}, from which we can draw the
+Results are summarised in \autoref{tab:ruleXtract}, from which we can draw the
 following observations:
 %
   % TODONEVER when pointing at rows, use hyperlinks
@@ -1125,10 +1150,10 @@ following observations:
     \emph{Joshua} are memory hungry, with a usage of up to 40GB. In the case of \emph{ruleXtract},
     this is because we keep all source pattern instances for all test set
     sentences are kept in memory. In the case
-    of \emph{Joshua}, this is due to a caching optimization: rule source sides
+    of \emph{Joshua}, this is due to a caching optimisation: rule source sides
     that have already been considered relevant to the test set are stored
     in a hash map.
-\paragraph{Local disk optimization} Comparing \emph{HDFS} and \emph{Local} rows
+\paragraph{Local disk optimisation} Comparing \emph{HDFS} and \emph{Local} rows
     (row 1 vs.\ row 3, row 2 vs.\ row 4, row 7 vs.\ row 9, row 8 vs.\ row 10), we can
     see that using the local filesystem as opposed to HDFS gives a small
     decrease in query retrieval time, which becomes more
@@ -1140,7 +1165,7 @@ following observations:
     HDFS through a MapReduce job, this
     requires copying or moving the HFile from the HDFS file system to the
     local disk file system prior to running grammar retrieval.
-\paragraph{Bloom filter optimization} Comparing rows with and without \emph{Bloom}
+\paragraph{Bloom filter optimisation} Comparing rows with and without \emph{Bloom}
     (row 1 vs.\ row 2, row 3 vs.\ row 4, row 7 vs.\ row 8 and row 9 vs.\ row 10), we can
     see that the
     use of a Bloom filter gives an important decrease in query retrieval time.
@@ -1150,8 +1175,8 @@ following observations:
     number of time consuming HFile lookups respectively by 96\% and 93\%. Note
     that Bloom filters increase query processing time only for the
     large grammar and more so when using HDFS.
-\paragraph{Parallelization} In order to run \emph{Joshua} on the larger grammar and
-    avoid memory problems, we needed to use parallelization, which provided
+\paragraph{Parallelisation} In order to run \emph{Joshua} on the larger grammar and
+    avoid memory problems, we needed to use parallelisation, which provided
     competitive speeds and a low memory footprint (maximum 4G per job) (see rows
     15 and 16).
 
@@ -1167,7 +1192,7 @@ making direct comparison difficult.
 % TODOFINAL (done ?) need to compare apples to apples: stick in numbers for cdec and
 % the larger corpus
 Despite this apparent slowness, the use of suffix array methods for rule extraction
-favors rapid experimentation because no time consuming precomputation is required.
+favours rapid experimentation because no time consuming precomputation is required.
 With our method, the precomputation involved consists in generating an HFile.
 This takes about 20 minutes for the small corpus and about 5 hours for the larger
 corpus. With the suffix array method,
@@ -1220,12 +1245,12 @@ machine. We have demonstrated that its performance in terms of speed and memory
 usage is competitive with other current alternative approaches.
 
 There are several possible extensions to our current infrastructure.
-First, rule retrieval can be parallelized by source sentence in order % TODOFINAL these are separate
+First, rule retrieval can be parallelised by source sentence in order % TODOFINAL these are separate
 to provide sentence specific grammars rather than test set specific
-grammar. Rule retrieval can also be parallelized by
+grammar. Rule retrieval can also be parallelised by
 processing queries in parallel. The HFile format does not support
 concurrent reading with multithreading, but it allows multiprocessing
 reading, which makes this option suitable for MapReduce.
 Finally, in order to provide a real time system, causes of latency
-may be tackled; for example optimizing the source pattern instance
+may be tackled; for example optimising the source pattern instance
 creation phase would help reduce latency.

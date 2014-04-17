@@ -13,7 +13,7 @@
 % TODOFINAL harmonize notation for NIST openMT etc.
 % TODOFINAL grep for config and replace with configuration
 % TODOFINAL harmonize notation 1st pass vs. first pass first-pass
-% TODOSUBMIT remove mismatch between 34.92 and 34.96
+% TODOFINAL remove mismatch between 34.92 and 34.96
 % TODOFINAL add row numbers to all tables
 % TODOFINAL replace 1-best by 1st-best where appropriate
 % TODOFINAL (done ?) make short running title
@@ -65,7 +65,7 @@ we obtain very slight improvements over the MT baseline.
 \section{SMT Baseline System}
 \label{sec:gyroTransExpSetting}
 
-In this section, we briefly summarize the machine translation
+In this section, we briefly summarise the machine translation
 system used as a baseline for our string regeneration rescoring
 experiments.
 %
@@ -97,7 +97,7 @@ in \autoref{sec:rulextractMapReduce}.
 
 We build a first-pass language model using the target side
 of the parallel text and the AFP and Xinhua agencies of the
-GigaWord~\citep{parker-graff-kong-chen-maeda:2009:LDC}. % TODOSUBMIT review bibtex entry
+Gigaword~\citep{parker-graff-kong-chen-maeda:2009:LDC}. % TODOFINAL review bibtex entry
 We first build separate modified Kneser-Ney smoothed 4-gram language
 models (see \autoref{sec:StatisticalMachineTranslationKneserNey})
 on each of these three corpora. The language models built on AFP
@@ -130,7 +130,7 @@ a score of 33.90 BLEU on the newswire portion of the MT12 test set.
     \begin{tabular}{l|lll}
       Configuration   & Tune & MT08 \\
       \hline
-      MT baseline 1st pass & 34.92 & 35.71 \\
+      MT baseline 1st pass & 34.96 & 35.71 \\
       MT baseline +5g      & 36.04 & 36.60 \\
       MT baseline +lmbr    & 36.80 & 37.59 \\
     \end{tabular}
@@ -202,7 +202,7 @@ We use the following settings for the regeneration decoder:
   \item As in \autoref{sec:gyroFutureCost}, future cost is estimated with a unigram language model.
 \end{itemize}
 %
-Results are summarized in \autoref{tab:gyroMTbaseline}.
+Results are summarised in \autoref{tab:gyroMTbaseline}.
 The main observation is that for all regeneration configurations, there
 is a substantial drop in performance with respect
 to the machine translation baseline. This is not unexpected
@@ -229,7 +229,7 @@ when regenerating a well-formed English sentence as in \autoref{sec:gyroFutureCo
 
 Finally, as predicted, because the quality of the bags decreases from the 1st-best configuration
 to the 10th-best configuration, performance after regeneration from these sets of bags also decreases.
-In the next section, we will analyze the drop in performance
+In the next section, we will analyse the drop in performance
 for the regeneration configuration with respect to the MT
 baseline.
 %
@@ -309,7 +309,7 @@ by the language model only, is lower than the score of another
 regeneration hypothesis.
 
 For the case when the MT hypothesis is not present in the regeneration
-lattice, we further analyze at which point the MT hypothesis is lost
+lattice, we further analyse at which point the MT hypothesis is lost
 during the decoding procedure. As described in \autoref{sec:gyroStateDefinition},
 a state is defined by coverage and history. For this analysis, we
 add a Boolean variable to the state definition that indicates whether

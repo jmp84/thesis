@@ -2,14 +2,10 @@
 \chaptermark{Hiero Extraction from Posteriors}
 \label{chap:extractionFromPosteriors}
 
-% TODOSUBMIT fix table g1-g4 margin right
-% TODOSUBMIT check about G1-G4
 % TODOFINAL check too much blank space
 % TODOFINAL notation for phrase pairs brackets (grep for '(f' for example)
-% TODOSUBMIT do something about G_3 and G_4 used sometimes and sometimes not
 % TODOFINAL grep for {\ (to detect for example {\it )
 % TODOFINAL grep for output used as a verb and correct
-% TODOSUBMIT grep for ??
 % TODOFINAL grep \forall and replace comma maybe or find a better way
 % TODOFINAL grep for consistent and use it consistently
 % TODOFINAL ensure that equations don't go over margin
@@ -138,7 +134,7 @@ English word \emph{seen}. This link will prevent the extraction of the useful
 phrase pair $\langle$\emph{hat}, \emph{has}$\rangle$
 from this sentence pair. However, it is
 possible that the \emph{posterior probability} of this spurious link according
-to the alignment model is relatively low. We hypothesize that posterior
+to the alignment model is relatively low. We hypothesise that posterior
 probability information from alignment models is more reliable than the links
 obtained from Viterbi alignment.
 
@@ -179,7 +175,7 @@ syntax-augmented hierarchical system~\citep{zollmann-venugopal:2006:WMT}.
 In the alignment step, an $n$-best list of alignments $\bm{a_1}, ..., \bm{a_n}$ is
 produced with posterior probabilities
 $p(\bm{a_1} \mid \bm{f}, \bm{e}), ..., p(\bm{a_n} \mid \bm{f}, \bm{e})$. These
-posteriors are normalized to produce probabilities
+posteriors are normalised to produce probabilities
 $\hat{p}(\bm{a_1}), ..., \hat{p}(\bm{a_n})$. Similarly, probabilities
 $\hat{p}(\bm{\pi_1}), ..., \hat{p}(\bm{\pi_{n'}})$ are obtained
 for an $n'$-best list of parses $\bm{\pi_1}, ..., \bm{\pi_{n'}}$. For each alignment
@@ -274,7 +270,7 @@ pair is produced by concatenating phrase pairs, or so-called \emph{concepts}.
 The authors consider a simpler model with only joint phrase pair translation
 probabilities and a more complex model with translation and distortion
 probabilities. The parameter are trained with an approximate version of the
-expectation-maximization algorithm~\citep{dempster-laird-rubin:1977:JRSS}.
+expectation-maximisation algorithm~\citep{dempster-laird-rubin:1977:JRSS}.
 Experiments demonstrate translation improvements over IBM Model 4.
 
 \citet{denero-klein:2008:ACL} prove that phrase alignment is an
@@ -284,7 +280,7 @@ form a partition of $\bm{f}$ and target phrases that form a partition of
 $\bm{e}$. A scoring function $\phi$ is also defined that assigns a real-valued
 score to any phrase pair $\langle$source phrase, target phrase$\rangle$. The score of a
 bijective phrase alignment is simply the product of the scores of its phrase pairs.
-Given $(\bm{f}, \bm{e}, \phi)$, the phrase alignment optimization problem is to find
+Given $(\bm{f}, \bm{e}, \phi)$, the phrase alignment optimisation problem is to find
 the best scoring alignment. \citet{denero-klein:2008:ACL} show that this problem
 is NP-hard by showing that the corresponding decision problem is NP-complete via
 reduction of the SAT problem. We give here an indication of the size of the search
@@ -300,7 +296,7 @@ an inversion transduction grammar rather than IBM or HMM models.
 Phrase alignment is directly modelled with an inversion transduction
 grammar. The phrase alignment search space is more restrictive than
 the space considered in \citet{denero-klein:2008:ACL} and the
-expectation maximization algorithm can be carried out in $O(n^6)$
+expectation maximisation algorithm can be carried out in $O(n^6)$
 where $n$ is the number of tokens in a sentence.
 \citet{pauls-klein-chiang-knight:2010:NAACL} also use an
 inversion transduction grammar to directly align phrases to nodes in a
@@ -616,7 +612,7 @@ After simplification, we obtain \autoref{eq:linkposM2} from
 We now derive $p_{\text{HMM}}(a_{j_0} = i_0 | f_1^J, e_1^I)$, the link posterior
 probability for the HMM
 model~\citep{vogel-ney-tillmann,rabiner:1989:IEEE}. These derivations
-are standard once we realize that the observed sequence is the source
+are standard once we realise that the observed sequence is the source
 sentence $f_1^J$, the hidden sequence is $a_1^J$ and that in addition
 to standard presentations of HMM, all probabilities are conditioned on
 the target sentence $e_1^I$.
@@ -951,7 +947,7 @@ approaches to rule extraction based on link posterior probabilities and
 phrase pair posterior probabilities. In order to expose concepts with more
 clarity, we have restricted the presentation
 to the extraction of phrase based rules as opposed to hierarchical rules.
-We will now show how to generalize the techniques presented so far to
+We will now show how to generalise the techniques presented so far to
 the extraction of hierarchical rules.
 
 \subsection{Hierarchical Rule Extraction}
@@ -1218,7 +1214,7 @@ left-most column of \autoref{tab:grammar}.
 %
 \begin{table}
 \begin{center}
-\begin{scriptsize}
+\begin{tiny}
 \begin{tabular}{|c|c|c|c|c|} \hline
 $G_0$   &  $G_1$  &  $G_2$ &  $G_3$  & $G_4$  \\ 
 \hline
@@ -1228,7 +1224,7 @@ $G_0$   &  $G_1$  &  $G_2$ &  $G_3$  & $G_4$  \\
                    &                            &                        & \RT[$X$][$w~X~w$][$w~X~w$] & \RT[$X$][$X_1wX_2$][$X_2X_1w$] \\
 \hline
 \end{tabular}
-\end{scriptsize}
+\end{tiny}
 \end{center}
 \caption{Hierarchical phrase-based grammars containing different types of rules. The grammar expressiveness is greater as more types of rules are included. In addition to the rules shown in the respective columns, $G_1$, $G_2$, $G_3$ and $G_4$ also contain the rules of $G_0$.}
 \label{tab:grammar}
@@ -1280,7 +1276,7 @@ needed in a grammar to produce an acceptable translation.
     \end{center}
     \caption{Most frequently used rule patterns. Frequency was measured by
     running the decoder on a development set, and counting rule patterns
-    on single best derivations of single best hypotheses. We hypothesize
+    on single best derivations of single best hypotheses. We hypothesise
     that a frequent rule pattern is needed to produce a translation with
     good quality.}
     \label{tab:rulesused}
@@ -1323,13 +1319,13 @@ we use HiFST (see \autoref{sec:hifst}). The language model
 is a 4-gram language model estimated over the English side of the parallel text
 and the AFP and Xinhua portions of the English Gigaword Fourth
 Edition~(LDC2009T13) for the first pass translation, interpolated with a
-zero-cutoff stupid-backoff
+zero-cutoff Stupid Backoff
 5-gram (see \autoref{sec:stupidBackoffSmoothing} and
 \autoref{sec:relatedwork}) estimated using 10.5B words of English newswire text for 5-gram language
 model rescoring. In tuning the systems, standard minimum error rate training
 iterative parameter estimation under BLEU is performed on the development set.
 
-% TODOSUBMIT describe here hefaestus config
+% TODOFINAL describe here hefaestus config
 Rules with a source-to-target probability less than 0.01 are discarded. In
 addition, rules that did not occur more than $n_{obs}$ times are discarded. For
 Viterbi extraction, $n_{obs} = 1$. For link posterior extraction, $n_{obs} = 2$
@@ -1459,6 +1455,11 @@ instances of search pruning per input word.
   \end{center}
 \end{table}
 %
+Preliminary experimental work
+was conducted on grammars $G_1$ and $G_2$.
+Because of slow decoding times, $G_4$ was not included in this set
+of experiments; instead, grammar $G_4$ was used to contrast the \textbf{WP}
+and \textbf{PP} methods in \autoref{sec:extractionFromPosteriorsComparisonWPPP}.
 As a contrast, we extract rules according to the heuristics introduced
 by~\citet{chiang:2007:CL} and apply the filters described
 by~\citet{iglesias-degispert-banga-byrne:2009:EACL} to generate a standard
@@ -1509,7 +1510,7 @@ an average of 8.7 while WP and PP yield 9.7 and 8.4 rules on average. This shows
 that method {\bf PP} yields wider coverage but with sharper source-to-target
 rule translation probability distributions than method {\bf WP}, as the average
 number of translations per rule is determined by a threshold of 0.01 for
-the minimum source-to-target probability. % TODOSUBMIT clarify and refer to background rule filtering thresholds
+the minimum source-to-target probability. % TODOFINAL clarify and refer to background rule filtering thresholds
 
 \paragraph{Decoding time and pruning in search}
 
@@ -1666,8 +1667,8 @@ We have presented new rule extraction methods that lead to larger rule sets as
 well as better estimated translation models. A simple grammar estimated with
 these methods was shown to outperform a baseline hierarchical grammar extracted
 from Viterbi alignments. A fine-grained analysis was provided to explain the
-advantages of the phrase pair posterior extraction method. Finally, it was shown
+advantages of the phrase-pair posterior extraction method. Finally, it was shown
 that the best way to exploit both alignment directions is to train separate
 models for each direction, translate separately and combine the lattice outputs.
 
-% TODOSUBMIT expand conclusions
+% TODOFINAL expand conclusions
