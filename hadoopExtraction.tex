@@ -49,15 +49,17 @@ mentioned in \autoref{chap:intro}, translation even needs to be carried out in %
 \emph{real time}, i.e.\ for example with a speed of 2000 words translated per minute.
 
 Therefore SMT models need to be stored in a data structure
-that supports efficient querying and that also scales. We introduce a solution
+that supports efficient querying and is scalable. We introduce a solution
 that addresses these two requirements and that has the advantage that
 it reuses an existing framework in order to ease the implementation.
-We store translation models as a set of key-value pairs in an HFile. We apply this
+We store translation models as a set of key-value pairs in an
+HFile\footnote{\url{http://hbase.apache.org}}. We apply this
 strategy in order to retrieve relevant rules
 from a hierarchical phrase-based grammar at the test set level. We compare our
-approach to alternative strategies and show that its tradeoffs in terms
-of speed, memory and simplicity are
-competitive~\citep{pino-waite-byrne:2012:PBML}. We have made software written
+approach to alternative strategies and show that our approach
+offers competitive performance in terms
+of speed, memory and simplicity~\citep{pino-waite-byrne:2012:PBML}. We
+have made software written
 for this work
 available online.\footnote{\url{https://github.com/jmp84/ruleXtract} (branch PBML-2012)}
 
@@ -168,8 +170,8 @@ source-to-target and target-to-source probabilities can be computed.
 
 This
 method becomes progressively slower with larger amounts of data
-because it requires to extract rules from the training parallel corpus
-and recompute translation probabilities
+because it requires extracting rules from the training parallel corpus
+and recomputing translation probabilities
 each time we translate a new test set or a new
 sentence. We
 would like to improve on this design for more rapid experimentation. We also would like
@@ -188,7 +190,7 @@ few minutes.
 In this chapter, we address the problem of retrieving relevant rules with their
 translation probabilities. We report on investigations into
 storing the model in the HFile data
-structure.\footnote{\url{http://hbase.apache.org}} To our knowledge, this is the first
+structure. To our knowledge, this is the first
 detailed proposed implementation of translation model storage and
 filtering using HFile data structures. We find that this approach
 offers a good compromise
@@ -220,7 +222,7 @@ and retrieving from SMT models.
 \citet{brants-popat-xu-och-dean:2007:EMNLP-CoNLL}
 introduce a new smoothing method called
 \emph{Stupid Backoff} (see \autoref{sec:stupidBackoffSmoothing}).
-The Stupid Backoff smoothing scheme is reminded in \autoref{eq:stupidBackoffSchemeReminder}:
+The Stupid Backoff smoothing scheme is recalled in \autoref{eq:stupidBackoffSchemeReminder}:
 %
 \begin{equation}
   p_{\text{stupid backoff}}(w_i \mid w_{i - n + 1}^{i - 1}) =
@@ -260,7 +262,8 @@ that for large amounts of monolingual data, i.e. above 10 billion
 tokens, Stupid Backoff smoothing and Kneser-Ney smoothing perform comparably.
 In addition, only
 Stupid Backoff smoothing can be scaled to datasets
-with more than 31 billion tokens.
+with more than 31 billion tokens. The scalability of Kneser-Ney
+smoothing has been improved in recent work~\citep{heafield-pouzyrevsky-clark-koehn:2013:ACL}.\footnote{see also \url{http://kheafield.com/code/kenlm/estimation/}, Scalability section}
 
 \citet{dyer-cordova-mont-lin:2008:WMT}
 observe that translation model estimation has become prohibitive
@@ -285,13 +288,14 @@ store SMT models and to retrieve the information needed in translation from
 these models. SMT models are usually discrete probabilistic models and can
 therefore be represented as a set of key-value pairs. To obtain relevant
 information from a model stored in a certain data structure, a set of keys called a
-\emph{query set} is formed, then each key in this query set is sought in that
+\emph{query set} is formed; each key in this query set is then sought in that
 datastructure. Strategies include:
 %
 \begin{itemize}
   \item storing the model as a simple data structure in memory
   \item storing the model in a text file
-  \item storing the model in more complicated data structures such as tries (in memory or disk)
+  \item storing the model in more complicated data structures such as
+    tries~\citep{fredkin:1960:ACM} (in memory or disk)
   \item storing fractions of the entire model
   \item storing data as opposed to a precomputed model
   \item storing models in a distributed fashion
@@ -331,7 +335,7 @@ dataset. The trie may also be small enough to fit in physical memory to further
 reduce querying time. \citet{zens-ney:2007:HLTNAACL} use tries
 to store a phrase-based grammmar. All the source phrases are represented
 in a trie stored on disk. Only relevant parts of the trie are loaded into
-memory when a source phrase is looked up.
+memory when a source phrase is sought.
 \citet{ganitkevitch-cao-weese-post-callisonburch:2012:WMT} extend this
 approach to store hierarchical phrase-based grammars. Both
 source sides and target sides are stored in a packed representation of a trie.
@@ -422,7 +426,7 @@ a rule count, which is normalized with the source marginal count to produce a
 source-to-target probability. \citet{lopez:2007:EMNLP-CoNLL} extends this approach
 to address the grammar extraction and estimation of hierarchical rules.
 Note that the use of suffix arrays for translation model estimation only
-allows to compute the source-to-target probability.
+supports the computation of source-to-target probabilities.
 
 % TODO explain suffix array better
 %suffixarray callisonburch
@@ -552,12 +556,12 @@ experiments.
       Bloom Filter Index Block \\
       \hline
     \end{tabular}
-    \caption[Caption for LOF]{HFile internal structure.\footnotemark
-    The structure is divided into three parts. In the first part, data blocks
-    are interspersed with leaf data index blocks and Bloom blocks. The second
-    part contains intermediate data index blocks. The third part consists
-    of metadata: root data index blocks, file format information and a Bloom
-    filter index block.}
+    \caption[Caption for LOF]{HFile internal structure.\footnotemark \ The
+      structure is divided into three parts. In the first part, data blocks
+      are interspersed with leaf data index blocks and Bloom blocks. The second
+      part contains intermediate data index blocks. The third part consists
+      of metadata: root data index blocks, file format information and a Bloom
+      filter index block.}
     \label{fig:hfile}
   \end{center}
 \end{figure}
@@ -626,7 +630,7 @@ files are split into HDFS blocks that are stored on many nodes in a cluster.
 However, the HFile format can also be used completely independently of HDFS. If
 its size is smaller than local disk space, the entire HFile can be stored on the local
 disk of one machine and accessed through the machine's local file system. We
-find in \autoref{sec:rulextract} that using local disk
+report in \autoref{sec:rulextract} that using local disk
 is faster than using HDFS.
 
 \subsection{Query sorting optimization}
@@ -636,9 +640,9 @@ Prior to HFile lookup, we sort keys in the query set lexicographically. If two
 keys in the set of queries are contained in the same block, then the block is
 only loaded once. In addition, the computer hardware and operating system allow
 further automatic improvements to the query execution. Examples of these
-automatic improvements include reduced disk seek time, the operating system
+automatic improvements include reduced disk seek time,
 caching data from
-disk,\footnote{The Linux Documentation Project, The File System, \url{http://tldp.org}}
+disk by the operating system,\footnote{The Linux Documentation Project, The File System, \url{http://tldp.org}}
 or CPU caching data from main memory~\citep{patterson-hennessy:2005:COA}.
 
 \section{Hierarchical Rule Extraction with MapReduce}
@@ -1101,7 +1105,12 @@ in order to reduce the size of the test set specific grammar.
     \hline
   \end{tabular}
   \caption{Time and memory measurements for rule filtering with different
-    strategies for a small and a large grammar.}
+    strategies for a small and a large grammar. Various configurations for
+    \emph{ruleXtract} and \emph{Joshua} are compared for time and memory
+    usage. The \emph{fast} configuration for \emph{Joshua} filters rules
+    by matching consecutive terminals to test set $n$-grams, which explains
+    that the number of rules obtained is higher than in all other configurations.
+    This also means that some filtered rules are never used in decoding.}
   \label{tab:ruleXtract}
   \end{center}
 \end{table}
@@ -1197,7 +1206,7 @@ sentence at a time may not benefit from caching
 (see \autoref{sec:bloomFilterOptimization} and \autoref{sec:querySortingOptimization})
 as much as processing an entire test set.
 Future work will be dedicated to reduce latency and obtain an actual real time
-system.
+system at the translation instance level.
 
 \section{Conclusion}
 \label{sec:conclusion}
@@ -1218,5 +1227,5 @@ processing queries in parallel. The HFile format does not support
 concurrent reading with multithreading, but it allows multiprocessing
 reading, which makes this option suitable for MapReduce.
 Finally, in order to provide a real time system, causes of latency
-may be tackled, for example optimizing the source pattern instance
+may be tackled; for example optimizing the source pattern instance
 creation phase would help reduce latency.
