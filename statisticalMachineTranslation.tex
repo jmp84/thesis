@@ -1,86 +1,82 @@
 \chapter{Statistical Machine Translation}
 \label{chap:smt}
 
-% TODO fix vertical space after "even if one strives"
-% TODO define oracles and how to compute them
-% TODO grep for paragraph and replace by sub or subsubsection where appropriate
-% TODO if time, add more hiero rule types, e.g. oov, deletions, etc.
-% TODO if time, expand the hiero rule extraction section with the actual implementation
-% TODO review all equations and make sure preceded by colon rather than period.
-% TODO: rule filtering
-% TODO grep for mbox and replace by text
-% TODO grep for | and replace by \mid
-% TODO grep footnote and replace by citation when appropriate
-% TODO grep for ?? in pdf
-% TODO check space after argmax
-% TODO ask Bill if MTTK and/or GIZA can be used for word based decoding
-% TODO check word alignment vs. word-alignment
-% TODO check notations with \hat: bold inside or outside the hat
-% TODO grep all occurrences of start and end of sentence and use texttt
-% TODO remove the clearpage linebreaks newpages, etc.
-% TODO review all source to target target to source and add hyphens
-% TODO review all itemize and use consistent punctuation
-% TODO add urls to thesis.bib where possible
-% TODO grep for \cite and correct into \citet or \citep
-% TODO review all transitions between sections
-% TODO check title capitalization
-% TODO review and expand all captions
-% TODO check where sentence pair defined
-% TODO check where parallel sentence, parallel corpus defined
-% TODO review proper use of em dashes
-% TODO check use of hierarchical phrase-based and replace with synchr gram where appropriate
-% TODO check acronym MT and SMT
-% TODO grep for source channel and put a hyphen
-%TODO(remove "and colleagues")
-%TODO add some related work for reparameterization of model 2 and maybe discriminative
-%alignment ?
-%TODO remove vertical bar for conditional proba
-%TODO replace \ by \, in multiplications
-%TODO replace all {\em
-% TODO remove all \bf and \it and \bfseries and \itshape
-% replace all refs by autoref
-% TODO put a tilda before all citep
-%TODO grep for trailing spaces
-% TODO add a note in the extraction from posterior chapter that we use
-% word-to-word HMM phrase posteriors as opposed to word-to-phrase HMM phrase
-% posteriors
-% TODO source channel or noisy channel model ?
-% TODO Bill quick question: in MTTK f2e directory, what direction is it ?
-% TODO for phrase pair extraction, cite also IEEE paper, not just Yonggang thesis
-% TODO: papers to read: chen and goodman, yonggang IEEE, koehn's book
-% TODO: see alternative presentation of rule extraction in one my reading group
-% presentations
-% TODO replace all refs by autoref
-% TODO replace all HMMs by mbox{HMM}
-% TODO remove all mbox and replace by text
-% TODO maybe cite Yee Whye Teh's 2006 paper for lm
-% TODO soften down claim that koehn et al is wrong in extraction from posteriors (which contradicts etc.)
-% TODO maybe include alignment template paper
-% TODO read papers by Papineni et al 1997, Papineni et al 1998
-% TODO check instance of noisy channel and source channel
-% TODO maybe include mention of Berger et al. 1994 The Candide System
-% TODO look at this paper by Venugopal et al 2003: Effective Phrase Translation Extraction from Alignment Models
-% TODO look at this paper: Papineni, Roukos, and Ward (1997, 1998)
-% TODO look at this paper: Comparing and Integrating Alignment Template and Standard Phrase-Based Statistical Machine Translation
-% TODO look at Knight 1999 that MT search is NP-complete
-% TODO learn about A* search
-% TODO learn about (admissible) heuristics used in phrase-based MT
-% TODO review Zens et al 2002 KI 2002
-% TODO maybe look at ngram translation models
-% TODO note on how hiero models reordering directly but still can be improved
-% a usual lexicalized reordering model
-% TODO comment on hypothesis recombination and how a hyp may be lost for rescoring
-% TODO maybe look at Tillmann et al 1997 for stack decoding
-% TODO maybe look at A* search Och et al 2001
-% TODO make a section with definitions
-% TODO read the mathematics of SMT bordel de merde
-% TODO grep for hyphen (phrase-based etc.)
-% TODO harmonize notation \bm{f} vs. f_1^J
-% TODO grep for cite grep -v citep or citet
-% TODO grep for noindent
-% TODO grep for {\em}, grep for {\bf}
-% TODO grep for mbox
-% TODO grep for linebreak
+% TODOFINAL fix vertical space after "even if one strives"
+% TODOFINAL define oracles and how to compute them
+% TODOFINAL talk about cmert/lmert/pro in all exps
+% TODOFINAL grep for paragraph and replace by sub or subsubsection where appropriate
+% TODOFINAL if time, add more hiero rule types, e.g. oov, deletions, etc.
+% TODONEVER if time, expand the hiero rule extraction section with the actual implementation where holes are poled
+% TODOFINAL review all equations and make sure preceded by colon rather than period.
+% TODOSUBMIT rule filtering
+% TODOFINAL grep for mbox and replace by text
+% TODOFINAL grep for | and replace by \mid
+% TODOFINAL grep footnote and replace by citation when appropriate
+% TODOSUBMIT grep for ?? in pdf
+% TODOFINAL check space after argmax
+% TODOFINAL (done ?) ask Bill if MTTK and/or GIZA can be used for word based decoding
+% TODOFINAL check word alignment vs. word-alignment
+% TODOFINAL check notations with \hat: bold inside or outside the hat
+% TODOFINAL grep all occurrences of start and end of sentence and use texttt
+% TODOFINAL (done ?) remove the clearpage linebreaks newpages, etc.
+% TODOFINAL review all source to target target to source and add hyphens
+% TODOFINAL review all itemize and use consistent punctuation
+% TODOFINAL add urls to thesis.bib where possible
+% TODOSUBMIT (done !) grep for \cite and correct into \citet or \citep
+% TODOFINAL review all transitions between sections
+% TODOFINAL check title capitalization
+% TODOFINAL review and expand all captions
+% TODOFINAL check where sentence pair defined
+% TODOFINAL check where parallel sentence, parallel corpus defined
+% TODOFINAL review proper use of em dashes
+% TODOFINAL check use of hierarchical phrase-based and replace with synchr gram where appropriate
+% TODOFINAL check acronym MT and SMT
+% TODOFINAL grep for source channel and put a hyphen
+% TODOSUBMIT (done !) (remove "and colleagues")
+% TODOFINAL or TODONEVER add some related work for reparameterization of model 2 and maybe discriminative alignment ?
+% TODOFINAL remove vertical bar for conditional proba
+% TODOFINAL replace \ by \, in multiplications
+% TODOFINAL replace all {\em
+% TODOFINAL remove all \bf and \it and \bfseries and \itshape
+% TODOFINAL replace all refs by autoref
+% TODOFINAL put a tilda before all citep
+% TODOFINAL grep for trailing spaces
+% TODOFINAL (done ?) add a note in the extraction from posterior chapter that we use word-to-word HMM phrase posteriors as opposed to word-to-phrase HMM phrase posteriors
+% TODOFINAL (done ?) source channel or noisy channel model ?
+% TODOFINAL (done ?) Bill quick question: in MTTK f2e directory, what direction is it ?
+% TODOFINAL for phrase pair extraction, cite also IEEE paper, not just Yonggang thesis
+% TODOFINAL (done) : papers to read: chen and goodman, yonggang IEEE, koehn's book
+% TODOFINAL see alternative presentation of rule extraction in one my reading group presentations
+% TODOFINAL (done !) replace all refs by autoref
+% TODOFINAL replace all HMMs by mbox{HMM}
+% TODOFINAL remove all mbox and replace by text
+% TODOFINAL maybe cite Yee Whye Teh's 2006 paper for lm
+% TODOFINAL (done) soften down claim that koehn et al is wrong in extraction from posteriors (which contradicts etc.)
+% TODOFINAL (done) maybe include alignment template paper
+% TODOFINAL read papers by Papineni et al 1997, Papineni et al 1998
+% TODOFINAL (done) check instance of noisy channel and source channel
+% TODONEVER maybe include mention of Berger et al. 1994 The Candide System
+% TODOFINAL look at this paper by Venugopal et al 2003: Effective Phrase Translation Extraction from Alignment Models
+% TODOFINAL look at this paper: Papineni, Roukos, and Ward (1997, 1998)
+% TODOFINAL look at this paper: Comparing and Integrating Alignment Template and Standard Phrase-Based Statistical Machine Translation
+% TODOFINAL look at Knight 1999 that MT search is NP-complete
+% TODOFINAL learn about A* search
+% TODOFINAL learn about (admissible) heuristics used in phrase-based MT
+% TODOFINAL review Zens et al 2002 KI 2002
+% TODOFINAL maybe look at ngram translation models
+% TODOFINAL (done ?) note on how hiero models reordering directly but still can be improved a usual lexicalized reordering model
+% TODOFINAL comment on hypothesis recombination and how a hyp may be lost for rescoring
+% TODOFINAL maybe look at Tillmann et al 1997 for stack decoding
+% TODOFINAL maybe look at A* search Och et al 2001
+% TODOFINAL make a section with definitions
+% TODOFINAL read the mathematics of SMT bordel de merde
+% TODOFINAL grep for hyphen (phrase-based etc.)
+% TODOFINAL harmonize notation \bm{f} vs. f_1^J
+% TODOFINAL (done) grep for cite grep -v citep or citet
+% TODOSUBMIT (done) grep for noindent
+% TODOFINAL grep for {\em}, grep for {\bf}
+% TODOFINAL grep for mbox
+% TODOFINAL (done) grep for linebreak
 
 
 % This is a background chapter on SMT with emphasis on the parts
@@ -110,7 +106,7 @@
 %missing:
 %-- mapreduce
 
-%todo refs to background in other chapters:
+% TODOFINAL refs to background in other chapters:
 %-- rule extraction alignment constraints
 %-- wphmm
 %-- lexical feature formula
@@ -125,7 +121,7 @@
 %original source channel formulation OK
 %word alignment OK
 %newer log-linear formulation OK
-%phrase-based translation NEW TODO
+%phrase-based translation OK
 %hierarchical phrase-based translation OK
 %features OK
 %language modelling: one of the features OK
@@ -138,7 +134,7 @@
 %\section{Overview}
 
 % This should be an overview of the translation pipeline.
-% TODO Maybe move it later as a summary and explanation of how things
+% TODOFINAL TODONEVER ? Maybe move it later as a summary and explanation of how things
 % are done in practice
 
 Statistical Machine Translation (SMT)~\citep{brown-dellapietra-dellapietra-mercer-1993,lopez:2008:ACMComputingSurveys,koehn:2010:book}
@@ -147,12 +143,12 @@ amounts of data and computing power have become available.
 In the SMT paradigm, given a sentence in a source language,
 conceptually all
 possible sentences in a target language are assigned a probability, a
-score or a cost and the best translation is picked according to a certain
+score, or a cost and the best translation is picked according to a certain
 decision criterion that relates to these probabilities, scores or costs.
 The research challenge is to develop models that assign scores that
-relate to human judgments of translation quality.
+reflect human judgments of translation quality.
 
-% TODO add some blabla paragraph
+% TODOFINAL TODONEVER ? add some blabla paragraph
 
 In this chapter, we first review the historical background of SMT in
 \autoref{sec:historicalBackground}.
@@ -165,11 +161,11 @@ model. The original source-channel model was extended into the log-linear
 model, presented in \autoref{sec:loglinearModel}.
 The field of SMT shifted from word-based models to phrase-based
 models, introduced in \autoref{sec:phraseBasedTranslation}, while
-retaining word-based models as a preliminary step.
+retaining word-based models in their first formulation as a preliminary step.
 Phrase-based translation was extended into hierarchical
-phrase-based translation, which we present in
+phrase-based translation, which we review in
 \autoref{sec:hierarchicalPhraseBasedTranslation}.
-% TODO put this somewhere else, e.g. in motivation section of hierarchical phrase based mt
+% TODOFINAL (done ?) put this somewhere else, e.g. in motivation section of hierarchical phrase based mt
 %Hierarchical phrase-based translation model
 %``gappy'' phrases and reordering
 %with a probabilistic synchronous context-free grammar.
@@ -180,8 +176,11 @@ is one of the most important features in translation, is explored in
 more detail in \autoref{sec:languageModelling}. In
 \autoref{sec:optimization}, we review optimization techniques that
 are employed in order to tune the decoder parameters. We finally present
-how finite state transducers can be taken advantage of in decoding
-in \autoref{sec:hifst} and rescoring in \autoref{sec:rescoring}.
+how finite state transducers can be used in decoding
+in \autoref{sec:hifst}. Various rescoring
+procedures are reviewed in \autoref{sec:rescoring}.
+
+% TODO MapReduce !!!!!!!!!!!!!!!!!!!!!!
 
 \section{Historical Background}
 \label{sec:historicalBackground}
@@ -245,8 +244,8 @@ models~\citep{chiang:2005:ACL,chiang:2007:CL}.
 
 \section{Source-Channel Model}
 \label{sec:sourceChannelModel}
-% TODO check whether we say noisy channel or source channel model
-% TODO normalize SMT
+% TODOFINAL (done) check whether we say noisy channel or source channel model
+% TODOFINAL (done ?) normalize SMT
 %brown et al series of papers directly inspired by warren weaver
 
 %additional papers:
@@ -297,10 +296,10 @@ for practical reasons: the amount of parallel data used to train the translation
 model is in general orders of magnitude smaller than the amount of monolingual
 data used to train the language model. Another justification is that
 using two separate models makes the translation process modular: improving
-the translation model will improve \emph{adequacy}, i.e.\ how well the meaning
+the translation model may help improve \emph{adequacy}, i.e.\ how well the meaning
 of the source text is preserved in the translated text, while improving
-the language model will improve \emph{fluency}, i.e.\ how well-formed is the
-translation. It is therefore considered
+the language model may help improve \emph{fluency}, i.e.\ how well-formed the
+translation is. It is therefore considered
 preferable to train both a translation model and a language model.
 In these models, parallel sentence pairs and target sentences are
 not used directly as parameters because of an obvious sparsity
@@ -340,7 +339,8 @@ words and their positions, as defined in \autoref{eq:alignmentSetDefinition}:
 %
 When the context of which sentence pair $(\bm{f}, \bm{e})$ is
 being word-aligned is obvious, we may simply consider source word positions
-and target word positions. In that case, $\bm{a}$ is defined as in
+and target word positions. In that case, $\bm{a}$ is simply defined
+as a subset (source position, target position), in
 \autoref{eq:alignmentSetDefinitionSimpler}:
 %
 \begin{equation}
@@ -355,8 +355,8 @@ source and target language and in a particular
 sentence pair. Alignments can present many-to-one and one-to-many
 mappings as well as reordering as highlighted by crossing links. An example
 of word alignment is
-shown in Figure \ref{fig:examplealign}.
-% TODO maybe add circles around the words
+shown in \autoref{fig:examplealign}.
+% TODONEVER maybe add circles around the words
 %
 \begin{figure}
   \begin{center}
@@ -425,7 +425,7 @@ to target word positions, as in \autoref{eq:alignmentDefinition}:
 The target position zero is included to
 model source words not aligned to any target word; these unaligned source words
 are virtually aligned to a so-called \emph{null word}. Note that this definition
-is not symmetric: it only allows many-to-one mapping from source to target.
+is not symmetric: it only allows many-to-one mappings from source to target.
 Various symmetrisation strategies, presented in \autoref{sec:symmetrisationHeuristics},
 have been devised to address this limitation.
 Also note that we did not
@@ -455,15 +455,16 @@ $p(a_j \mid f_1^{j-1}, a_1^{j-1}, e_1^I)$.
 Parameter estimation is carried out with the
 expectation-maximisation algorithm~\citep{dempster-laird-rubin:1977:JRSS}.
 Also based on \autoref{eq:generalEquationIBMModels}, \citet{vogel-ney-tillmann}
-introduce an HMM model for word alignment and \citet{deng-and-byrne:2008:ASLP}
+introduce an HMM model~\citep{rabiner:1989:IEEE} for
+word alignment and \citet{deng-and-byrne:2008:ASLP}
 extend the HMM model to a word-to-phrase HMM model. We describe these two models in the following
 sections.
-% TODO should I present all IBM models ???
+% TODONEVER should I present all IBM models ???
 
-% TODO think about where to put this
+% TODOFINAL think about where to put this
 We have described word alignment models in the context of the source-channel
 model. In that context, word alignment models can be used directly for word-based
-decoding.\footnote{e.g. \url{http://www.isi.edu/licensed-sw/rewrite-decoder}} % TODO check whether MTTK and/or GIZA++ can also be used in decoding mode
+decoding.\footnote{e.g. \url{http://www.isi.edu/licensed-sw/rewrite-decoder}} % TODOFINAL (done) check whether MTTK and/or GIZA++ can also be used in decoding mode
 However, nowadays, word alignment models are used as a preliminary
 step in the machine translation training pipeline, namely
 prior to rule extraction (see \autoref{sec:phrasextract} and
@@ -511,7 +512,7 @@ We review HMM and word-to-phrase HMM models as these models are used
 in experiments throughout this thesis.
 \citet{vogel-ney-tillmann} introduce an HMM alignment model
 that treats target word positions as hidden states and source words as
-observations. The model is written in \eqref{eq:HmmAlignmentDefinition}:
+observations. The model is written in \autoref{eq:HmmAlignmentDefinition}:
 %
 \begin{equation}
   p(f_1^J, a_1^J \mid e_1^I) = \prod_{j=1}^J p(a_j \mid a_{j-1},I) \, p(f_j \mid e_{a_j})
@@ -675,12 +676,12 @@ strategies~\citep{och-tillmann-ney:1999:EMNLP,och-ney:2003:CL,koehn-och-marcu:20
 \citet{och-tillmann-ney:1999:EMNLP} designed
 a first symmetrisation heuristic that was later on dubbed
 as the \emph{grow} heuristic. \citet{koehn-och-marcu:2003:NAACL}
-later extend the \emph{grow} heuristic into
+later extended the \emph{grow} heuristic into
 the \emph{grow-diag} and \emph{grow-diag-final} heuristics
-and examine the impact on translation
+and examined the impact on translation
 performance for each heuristic.
 
-Alignments from source to target (i.e. the alignment is
+Alignments from source to target (i.e. in which the alignment is
 a function from source positions to target positions)
 and target to source are denoted
 $\bm{a}_{f2e}$ and $\bm{a}_{e2f}$ respectively.
@@ -696,7 +697,8 @@ are defined as follows:
 \end{itemize}
 %
 The \emph{intersection} heuristics typically produces high precision alignments
-while the \emph{union} heuristics typically produces high recall alignments.
+while the \emph{union} heuristics typically produces high recall
+alignments~\citep{och-ney:2003:CL}.
 We now present the \emph{grow} heuristic and its variants, which are based
 on the initial \emph{intersection} and \emph{union} heuristics.
 The \emph{grow} heuristic algorithm is presented in
@@ -741,7 +743,8 @@ This is repeated until no more links are added.
     \EndFunction
   \end{algorithmic}
   %\end{footnotesize}
-  \caption{Algorithm for the \emph{grow} symmetrisation heuristic.
+  \caption{Algorithm for the \emph{grow} symmetrisation
+    heuristic~\citep{koehn:2010:book}.
     The alignment is initialized from the intersection and alignment links
     that are neighbours to existing alignment links are iteratively added if the source
     or the target is not already aligned.}
@@ -837,7 +840,7 @@ version of the source-channel model, that is using the following equation:
   \bm{\hat{e}} = \argmax_{\bm{e}} p(\bm{e} \mid \bm{f}) \, p(\bm{e})
 \end{equation}
 %
-give comparable performance with respect to using the correct
+gives comparable performance with respect to using the correct
 formulation of the source-channel model given in \autoref{eq:noisy}.
 Then \citet{och-ney:2002:ACL} propose the following log-linear model extension:
 %
@@ -849,8 +852,8 @@ Then \citet{och-ney:2002:ACL} propose the following log-linear model extension:
 %
 where $h_m$ are called \emph{feature functions} and $\lambda_m$
 are called \emph{feature weights}. The log-linear model is an extension
-to the noisy channel model because it can be reduced to the original
-noisy channel model with the following settings:
+to the source-channel model because it can be reduced to the original
+source-channel model with the following settings:
 %
     \begin{itemize}
       \item $M = 2$
@@ -863,8 +866,8 @@ Log-linear models were originally trained with the maximum likelihood
 criterion, which precisely makes them equivalent to maximum entropy
 models~\citep{berger-dellapietra-dellapietra:1996:CL}. However,
 more effective training techniques such as minimum error rate
-training~\citep{och:2003:ACL} were introduced later on, that do
-not require the computation of the normalization constant
+training~\citep{och:2003:ACL} were introduced subsequently, that do
+not require the computation of a normalization constant
 (see \autoref{sec:mert}).
 Thus, in practice, SMT models are effectively simply linear models, with the objective
 function presented in \autoref{eq:linearModel}:
@@ -883,18 +886,18 @@ function presented in \autoref{eq:linearModel}:
 %  \label{eq:alignmentTemplate}
 %\end{equation}
 %
-% TODO check if it is "correct" to invert the notation in above equation wrt to original publication
+% TODOFINAL check if it is "correct" to invert the notation in above equation wrt to original publication
 %where the variables $z_1^K$ and $a_1^K$ are alignment templates and the alignment of alignment templates.
 %Each term in \autoref{eq:alignmentTemplate} is modelled as a maximum entropy model and search
 %is carried out using the maximum approximation defined in \autoref{eq:maxApproximation}:
 %
-% TODO finish this
+% TODONEVER finish this
 %\begin{align}
 %  \hat{e_1^I} &= \argmax_{z_1}
 %  \label{eq:maxApproximation}
 %\end{align}
 
-% TODO talk about training methods: GIS vs MERT
+% TODONEVER talk about training methods: GIS vs MERT
 
 \section{Phrase-Based Translation}
 \label{sec:phraseBasedTranslation}
@@ -1043,7 +1046,7 @@ function presented in \autoref{eq:linearModel}:
 %if english word unaligned, use the NULL word on the f side
 %w estimated with rel freq from aligned corpus.
 %use both lex(e|f,a) and lex(f|e,a)
-%log linear model: TODO find out what's the objective in moses/koehn2003
+%log linear model: TODONEVER find out what's the objective in moses/koehn2003
 %phrase-extract etc. etc.
 %source channel phrase-based model:
 %e = argmax p(f|e) p(e)
@@ -1084,16 +1087,16 @@ the original source-channel model and the current log-linear model. We also
 have presented word alignment models, which were introduced within the source-channel
 model framework and which are instances of word-based models.
 
-% TODO motivation for phrase based: word based a:[1,J]->[1,I] so many to one mapping only
+% TODOFINAL motivation for phrase based: word based a:[1,J]->[1,I] so many to one mapping only
 In the phrase-based translation paradigm, the minimal unit of translation consists
 of phrases. Phrases are sequences of consecutive words, that need not be syntactically
-or semantically motivated.
+or semantically motivated, but nevertheless are used as translation unit.
 Benefits of phrase-based models include:
 %
 \begin{itemize}
   \item effectively disambiguating the translation of a word in a certain local context;
-  \item effective local reordering such as the adjective-noun inversion from French to English;
-  \item effective translation of multi-word expressions.
+  \item effective local reordering within a phrase such as the adjective-noun inversion from French to English;
+  \item effective translation of multi-word expressions, such as idioms.
 \end{itemize}
 %
 Phrase-based models
@@ -1102,7 +1105,7 @@ certain language pairs that do not involve much reordering
 such as French-English. They can be defined
 in the source-channel model framework (see \autoref{sec:sourceChannelModel}) or
 the log-linear model framework (see \autoref{sec:loglinearModel}).
-Because the source-channel model is rarely used anymore and because it is
+Because the source-channel model is no longer widely used anymore and because it is
 a special case of a log-linear model, we will focus our presentation
 on the log-linear model.
 
@@ -1122,7 +1125,7 @@ in \autoref{eq:loglinearModel} as a starting point and repeated in
   \label{eq:loglinearModelRepeated}
 \end{equation}
 %
-In order to reduce the number of parameters, the two latent variables $\pi_1^K$
+In order to reduce the number of parameters, two latent variables $\pi_1^K$
 and $z_1^K$ are introduced. $z_1^K$ is a sequence of \emph{alignment templates}
 while $\pi_1^K$ is a permutation of size $K$. An alignment template
 is a triple $(\tilde{F}, \tilde{E}, \tilde{A})$ where $\tilde{F}$ is a
@@ -1261,7 +1264,7 @@ model but does not make use of source and target word classes.
 Again, we use the latent variables $\pi_1^K$ and $z_1^K$.
 This time, $z_k$ is defined as a triple $(\tilde{f}, \tilde{e}, \tilde{A})$
 where $\tilde{f}$ is a sequence of source words, $\tilde{e}$ is a sequence
-of target words and $\tilde{A}$ is an alignment between $\tilde{f}$ and $\tilde{e}$.
+of target words and $\tilde{A}$ is an alignment between the words in $\tilde{f}$ and $\tilde{e}$.
 The reason for using the alignment information between phrase pairs is to be able
 to compute the lexical feature (see \autoref{sec:features}).
 Because the lexical feature can be computed
@@ -1279,7 +1282,7 @@ A preliminary step to phrase pair extraction
 is to obtain word aligned parallel text.
 One possibility is to train source-to-target and
 target-to-source word alignment models, obtain
-Viterbi alignments in both directions and
+Viterbi alignments in both directions, and
 apply symmetrisation heuristics, as described
 in \autoref{sec:symmetrisationHeuristics}.
 Then phrase pairs are extracted from each
@@ -1381,7 +1384,7 @@ a source sentence $\bm{f}$ of length $J$ to be translated:
 %
 We can see that the search space is too large for this naive
 approach to be feasible.
-We now present a better solution to the decoding process in phrase-based translation.
+We now present a practical solution to the decoding process in phrase-based translation.
 We will first introduce the translation process. Then, we will
 describe how translation hypotheses are built incrementally.
 We will then motivate the need for pruning and how pruning
@@ -1391,8 +1394,10 @@ may reduce search errors.
 \paragraph{Translation Process}
 
 Given a source sentence, the translation process is to iteratively
-pick a source phrase, translate that source phrase into a target phrase
-and append the target phrase to the translation, until the source
+pick a source phrase that has not been translated yet,
+translate that source phrase into a target phrase
+and append the target phrase to the translation, and repeat this
+process until the source
 sentence has been entirely covered by source phrases. While the process is not
 complete, the concatenation of target phrases is called a
 \emph{partial hypothesis}.
@@ -1432,12 +1437,16 @@ The partial hypotheses are grouped in \emph{stacks}
 by the number of source words covered.
 This allows pruning. Each time a hypothesis expansion produces a hypothesis that
 belongs to a certain stack, that stack is pruned.
-There are two types of pruning, histogram pruning and threshold
+There are two commonly used types of pruning: histogram pruning and threshold
 pruning. Histogram pruning enforces a maximum number
 of partial hypotheses in each stack. Threshold pruning
 examines the cost of the best partial hypothesis in a stack
 and discards all partial hypotheses in that stack whose cost
 is greater than the best cost plus a threshold.
+Histogram pruning provides a simple guaranty in terms
+of computational complexity. On the other hand, because it relies
+on cost, threshold pruning ensures a consistent quality for partial
+hypotheses that survive the pruning threshold.
 
 \paragraph{Future Cost}
 \label{sec:phraseBasedFutureCost}
@@ -1455,10 +1464,12 @@ partial hypothesis.
 \section{Hierarchical Phrase-Based Translation}
 \label{sec:hierarchicalPhraseBasedTranslation}
 
-% TODO reread from here
-% TODO rework outline:
+% TODOFINAL reread from here
+% TODOSUBMIT or TODOFINAL rework outline:
 % make a separate section on features after hiero section
 % last subsection of hiero should be decoding with hifst
+
+\begin{sloppy} % in this paragraph, word running into the right margin
 
 In the previous section, we have described the
 phrase-based translation paradigm.
@@ -1467,21 +1478,28 @@ hierarchical phrase-based translation
 model. This model relies on the synchronous
 context free grammar formalism. Reordering
 between source and target languages is modelled
-by the grammar rather than by an \emph{ad hoc}
+by the grammar rather than by an \emph{ad} \emph{hoc}
 reordering model, although using both the grammar
 and a reordering model may be
 beneficial~\citep{huck-EtAl:2013:WMT}.
+A closely related formalism, inversion
+transduction grammars, was previously
+introduced~\citep{wu:1995:IJCAI,wu:1997:CL}, however, because hierarchical
+phrase-based grammar only contain lexicalized rules, translation decoding
+is more practical.
 An alternative to hierarchical phrase-based
 translation that also models discontinuous
 phrases but does not use the same grammar
-formalism has been introduced
+formalism has also been introduced
 recently~\citep{galley-manning:2010:NAACLHLT}.
+
+\end{sloppy}
 
 \subsection{Introduction and Motivation}
 \label{sec:hierintro}
 
 Phrase-based models generally impose a limit on the size
-of the phrase pairs extracted and, in decoding, phrases
+of the phrase pairs extracted while, in decoding, phrases
 are typically reordered within a certain limit.
 These restrictions may be problematic for language pairs
 such as German-English or Chinese-English that allow
@@ -1489,8 +1507,6 @@ arbitrary reordering in some instances.
 Hierarchical phrase-based translation was introduced
 in order to overcome the reordering limitations from
 phrase-based models~\citep{chiang:2005:ACL,chiang:2007:CL}.
-%A closely related formalism, inversion
-%transduction grammars, was previously introduced~\citep{wu:1995:IJCAI,wu:1997:CL}. TODO put this somewhere else
 For example, the Chinese sentence with English gloss
 in \autoref{fig:exampleHiero} requires ``nested'' reordering~\citep{chiang:2007:CL}:
 %
@@ -1561,8 +1577,8 @@ in \autoref{fig:exampleHiero} requires ``nested'' reordering~\citep{chiang:2007:
 \end{CJK}  
 %
 Phrase-based systems can model this type of movement but
-they need to use very long phrase pairs, which is
-impractical because of data sparsity. On the other
+they require very long phrase pairs, which is
+impractical to rely upon because of data sparsity. On the other
 hand, hierarchical phrase-based grammars do model this type of movement using
 shorter phrase pairs but with more complex rules.
 
@@ -1587,6 +1603,7 @@ indicates which nonterminals in the source and target languages correspond to ea
 a set of matching indices.
 
 \subsubsection{Types of Rules}
+\label{sec:hieroTypesOfRules}
 
 A rule may or may not contain any nonterminals.
 A rule without nonterminals (on the right hand side) is
@@ -1605,7 +1622,7 @@ be able to start a derivation.
 The second glue rule allows concatenation of phrase-based or
 hierarchical rules.
 
-% TODO mention reordering and monotone rules
+% TODOFINAL mention reordering and monotone rules
 %When introducing hierarchical phrase-based translation, we mentioned
 %that reordering between source and target language is modeled
 %by the hierarchical grammar.
@@ -1676,7 +1693,7 @@ in \autoref{fig:exampleHieroDerivation}.
     Adapted from~\citep{chiang:2007:CL}.
     A derivation is simply a sequence of rules that
     rewrite the start symbol $S$ into a sentence pair.
-    This particular derivation produces the sentence pair from \autoref{fig:exampleHiero}.} % TODO better title, refer chiang and replace pinyin by chinese
+    This particular derivation produces the sentence pair from \autoref{fig:exampleHiero}.} % TODOFINAL (done ?) better title, refer chiang and replace pinyin by chinese
   \label{fig:exampleHieroDerivation}
 \end{CJK}
 \end{figure}
@@ -1706,18 +1723,20 @@ that must be satisfied by the rules in a hierarchical grammar:
   \item If a rule $X \rightarrow \langle \gamma, \alpha \rangle$ has a pattern $\langle w, w \rangle$, then $|\gamma| \leq 10$ and $|\alpha| \leq 10$.
   \item A rule $X \rightarrow \langle \gamma, \alpha \rangle$ must satisfy $|\gamma| \leq 5$.
   \item Rules have at most 2 nonterminals.
-  \item The source side of a rule cannot have adjacent nonterminals.
-    \citet{setiawan-resnik:2010:NAACL} relax this constraint.
+  \item The source side of a rule cannot have adjacent nonterminals.    
+    \citet{setiawan-resnik:2010:NAACL} relax this constraint in order to model
+    Chinese-English reordering phenomena that may be not always captured in
+    training because of data sparsity.
     Note that the target side can still
-    have adjacent nonterminals. %, for example see Section \ref{sec:emnlp10gramdef}.
+    have adjacent nonterminals. % TODO ? for example see Section \ref{sec:emnlp10gramdef}.
   \end{itemize}
 %
-% TODO: missing constraints: boundary words, at least one alignment link
+% TODOFINAL: missing constraints: boundary words, at least one alignment link
 More fine-grained constraints can be defined on patterns.
 For example, we use the configuration described
 in \autoref{tab:patternconfig} for some of the translation experiments in this
 thesis. This grammar was obtained following a greedy strategy of adding
-in turn most beneficial patterns for Arabic-English translation.
+in turn the most beneficial patterns for Arabic-English translation.
 
   \begin{table}[htbp]
     \begin{center}
@@ -1765,11 +1784,13 @@ in turn most beneficial patterns for Arabic-English translation.
         \hline
       \end{tabular}
     \end{center}
-    \caption{Rule patterns included in a baseline hierarchical grammar.}
+    \caption{Rule patterns included in a baseline hierarchical grammar.
+      The decision whether to include each pattern was based on preliminary experiments
+      in Arabic-English. Most beneficial patterns were added incrementally.}
     \label{tab:patternconfig}
   \end{table}
   
-  Another restriction on hierarchical grammar is the amount of reordering allowed. \citet{degispert-iglesias-blackwood-banga-byrne:2010:CL} investigate the use
+  Another restriction on hierarchical grammars is the extent of reordering allowed. \citet{degispert-iglesias-blackwood-banga-byrne:2010:CL} investigate the use
   of shallow-$N$ grammars that precisely control the depth of reordering in translation. We describe here 
   shallow-1 grammars~\citep{iglesias-degispert-banga-byrne:2009:EACL,degispert-iglesias-blackwood-banga-byrne:2010:CL} as
   they will be used for translation experiments in this thesis. Shallow-1 grammars
@@ -1787,7 +1808,7 @@ in turn most beneficial patterns for Arabic-English translation.
 %  
   where $S$ is the start symbol, $T$ is the set of terminals and $V$ is the set of nonterminals. There are two nonterminals
   apart from the start symbol: $X$ and $V$. The rule type $X \rightarrow \langle \gamma_s , \alpha_s \rangle$ corresponds
-  to all hierarchical rules. It is possible to apply this type of rule only once. Indeed, the
+  to all hierarchical rules. It is possible to apply this type of rule only once in any derivation. Indeed, the
   right hand side contains only one type of nonterminal, $V$, which can be rewritten only with a phrasal rule corresponding
   to the line $V \rightarrow \langle s , t \rangle$. Note that for rules of the type $V \rightarrow \langle s , t \rangle$, $t$ can be
   the empty word, thus these rules, called {\em deletion rules}, allow deletion on the target side. Shallow-1 grammar are used for language pairs that do not present
@@ -1795,9 +1816,9 @@ in turn most beneficial patterns for Arabic-English translation.
   for the Arabic-English language pair~\citep{iglesias-degispert-banga-byrne:2009:EACL} and for
   the Spanish-English language pair~\citep{iglesias-degispert-banga-byrne:2009:SEPLN}.
   In addition, shallow-1 grammars reduce the search space of the decoder greatly, resulting in a much faster decoding
-  time, a reduced memory use and potentially less search errors.
+  time, a reduced memory use and potentially fewer search errors under the translation grammar.
 
-  % TODO log linear model for hpbt
+  % TODOFINAL (?) log linear model for hpbt
 
     \subsection{Log-linear Model for Hierarchical Phrase-Based Translation} \label{sec:loglinear}
 
@@ -1816,7 +1837,7 @@ in turn most beneficial patterns for Arabic-English translation.
     We can now derive the log-linear model for hierarchical translation:
 
     \begin{eqnarray}
-      \hat{{\bf e}} &=& \argmax_{\bm{e}} p(\bm{e} \mid \bm{f}) \nonumber \\
+      \bm{\hat{e}} &=& \argmax_{\bm{e}} p(\bm{e} \mid \bm{f}) \nonumber \\
                     &=& \argmax_{\bm{e}} \sum_{D \in \mathcal{D}} p(D,\bm{e} \mid \bm{f}) \mbox{ (marginalisation)} \nonumber \\
                     %&=& \argmax_{e} \sum_{d} p(d,{\bf e}|{\bf f}) \mbox{ (simply because the event D,{\bf e} is the same as the event d,{\bf e}} \\
                     &=& \argmax_{\bm{e}} \argmax_{D \in \mathcal{D}} p(D,\bm{e} \mid \bm{f}) \mbox{ (max approximation)} \nonumber \\
@@ -1836,21 +1857,23 @@ in turn most beneficial patterns for Arabic-English translation.
     \begin{equation}
       h_M(D) = p_{LM}(e(D))
     \end{equation}
-    
-    \noindent where $M$ is the index of the language model feature, $p_{LM}$ is the language model and $e(D)$ is the English
+%
+    where $M$ is the index of the language model feature, $p_{LM}$ is the language model and $e(D)$ is the English
     yield of the derivation $D$. It is not possible to compute the language model using dynamic programming since
     the language model needs context in order to be computed, therefore the language model feature is typically
-    computed after a parsing step. % TODO explain better. for this, reread chiang's paper and/or hifst paper(s)
+    computed after a parsing step. % TODOFINAL explain better. for this, reread chiang's paper and/or hifst paper(s)
     
-    Note that Equation (\ref{eq:decoding}) is an approximation and that there have been attempts to perform marginalisation over the latent variable 
+    Note that \autoref{eq:decoding} is an approximation and that there have been attempts to perform marginalisation over the latent variable 
     $D$ while keeping the translation process tractable~\citep{blunsom-cohn-osborne:2008:ACL,degispert-iglesias-blackwood-banga-byrne:2010:CL}.
+    This can give gains over the max approximation, although subsequent rescoring
+    steps (see \autoref{sec:rescoring}) can produce similar performance~\citep{degispert-iglesias-blackwood-banga-byrne:2010:CL}.
 
     %We now describe which features are used in our system, except for the language model which will be presented in Section \ref{lm}.
 
   \subsection{Rule Extraction} \label{sec:hierruleextract}
 
   We have so far given the definition of a hierarchical grammar and explained how it is used with statistical models.
-  It is also necessary to extract an appropriate grammar, that is the rules it contains. The extraction
+  It is also necessary to extract an appropriate grammar, defined by its rules. The extraction
   is performed on a parallel corpus. The parallel corpus is first word-aligned, then
   rules are extracted from the alignment.
 
@@ -1895,7 +1918,7 @@ in turn most beneficial patterns for Arabic-English translation.
         $X \rightarrow \langle \alpha_1, \gamma_1 \rangle, ..., X \rightarrow \langle \alpha_n, \gamma_n \rangle$.
         Then the source-to-target translation model is simply $\prod_{i=1}^n p(\gamma_i|\alpha_i)$ where
         the $p(\gamma_i|\alpha_i)$ are typically estimated using relative frequency, based on the appearance 
-        of phrasal and hierarchical rules in the parallel corpus
+        of phrasal and hierarchical rules in the parallel corpus.
         %, which will be described in Section \ref{sec:hierextraction}.
         The target-to-source 
         translation model is symmetric.
@@ -1905,23 +1928,24 @@ in turn most beneficial patterns for Arabic-English translation.
         \begin{equation} \label{eq:lexfeature}
           lx(f_1^J,e_1^I) = \frac{1}{(I+1)^J}\prod_{j=1}^{J} \sum_{i=0}^{I} p_1(e_i|f_j)
         \end{equation}
-
-        \noindent where $p_1$ is the word-to-word translation probability in IBM Model 1 and $e_0$ the null word. The target-to-source lexical translation model is symmetric. One reason to use lexical models in addition to translation models is that translation models are relatively sparse compared
+%
+        where $p_1$ is the word-to-word translation probability in IBM Model 1 and $e_0$ the null word. The target-to-source lexical translation model is symmetric. One reason to use lexical models in addition to translation models is that translation models are relatively sparse compared
         to lexical models, thus lexical models can smooth the translation models.
 
-      \item Number of uses of the glue rule. This feature trades off monotonic translation versus reordering.
+      \item Number of uses of the glue rule in a derivation. This feature trades off monotonic translation versus reordering.
       \item Word insertion penalty. This feature controls the length of the output.
-      \item Rule insertion penalty. This feature controls the number of derivations in decoding. Using many rules is closer to word-to-word
+      \item Rule insertion penalty. This feature controls the number of rules used in a derivation to generate a translation.
+        Using many rules is closer to word-to-word
         translation while using few rules means that longer phrase pairs are used. This feature is similar to the phrase penalty in phrase-based
-        statistical machine translation \cite{koehn-och-marcu:2003:NAACL}.
+        statistical machine translation~\citep{koehn:2010:book}.
       \item Word deletion scale factor. This feature controls the number of times a deletion rule is applied.
       \item Rule count feature. This feature indicates 
         whether a rule occurs once, twice or more in the parallel data~\citep{bender:07}. Thus it indicates how reliable a rule is.
     \end{itemize}
 
-    The feature weights are optimized using minimum error rate training \cite{och:2003:ACL} under the BLEU 
-    score \cite{papineni-roukos-ward-zhu:2002:ACL}, which will be described
-    in \autoref{sec:optimization}.
+    The feature weights are optimized using minimum error rate training~\citep{och:2003:ACL} under the BLEU
+    score~\citep{papineni-roukos-ward-zhu:2002:ACL} (see
+    also \autoref{sec:evaluationMetrics}).
     %Minimum error rate training is described in more detail in Section \ref{sec:syscombmert}.
 
 \section{Language Modelling}
@@ -1932,7 +1956,7 @@ in turn most beneficial patterns for Arabic-English translation.
 
 % outline: introduction, definition, smoothing strategies
 
-We mentioned in Section \ref{sec:loglinear} that a language model was one of the features of
+We mentioned in \autoref{sec:loglinear} that a language model was one of the features of
 log-linear models for translation. This feature is critical as it helps to obtain a fluent
 translation output. A language model is a probability distribution over word sequences. It can be used to assign
 a probability to a sequence of words or to predict the word most likely to appear in a certain context.
@@ -1941,7 +1965,7 @@ as automatic speech recognition or machine translation.
 $n$-gram language models are typically used because they are 
 robust, can be easily trained on large amounts of data and model local grammatical relationships.
 Since they do not model the language structure nor long distance relationships between words, work
-has been conducted~\citep{shen-xu-weischedel:2008:ACL} to overcome this issue. % TODO move this or expand
+has been conducted~\citep{shen-xu-weischedel:2008:ACL} to overcome this issue. % TODONEVER move this or expand
 We first review $n$-gram language models, then review different smoothing techniques, we finally
 describe in more detail two smoothing techniques
 that are used for experiments in this thesis: Kneser-Ney smoothing
@@ -1968,7 +1992,7 @@ probability $p$. $p$ has the following properties:
     start-of-sentence state and have to transition to either a word or the
     end-of-sentence state.
 \end{itemize}
-% TODO maybe add a condition that p(w | v) < 1 to prevent prob mass to infinite
+% TODOFINAL (?) maybe add a condition that p(w | v) < 1 to prevent prob mass to infinite
 % sequences
 %
 A bigram model is defined by the conditional independence assumptions of the
@@ -1984,7 +2008,7 @@ $\bm{w} = w_1...w_n$ in \autoref{eq:bigramProbability}:
 with the convention $w_0 = \text{\texttt{<s>}}$ and $w_{n+1} = \text{\texttt{</s>}}$.
 
 An $n$-gram language model can be defined similarly: this time the random
-variables $X_i$ take values in $W^{n - 1}$ instead of $W$. An $n$-gram model % TODO maybe define properly instead of saying it's the same
+variables $X_i$ take values in $W^{n - 1}$ instead of $W$. An $n$-gram model % TODONEVER maybe define properly instead of saying it's the same
 will assign the probability $p(\bm{w})$ to a sequence of words
 $\bm{w} = w_1...w_n$ in \autoref{eq:ngramProbability}:
 %
@@ -2011,7 +2035,7 @@ address this problem.
 \subsection{Back-off and Interpolated Models}
 \label{sec:backoffAndInterpolatedModels}
 
-% TODO look at cutoffs
+% TODOFINAL (looked at it in some other place) look at cutoffs
 
 Smoothing strategies for language modelling make use of lower order
 distributions either by backoff or interpolation. The general form of a backoff
@@ -2138,8 +2162,8 @@ $N_1$, $N_2$ and $N_{3+}$ are defined in \autoref{eq:definitionN}.
 \subsection{Stupid Backoff Smoothing}
 \label{sec:stupidBackoffSmoothing}
 
-The Stupid Backoff scheme is similar to
-the general backoff scheme presented in \autoref{eq:backoffModel}
+The Stupid Backoff smoothing scheme is similar to
+the general backoff smoothing scheme presented in \autoref{eq:backoffModel}
 and presented in \autoref{eq:stupidBackoffScheme}:
 %
 \begin{equation}
@@ -2165,7 +2189,7 @@ Stupid-Backoff smoothing was designed to fit the MapReduce framework
 and build very large language models (see \autoref{sec:hfileIntro}).
 %\subsection{Good-Turing Smoothing}
 
-%TODO section describing good-turing smoothing (becaused used in biased lm).
+%TODONEVER section describing good-turing smoothing (becaused used in biased lm).
 
 \section{Optimization}
 \label{sec:optimization}
@@ -2182,7 +2206,7 @@ and build very large language models (see \autoref{sec:hfileIntro}).
     METEOR~\citep{banerjee-lavie:2005:MTSumm}, NIST~\citep{doddington:2002:HLTR} or
     TER~\citep{snover-dorr-schwartz-micciulla-makhoul:2006:AMTA}.
 
-    The BiLingual Evaluation Understudy (BLEU) score \cite{papineni-roukos-ward-zhu:2002:ACL} is defined as 
+    The BiLingual Evaluation Understudy (BLEU) score~\citep{papineni-roukos-ward-zhu:2002:ACL} is defined as 
     the geometric mean of $n$-gram modified precisions with respect
     to one or several translation references times a brevity penalty. More precisely, given $S$ input sentences
     $s_1,...,s_S$, we consider a set of $S$ candidate translations $c_1,...,c_S$. For each input sentence $s_i$, there is
@@ -2192,25 +2216,25 @@ and build very large language models (see \autoref{sec:hfileIntro}).
     \begin{equation}
       \mbox{BLEU}(c_1,...,c_S,r_{1,1},...r_{1,R_1},...,r_{S,1},...,r_{S,R_S}) = \mbox{BP} \prod_{n=1}^N p_n^{\frac{1}{N}}
     \end{equation}
-
-    \noindent BP is the brevity penalty and is defined as:
-
+%
+    BP is the brevity penalty and is defined as:
+%
     \begin{equation}
       \mbox{BP} = \exp(\min(0,1-\frac{\sum_{i=1}^S |r_{c_i}|}{\sum_{i=1}^S |c_i|}))
     \end{equation}
-
-    \noindent $p_n$ is the modified $n$-gram precision and is defined as
-
+%
+    $p_n$ is the modified $n$-gram precision and is defined as
+%
     \begin{equation}
       \frac{\sum_{i=1}^S \sum_{g \in c_i} count_{clip}(g,c_i,r_{i,1},...,r_{i,R_i})}{\sum_{i=1}^S \sum_{g \in c_i} count(g,c_i)}
     \end{equation}
-
-    \noindent where $g$ is an $n$-gram, $count(g,c_i)$ is the number of times $g$ occurs in $c_i$ and 
-    
+%
+    where $g$ is an $n$-gram, $count(g,c_i)$ is the number of times $g$ occurs in $c_i$ and 
+%    
     \begin{equation}
       count_{clip}(g,c_i,r_{i,1},..,r_{i,R_i}) = \min(count(g,c_i),\max(count(g,r_{i,1}),..,count(g,r_{i,R_i})))
     \end{equation}
-
+%
     The maximum $n$-gram order is usually $N=4$. The BLEU metric can be computed efficiently, is language
     independent and correlates well with human judgments, especially for statistical translation systems.
 
@@ -2220,16 +2244,16 @@ and build very large language models (see \autoref{sec:hfileIntro}).
     Minimum error rate training~\citep{och:2003:ACL} is a method to optimise the feature weights
     in a log-linear model for translation with respect to a particular evaluation metric. We present
     this method assuming that the evaluation metric is BLEU. The objective function is defined 
-    as following:
-
+    as follows:
+%
     \begin{equation}
       \hat{\lambda}_1^M = \argmax_{\lambda_1^M} \mbox{BLEU}(c(\lambda_1^M), {\bf r}) 
     \end{equation}
-
-    \noindent where $c(\lambda_1^M)$ are the candidate translations obtained using feature
+%
+    where $c(\lambda_1^M)$ are the candidate translations obtained using feature
     weights $\lambda_1^M$ and ${\bf r}$ are the reference translations. Since computing $c(\lambda_1^M)$
     requires computing the most likely translations given a set of features, this
-    optimisation problem is complex, it requires two $\argmax$ operations. Och therefore approximates the search space of translations
+    optimisation problem is complex: it requires two $\argmax$ operations. Och therefore approximates the search space of translations
     with $n$-best lists given by a decoder. The optimisation problem is then solved by 
     computing, along a particular direction in the feature space, intervals where the BLEU function 
     is constant and choosing for each direction the optimal feature set. It was found
@@ -2253,7 +2277,7 @@ with the original lattice to give translations a language model score.
 \section{Lattice Rescoring}
 \label{sec:rescoring}
 
-An advantage of the HiFST decoder (see Section \ref{sec:hifst}) is that it directly % TODO that's not the advantage, the advantage is less search error and no special purpose code
+An advantage of the HiFST decoder (see \autoref{sec:hifst}) is that it directly % TODOFINAL that's not the advantage, the advantage is less search error and no special purpose code
 generates translation lattices that can be rescored in order to improve translation quality.
 Rescoring methods are used in machine translation when their integration into the decoder
 is challenging in terms of memory use. 5-gram language model rescoring and lattice minimum
@@ -2265,13 +2289,14 @@ Bayes' risk rescoring are two such methods.
 \citet{brants-popat-xu-och-dean:2007:EMNLP-CoNLL} showed that using vast
 amounts of data for training language models can improve translation. However,
 using high order $n$-gram language models trained on
-a large dataset in decoding can create memory problems. % TODO verify this with last chap
+a large dataset in decoding can create memory problems. % TODOSUBMIT verify this with last chap
 A solution is to use such models to rescore the output
 lattice of a first-pass translation. These first-pass lattices are generated
 using a lower
 order language model.
 
-The language model we use for rescoring is a 5-gram zero cutoff stupid back-off language model \cite{brants-popat-xu-och-dean:2007:EMNLP-CoNLL}.
+The language model we use for rescoring is a 5-gram zero cutoff Stupid Backoff language
+model (see \autoref{sec:backoffAndInterpolatedModels}).
 To build this model, $n$-grams of order up to 5 and containing words in the target side of the parallel corpus 
 are extracted in parallel from the monolingual data, resulting in an $n$-gram count file.
 Then, $n$-grams from the first-pass translation lattice 
@@ -2337,7 +2362,7 @@ then we obtain the objective defined in \autoref{eq:generalSMTobjective}.
 In that sense, the minimum error objective is a special case of the
 MBR objective.
 If the translation quality is measure by
-BLEU, then an appropriate function for $L$ is $1 - $SBLEU where SBLEU is the % TODO backref to BLEU ?
+BLEU, then an appropriate function for $L$ is $1 - $SBLEU where SBLEU is the % TODOFINAL backref to BLEU ?
 sentence level BLEU score, defined as BLEU with a corpus containing
 only one sentence pair. \citet{kumar-byrne:2004:NAACL} use
 this definition of SBLEU for experiments on $n$-best list
@@ -2346,9 +2371,9 @@ SBLEU between two hypotheses might be zero, it is less likely
 that a particular hypothesis have an expected loss of zero.
 For other applications such as metrics evaluation, it is beneficial
 to introduce smoothing for sentence-level
-BLEU~\citep{lin-och:2004:COLING}. % TODO maybe put this in a metrics section
+BLEU~\citep{lin-och:2004:COLING}. % TODOFINAL maybe put this in a metrics section
 \citet{kumar-byrne:2004:NAACL} demonstrate gains in translation quality
-when rescoring $n$-best lists % TODO check that $n$-best list has been defined
+when rescoring $n$-best lists % TODOFINAL check that $n$-best list has been defined
 with the MBR objective function. Gains measured by the metric used
 to define the loss function are of course more important.
 
@@ -2435,3 +2460,37 @@ $p(u|\mathcal{E})$ are computed by interpolation. The decoding equation becomes:
 \end{equation}
 %
 The weights $(\lambda_1,\lambda_2)$ are such that $\lambda_1+\lambda_2 = 1$ and are tuned for BLEU on a development set.
+
+\section{MapReduce in SMT}
+\label{sec:mapReduceInSMT}
+
+TODO
+
+canonical example of word count
+
+% TODO move this to background section
+% TODO change the notation to use sets, use \times, and ^N notation for sequences, etc., do something clean
+MapReduce~\citep{dean-ghemawat:2008:ACM} is a framework designed for processing
+large amounts of data in a distributed fashion on a computer cluster. In this
+framework, the programmer needs to implement a function called \emph{map} and
+a function called \emph{reduce}. The \emph{map} function is defined in
+\autoref{eq:mapFunction}:
+%
+\begin{equation}
+  \text{map} : (k_1, v_1) \longmapsto [(k_2, v_2)]
+  \label{eq:mapFunction}
+\end{equation}
+%
+where $(k_1, v_1)$ is a key-value pair and $[(k_2, v_2)]$ is a list of
+key-value pairs. We use the $[ \, ]$ notation to denote a list. Keys and values are arbitrary byte sequences. As the key-value
+pairs $(k_2, v_2)$ are computed by the \emph{map function}, the MapReduce framework groups all values $v_2$ by key $k_2$ in order
+to provide an input $(k_2, [v_2])$ to the \emph{reduce} function, defined in
+\autoref{eq:reduceFunction}:
+%
+\begin{equation}
+  \text{reduce} : (k_2, [v_2]) \longmapsto [(k_3, v_3)]
+  \label{eq:reduceFunction}
+\end{equation}
+%
+The input to the \emph{reduce} function is a key and a list of values. The
+\emph{reduce} function generates a list of key-value pairs.
