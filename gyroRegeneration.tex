@@ -2,6 +2,7 @@
 \chaptermark{String Regeneration as Phrase-Based MT}
 \label{chap:gyro}
 
+% TODO canonical word count: refer to background
 % TODO grep for <s> and </s> and use texttt
 % TODO British vs US spelling
 % TODO grep config grep -v configuration and replace
@@ -37,8 +38,11 @@ Machine translation output was originally evaluated by
 human judges in terms
 of \emph{adequacy}, or how well the meaning of the source
 text is preserved in the translated text, and \emph{fluency},
-or how well formed the translation is~\citep{white-oconnell-carlson:1993:HLT}.
-Adequacy and fluency are one of the motivation for separating SMT models
+or how well-formed the translation is~\citep{white-oconnell-carlson:1993:HLT},
+i.e.\ to what extent it is syntactically, morphologically, and orthographically
+correct~\citep{reiter-dale:1997:JNLE}.
+Adequacy and fluency motivate the
+separation of SMT models
 into a translation model and a language model (see \autoref{sec:sourceChannelModel}).
 There is increasing concern that translation output
 often lacks fluency~\citep{knight:2007:TALK}.
@@ -57,33 +61,30 @@ task.
 Before the widespread use of automatic metrics such as
 BLEU (see \autoref{sec:evaluationMetrics}) or
 METEOR~\citep{banerjee-lavie:2005:MTSumm}, machine translation
-systems were originally evaluated in terms of \emph{adequacy}
-and \emph{fluency}~\citep{white-oconnell-carlson:1993:HLT} by human judges.
-While \emph{adequacy} measures how well the meaning of the
-source text is preserved in the translation output, \emph{fluency}
-measures to what extent the translation output is well formed.
-
+systems were originally evaluated in terms of adequacy
+and fluency.
 There is increasing concern that translation output
 often lacks fluency~\citep{knight:2007:TALK}.
-Current popular automatic metrics for translation can be gamed in the
+Current popular automatic metrics for translation can be ``gamed'' in the
 sense that it is possible to obtain a high score according to these
 metrics with an output that lacks fluency.
 For example, a translation may obtain a high BLEU score simply
 because it contains many $n$-grams that are also in the reference
-translation but this translation may not be well formed syntactically.
+translation but this translation may not be well-formed syntactically.
 \autoref{fig:gamingBLEUexample} shows how an improvement of
 20 BLEU points at the sentence level between an MT hypothesis
-and an oracle MT hypothesis may not translate into
+and an oracle MT hypothesis, i.e. the best performing hypothesis among a set, may
+not translate into
 an improvement in fluency. Of course, BLEU is designed to
 measure quality at the set level, so hopefully other oracle MT
 hypotheses will probably improve fluency.
-This situation may have led research on translation to neglect fluency.
+The nature of the translation metrics may have led research on translation to neglect fluency.
 %
 \begin{figure}
 \begin{quote}
-  \textbf{SMT System (19.76 BLEU)}: enda according to jerzy made a televised speech, the president of burundi civil war of resistance army soldiers in the past ten years, and had to settle on january 5 before the completion of the new military leadership will be in place before january 7, four of the former rebel army leader.
+  \textbf{SMT System (19.76 Sentence-Level BLEU)}: enda according to jerzy made a televised speech, the president of burundi civil war of resistance army soldiers in the past ten years, and had to settle on january 5 before the completion of the new military leadership will be in place before january 7, four of the former rebel army leader.
 
-  \textbf{SMT System Oracle (39.91 BLEU)}: en, a us \$according to al made a televised speech, said that the president of the burundi's rebel army soldiers in the past 10-year civil war must be before january 5 and the completion of the new military leadership will be in place by january 7, and four of the former leaders of the rebel forces.
+  \textbf{SMT System Oracle (39.91 Sentence-Level BLEU)}: en, a us \$according to al made a televised speech, said that the president of the burundi's rebel army soldiers in the past 10-year civil war must be before january 5 and the completion of the new military leadership will be in place by january 7, and four of the former leaders of the rebel forces.
 
   \textbf{Reference}: According to President Ndayizeye's televised speech, former rebel fighters in Burundi's 10-year civil war must be settled in by January 5.  The new army leadership is to be made up of 40 percent former rebels and should be in place by January 7.
 \end{quote}
@@ -94,7 +95,7 @@ This situation may have led research on translation to neglect fluency.
 \label{fig:gamingBLEUexample}
 \end{figure}
 
-Even if one strives to produce a fluent translation, this remains a very difficult task.
+Even if one strives to produce a fluent translation, it remains a very difficult task.
 Different word ordering between distant language pairs such as
 Chinese-English is one of the main reasons for the lack of fluency in translation.
 In general, obtaining a correct word order is a fundamental problem in many natural language
@@ -114,7 +115,7 @@ Word ordering is also one possible type of grammatical
 error, especially for foreign language
 learners~\citep{yu-chen:2012:COLING}. % TODO do something with this last crazy sentence
 
-In this chapter, we address the word ordering problem in
+In this chapter, we study the word ordering problem in
 isolation through the task of
 string regeneration~\citep{wan-dras-dale-paris:2009:EACL}.
 Given an input sentence where the word order has
@@ -173,9 +174,10 @@ in order to demonstrate the effectiveness
 of $n$-gram language models. With a 3-gram language model, they recover
 63\% of a sentences with less than 11 words with brute force search
 over all permutations. This is of course impractical for longer
-sentences. For a loose comparison, our system is able to recover
-60\% of the tokenized and lowercased sentences with less than 11 words
-on Section 23 of the Penn Treebank.
+sentences. % TODOFINAL run WSJ23 with 5g and LMBR and recompute this number
+%For a loose comparison, our system is able to recover
+%60\% of the tokenized and lowercased sentences with less than 11 words
+%on Section 23 of the Penn Treebank.
 %TODO compare our system to this performance
 %TODO update this performance with a better system or with rescored system
 %TODO maybe: run regeneration with base noun phrase together
@@ -206,8 +208,8 @@ natural language generation system output.
 String regeneration can also be considered as a simplified version
 of the \emph{linguistic realisation} task in a natural language
 generation system~\citep{reiter-dale:1997:JNLE}, which consists in
-generating a surface form that is ``syntactically, morphologically,
-and orthographically correct''.
+generating a surface form that is syntactically, morphologically,
+and orthographically correct.
 
 \citet{wan-dras-dale-paris:2009:EACL} use a
 modified version of the minimum spanning tree algorithm
@@ -226,9 +228,9 @@ indicated by the Penn Treebank are kept together for experimentation.
 formalism for string realization. They describe a sentence
 realizer that takes as input an unordered dependency tree, i.e.\ a dependency
 tree that only encode head-modifier relations but not the surface
-string ordering. Because an exhaustive search is intractable (consider
-all possible children permutations at each node), \citet{he-wang-guo-liu:2009:ACLIJCNLP}
-adopt a divide-and-conquer approach that recursively linearize
+string ordering. Because an exhaustive search is intractable (due to
+the number of possible children permutations at each node), \citet{he-wang-guo-liu:2009:ACLIJCNLP}
+adopt a divide-and-conquer approach that recursively linearizes
 subtrees in a bottom-up fashion. A log-linear model is used
 to select the best possible linearization for each subtree.
 Features include dependency relations, $n$-gram language models
@@ -280,10 +282,10 @@ to the phrase-based translation model, but in a monolingual setting.
 
 In the previous section, we have reviewed various strategies for string
 regeneration. We observe that, in general, the use of syntax was beneficial
-over the exclusive use of $n$-gram language model. We do not take advantage
-of syntactic information, however, we complement an $n$-gram language
-with $n$-gram rules extracted from monolingual data. We now describe our original method, which is inspired from
-phrase-based translation techniques~\citep{koehn:2010:book}.
+over the exclusive use of an $n$-gram language model. We do not take advantage
+of syntactic information, instead, we complement an $n$-gram language
+with $n$-gram rules extracted from monolingual data. We now describe our method, which is inspired from
+phrase-based translation techniques (see \autoref{sec:phraseBasedTranslation}).
 We employ a feature based linear model (see \autoref{sec:loglinearModel}) as our
 objective function:
 %
@@ -303,7 +305,7 @@ where:
 %
 $\bm{\Phi}(\bm{e})$ contains a language model
 $g(\bm{e})$ as well as local features $\bm{\varphi(e)}$
-that are additive over phrases that compose $\bm{e}$.
+that are additive over phrases that segment $\bm{e}$.
 Similarly, $\bm{\lambda}$ has a weight $\lambda_g$ for the language model
 and weights $\bm{\lambda_{\varphi}}$ for local features. As in phrase-based
 translation, a hypothesis
@@ -318,18 +320,21 @@ is decomposed into phrases $\bm{e}_1^I$. We can then rewrite
   \label{eq:gyroModel2}
 \end{equation}
 %
+Note that this model makes a max approximation: various segmentations of
+the hypotheses are considered but the score only depends on one single
+segmentation.
 Experiments to follow only make use of the language model feature but
 our implementation has other features integrated, such as
-word count or rule count and arbitrary features can be added easily.
+word count or rule count, and arbitrary features can be added easily.
 %TODO maybe add experiments with additional features
 Our decoder algorithm described subsequently in
 \autoref{sec:gyroDecoderAlgorithm} generates hypotheses left to right
-by concatenating phrases $e_1$, ..., $e_I$. For a phrase index $i \in [1, I]$,
-we define the partial model score $\text{sc}(e_1^i)$ of partial hypothesis $e_1^i$ as
+by concatenating phrases $\bm{e_1}$, ..., $\bm{e_I}$. For a phrase index $i \in [1, I]$,
+we define the partial model score $\text{sc}(\bm{e_1^i})$ of partial hypothesis $\bm{e_1^i}$ as
 in \autoref{eq:gyroPartialScore}:
 %
 \begin{equation}
-  \text{sc}(e_1^i) = \lambda_g g(e_1^i) + \bm{\lambda_{\varphi}} \cdot \sum_{k = 1}^i \bm{\varphi(e_k)} \\
+  \text{sc}(\bm{e_1^i}) = \lambda_g g(\bm{e_1^i}) + \bm{\lambda_{\varphi}} \cdot \sum_{k = 1}^i \bm{\varphi(e_k)} \\
   \label{eq:gyroPartialScore}
 \end{equation}
 
@@ -348,23 +353,23 @@ relevant rules for a given test set.
 \subsection{Rule Extraction}
 \label{sec:gyroRuleExtraction}
 
-$n$-gram rules are extracted from large corpus of monolingual
-text. The text is tokenized and lowercase. We then
+$n$-gram rules are extracted from large collections of monolingual
+text. The text is tokenized and lowercased. We then
 employ the MapReduce
 framework as implemented by Hadoop in order to extract % TODO refer to background
 $n$-grams together with their occurrence counts from the corpus.
 
 The input key to the \emph{map} function is irrelevant.
 The input value to the \emph{map} function is a line of text.
-The \emph{map} function simply extract all $n$-grams from the
+The \emph{map} function simply extracts all $n$-grams from the
 input line of text and outputs these $n$-grams with a count of
 one. The input to the \emph{reduce} function is an $n$-gram
 and a series of constant values equal to one.
 The \emph{reduce} function simply sums the counts
 and produces the $n$-gram with its total count. This MapReduce
-job is analogous to the canonical word count example except
+job is analogous to the canonical ``word count'' example except
 that here $n$-grams of higher order than unigrams are considered.
-For experiments, we extract $n$-grams from order 1 to 5. % TODO oral examination: in one instance we extracted 6-grams, made no difference
+For our experiments, we extract $n$-grams from order 1 to 5. % TODO oral examination: in one instance we extracted 6-grams, made no difference
 
 \subsection{Rule Filtering}
 \label{sec:ngramRuleFiltering}
@@ -383,7 +388,8 @@ from each other, the number of possible relevant 5-grams is
 $N \times (N - 1) \times (N - 2) \times (N - 3) \times (N - 4)$.
 For sentence of length 100, this would correspond to approximately
 9B queries. Even with an alternative implementation where keys in the
-HFile are sorted $n$-gram permutations and values are permutations and counts found in
+HFile are lexicographically sorted $n$-grams and values are the
+permutations and counts found in
 the monolingual data, the number of 5-gram queries would be $N \choose 5$, which
 is approximately 75M queries for a 100 word sentence.
 
@@ -401,6 +407,7 @@ output value is a coverage and a count. The \emph{reduce} function
 simply removes duplicates in the list of coverages. % TODO explain why
 %TODO explain coverage.
 % TODO maybe say why we have the counts
+% TODOFINAL brief example for the mapreduce job
 
 \section{String Regeneration Search}
 \label{sec:gyroDecoderAlgorithm}
@@ -418,7 +425,7 @@ stack-based decoding techniques reviewed in \autoref{sec:phraseBasedDecoding}.
 The input to the decoder consists of:
 %
 \begin{itemize}
-  \item A bag of words or multiset $\bm{w}$, represented as a vector.
+  \item A bag of words, or multiset, $\bm{w}$, represented as a vector.
     For example, we have $\bm{w} = [\text{do, you, do}]$ for the
     input sentence ``do you do'' to be regenerated.
   \item A set of $n$-grams, where the
@@ -477,7 +484,7 @@ are produced.
 
 As mentioned in \ref{sec:gyroAlgorithmOverview}, we represent
 the set of
-partial hypotheses with a vector of columns, that we denote
+partial hypotheses with a vector of columns that we denote
 $M$. For an input $\bm{w}$ of size $|\bm{w}|$, $M$ has a size
 of $|\bm{w}| + 1$. Elements of $M$ are denoted $M_0$, ..., $M_{|\bm{w}|}$.
 The $i$-th column $M_i$ represents hypotheses that have covered
@@ -544,7 +551,7 @@ and \textsc{Extend}.
 
 The states must
 contain enough information
-in order to be able to extend a hypothesis and
+in order to be able to extend a hypothesis, and
 states also represent
 all hypotheses that can be recombined. Thus, a state
 contains the following information:
@@ -561,7 +568,8 @@ contains the following information:
     to extend. The definition of history is therefore the same
     as the definition of history for an $n$-gram language model.
     In our implementation, the history is simply encoded as
-    an \texttt{lm::ngram::State} as defined in the KenLM toolkit.
+    an \texttt{lm::ngram::State} as defined in the KenLM
+    toolkit~\citep{heafield:2011:WMT}.
 \end{itemize}
 
 \paragraph{\textsc{CanApply} Operation}
@@ -793,7 +801,7 @@ particular sentence. Results are reported in \autoref{tab:gyroBaseline}.
   \begin{tabular}{l|l}
     Test Set & BLEU \\
     \hline
-    MT08-nw & STILL RUNNING \\
+    MT08-nw & 42.32 \\
     MT09-nw & 37.29 \\
     WSJ22 & 44.01 \\
     WSJ23 & 45.48 \\
@@ -846,7 +854,12 @@ For more rapid experimentation, we only reorder chunks of a limited
 size in the
 input. The input is divided each time a punctuation sign such
 as a comma or a semi-colon is observed or after having seen a maximum
-number of tokens. We also use a histogram pruning of 1000 states
+number of tokens.
+The implementation simply considers only
+$n$-grams whose coverage falls completely into
+the chunk being reordered; thus the language model
+is computed correctly at the boundaries between chunks.
+We also use a histogram pruning of 1000 states
 regardless of the input length.
 
 With this restriction, we obtain the results reported
@@ -981,8 +994,8 @@ Results
 are reported in \autoref{tab:gyroVaryNgramLength}.
 We can see that for a relatively short maximum of 11 on the input length,
 using more $n$-gram orders is always beneficial.
-Because the maximum input length is short, the search space is always
-explore more thoroughly and this benefits configuration that generate
+Because the maximum input length is short, the search space can be
+explored more thoroughly and this benefits configurations that generate
 larger search spaces.
 For a more realistic maximum input length of 20, results are more in line
 with our initial motivation for each configuration. Comparing row 6 vs.\ row 5,
@@ -1038,6 +1051,9 @@ Results are presented in
 include no overlap, a maximum overlap of 1 or a maximum overlap of 2.
 As in previous experiments, we contrast the effect of overlapping
 rules with a maximum input length of either 11 or 20.
+Decoding is run in parallel using Sun Grid Engine~\citep{gentzsch:2001:CCG}.
+The total decoding time is measured as the sum of time spent
+on each job.
 We also study the effect of overlapping rules when
 all $n$-gram orders are included (rule configuration ``all'') or
 when only unigrams and 5-grams are allowed (rule configuration ``1g/5g'').
@@ -1045,34 +1061,35 @@ We hypothesize that overlapping rules may be more beneficial
 when lower $n$-gram orders are missing.
 However, we observe that
 that allowing for overlapping rules does not improve performance, apart from 
-increasing the search space and decoding time.
+increasing the search space and decoding time in general.
 We do not use this decoder capability in future experiments.
 % TODO look at effect when no unigrams are used in terms of coverage
 
 \begin{table}
   \begin{center}
-  \begin{tabular}{l|l|l|l|l}
-    Row & Overlap & Max Input Length &  Rule Configuration & MT08-nw \\
+  \begin{tabular}{l|l|l|l|l|l}
+    Row & Overlap & Max Input Length &  Rule Configuration & MT08-nw & Total Time (s) \\
     \hline
-    1 & no overlap & 11 & all & 74.86 \\
-    2 & 1          & 11 & all & 74.87 \\
-    3 & 2          & 11 & all & 74.85 \\
+    1 & no overlap & 11 & all & 74.86 & 20075 \\
+    2 & 1          & 11 & all & 74.87 & 19685 \\
+    3 & 2          & 11 & all & 74.85 & 18200 \\
     \hline
-    4 & no overlap & 11 & 1g/5g & 74.82 \\
-    5 & 1          & 11 & 1g/5g & 74.81 \\
-    6 & 2          & 11 & 1g/5g & 74.80 \\
+    4 & no overlap & 11 & 1g/5g & 74.82 & 6774 \\
+    5 & 1          & 11 & 1g/5g & 74.81 & 8626 \\
+    6 & 2          & 11 & 1g/5g & 74.80 & 8805 \\
     \hline
-    7 & no overlap & 20 & all & 64.36 \\
-    8 & 1          & 20 & all & 64.39 \\
-    9 & 2          & 20 & all & 64.28 \\
+    7 & no overlap & 20 & all & 64.36 & 57285 \\
+    8 & 1          & 20 & all & 64.39 & 89989 \\
+    9 & 2          & 20 & all & 64.28 & 95775 \\
     \hline
-    10 & no overlap & 20 & 1g/5g & 64.74 \\
-    11 & 1          & 20 & 1g/5g & 64.72 \\
-    12 & 2          & 20 & 1g/5g & 64.63 \\
+    10 & no overlap & 20 & 1g/5g & 64.74 & 13420 \\
+    11 & 1          & 20 & 1g/5g & 64.72 & 20314 \\
+    12 & 2          & 20 & 1g/5g & 64.63 & 22522 \\
   \end{tabular}
   \caption{Effect of allowing for overlapping rules. Case-insensitive BLEU
     scores are reported. In all configurations, allowing for overlapping
-    rules does not improve performance.}
+    rules does not improve performance. In addition, overlapping
+    rules increase decoding time in general.}
   \label{tab:overlap}
   \end{center}
 \end{table}
@@ -1099,7 +1116,7 @@ the future cost. Given a partial hypothesis, its future cost is defined
 by the unigram language model score of the words from the input
 bag of words that are not covered by the partial hypothesis.
 Because there is no notion of word ordering in the input, we
-cannot use a higher order $n$-gram language model
+cannot easily use a higher order $n$-gram language model
 language model to estimate future cost.
 
 We compare the use of future cost estimates with maximum input lengths
@@ -1123,7 +1140,7 @@ of 20, we obtain a gain of 0.69 BLEU.
     \end{tabular}
     \caption{Effect of using a future cost estimate for pruning.
       Case-insensitive BLEU scores are reported.
-      Future cost is estimated with a unigram language model.
+      Future cost is computed with a unigram language model.
       Future cost is beneficial for both a relatively short maximum input
       length of 11 and for a more realistic maximum input length of 20, with
       respective improvements of 0.24 BLEU and 0.69 BLEU.}
@@ -1151,7 +1168,7 @@ described in \autoref{sec:lmbr}, will be applied in \autoref{chap:gyroTrans}.
 Results are reported in \autoref{tab:gyroRescoring}, on all our test sets.
 The MT08-nw set is used to tune LMBR parameters, and these parameters are
 tested on the MT09-nw set. Similarly, WSJ22 is used as a tuning set for WSJ23.
-Because we only use a single language feature and because in all decoder
+Because we only use a single language model as the only feature and because in all decoder
 hypotheses, the length is identical, there is no tuning or testing set
 for first-pass decoding or 5-gram language mode rescoring.
 
@@ -1192,9 +1209,9 @@ We have also analyzed various capabilities of our decoder.
 From this analysis, we draw the following conclusions:
 %
 \begin{itemize}
-  \item Lower order $n$-gram rules are not needed for best possible performance.
+  \item Removing lower order $n$-gram rules other than unigrams, which are needed to ensure that the input can be covered entirely, improves performance.
   \item Allowing for overlapping rules slows down the decoding procedure and
-    does not provide gains.
+    does not provide gains in our experiments.
   \item Future cost estimates improve the pruning procedure and overall performance.
   \item Lattice rescoring techniques are applicable and provide gains in the string
     regeneration setting.

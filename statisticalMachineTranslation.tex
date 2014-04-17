@@ -1,6 +1,8 @@
 \chapter{Statistical Machine Translation}
 \label{chap:smt}
 
+% TODO fix vertical space after "even if one strives"
+% TODO define oracles and how to compute them
 % TODO grep for paragraph and replace by sub or subsubsection where appropriate
 % TODO if time, add more hiero rule types, e.g. oov, deletions, etc.
 % TODO if time, expand the hiero rule extraction section with the actual implementation
@@ -297,7 +299,7 @@ data used to train the language model. Another justification is that
 using two separate models makes the translation process modular: improving
 the translation model will improve \emph{adequacy}, i.e.\ how well the meaning
 of the source text is preserved in the translated text, while improving
-the language model will improve \emph{fluency}, i.e.\ how well formed is the
+the language model will improve \emph{fluency}, i.e.\ how well-formed is the
 translation. It is therefore considered
 preferable to train both a translation model and a language model.
 In these models, parallel sentence pairs and target sentences are
