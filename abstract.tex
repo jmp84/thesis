@@ -1,21 +1,34 @@
 \chapter*{Abstract}
 
-% TODOSUBMIT expand a bit
+The relatively recently proposed hierarchical phrase-based
+translation model for statistical machine translation (SMT)
+has achieved state-of-the-art performance
+in numerous recent translation evaluations. Hierarchical phrase-based
+systems comprise a pipeline of modules with complex interactions.
+In this thesis, we propose refinements to the hierarchical
+phrase-based model as well as improvements and analyses in various
+modules for hierarchical phrase-based systems.
 
-Statistical machine translation models the translation equivalence
-between a natural language and another natural language
-with formal language grammars. Popular grammars include
-phrase-based grammars and synchronous context-free
+We took the opportunity of increasing amounts of available training
+data for machine translation as well as existing framework for
+distributed computing in order to build better infrastructure
+for extraction, estimation and retrieval of hierarhical phrase-based
 grammars.
 
-These grammars are typically extracted and estimated from
-a set of word alignments. In this thesis, we first show
-how to make the extraction and estimation more robust
-by exploiting further word alignment models.
+The modular nature of the SMT pipeline, while allowing individual
+improvements, has the disadvantage that errors committed by
+one module are propagated to the next. This thesis
+alleviates this issue between the word alignment module and the
+grammar extraction and estimation module by considering richer
+statistics from word alignment models in extraction.
 
-We also show how to extract, store and retrieve efficiently
-from very large grammars.
+This thesis also proposes refinements in grammar and language
+modelling both in the context of domain adaptation and in the
+context of the interaction between first-pass decoding and
+lattice rescoring.
 
-Finally, we demonstrate how to apply the phrase-based translation
-paradigm to the string regeneration task, with potential
-applications to machine translation.
+Finally, the fluency of machine translation output is studied
+through the string regeneration task. State-of-the-art is achieved
+in the string regeneration task. String regeneration applied
+to the output of a hierarchical phrase-based translation system
+obtains the same level of translation quality.
