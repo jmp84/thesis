@@ -1,0 +1,213 @@
+\chapter{Summary and Future Work}
+
+% TODONEVER maybe link to specific experiments on blue in each experimental sections
+
+Statistical Machine Translation was originally framed as a source-channel
+model with two main components, the translation model and the
+language model. This separation into two modules provided opportunities
+for improving each module individually, with the hope that improving the language model
+would improve fluency while improving the translation model would improve
+adequacy. Current state-of-the-art SMT systems include many more components
+that interact in complex ways but also provide further individual improvement
+opportunities.
+
+In this thesis, we present various improvements and analyses in the
+SMT pipeline, with an emphasis on refining hierarchical phrase-based
+models. In \autoref{sec:reviewOfWork}, we review the contributions of
+this thesis and in \autoref{sec:thesisFutureWork}, we propose
+possible future work for each our contributions.
+
+\section{Review of Work}
+\label{sec:reviewOfWork}
+
+This thesis demonstrated various refinements in
+hierarchical phrase-based translation systems.
+A scalable infrastructure was developed for generating
+and retrieving from hierarchical grammars. We also
+developped an original training method for hierarchical
+phrase-based models. Other SMT pipeline components
+were refined: we studied the effect of additional
+grammar features for domain adaptation and provided recommendations
+for language model building in first-pass decoding and rescoring.
+Finally, we developped a string regeneration system from the
+ground up, analyzed its competitive performance in
+the string regeneration task and its potential application to
+rescoring machine translation output. We now review each of
+these contributions.
+
+\subsection{Hierarchical Phrase-Based Grammars: Infrastructure}
+
+In order to enable more rapid experimentation and to ensure
+scalability for hierarchical phrase-based grammar extraction
+and retrieval, we developped a flexible MapReduce implementation
+of the grammar extraction and estimation
+algorithm~\citep{dyer-cordova-mont-lin:2008:WMT}.
+Our implementation described in \autoref{chap:hfile} includes
+extensions for the computation
+of provenance
+features~\citep{chiang-deneefe-pust:2011:ACL} and arbitrary
+corpus-level features can be added very easily to our framework.
+
+A framework relying on the HFile format
+for efficient retrieval of hierarchical rules to
+be used in test set decoding was also developped.
+Comprehensive time and memory measurements demonstrated
+that our system is competitive with respect to linearly
+scanning, possibly concurrently, the datastructure containing
+the grammar extracted from parallel
+text~\citep{pino-waite-byrne:2012:PBML}.
+
+\subsection{Hierarchical Phrase-Based Grammars: Modelling}
+
+In the SMT pipeline, the word alignment module and
+the grammar extraction and estimation module usually
+communicate through a fixed set of alignment links
+produced by the word alignment models. Our contribution
+was to allow for more communication between these two
+modules~\citep{degispert-pino-byrne:2010:EMNLP}.
+In \autoref{chap:extractionFromPosteriors}, we
+first reframed the rule extraction procedure
+into a general framework. Under this framework, we
+introduced two novel methods for grammar extraction
+and estimation based on word alignment posterior
+probabilities.
+
+The link posterior extraction method was based on alignment
+link posterior probabilities and allowed to extract
+a greater number of rules more reliably. The phrase pair
+posterior method was based on phrase pair alignment posterior
+probabilities and was shown to provide a better estimated
+translation model. Both methods provided important gains in
+translation quality in
+a medium size Chinese-English translation task.
+Alternative strategies for combining source-to-target
+and target-to-source word alignment models were also
+investigated; hypothesis combination obtained the best
+performance in our experiments.
+
+\subsection{Hierarchical Phrase-Based System Development}
+
+The translation model, refined in \autoref{chap:extractionFromPosteriors},
+is one of the main features in the loglinear model for translation.
+In \autoref{chap:wmt}, we studied the effect of provenance
+features~\citep{chiang-deneefe-pust:2011:ACL} for domain adaptation.
+The concept of provenance feature was extended from provenance lexical translation
+features to provenance translation features. We demonstrated that,
+when rule filtering thresholds are applied for each provenance and all
+surviving rules are kept, translation gains can be obtained.
+
+We also provided recommendations for language model modelling both
+in first-pass translation and rescoring. In the context of
+domain adaptation, we found that the best strategy for language modelling
+was off-line linear interpolation of various language models with
+weights tuned for perplexity on a held-out development set as opposed
+to loglinear interpolation with weights tuned by MERT.
+We also observed that when a few billion words of monolingual data were
+available, a two-pass strategy of first-pass decoding with a 4-gram
+language model trained on all data followed by 5-gram rescoring
+provided the best performance in our experiments.
+Finally we confirmed in the rescoring setting previous
+observations~\citep{brants-popat-xu-och-dean:2007:EMNLP-CoNLL} in
+the first-pass decoding setting
+that Kneser-Ney smoothing produced better translation quality than
+Stupid Backoff smoothing. Thus we obtained translation quality gains
+over the top ranking system in the WMT13 Russian-English
+task~\citep{pino-waite-xiao-degispert-flego-byrne:2013:WMT}.
+
+\subsection{Fluency in Hierarchical Phrase-Based Systems}
+
+One main reason for the lack of fluency in machine translation
+output is a discrepancy in word order between distant language pairs
+such as Chinese and English. In \autoref{chap:gyro}, we
+studied the problem of word ordering in isolation through
+the string regeneration task. We described a regeneration
+model inspired from the phrase-based translation model. We also
+built a regeneration decoder
+analogous to a stack-based decoder for translation.
+We achieved state-of-the-art performance on the string regeneration
+task. Finally, we analyzed various capabilities of the decoder.
+
+In \autoref{chap:gyroTrans}, we applied string regeneration
+to the output of a translation system in a 10-best rescoring setting.
+Performance was degraded, however, by combining information obtained
+from the translation system with the regeneration system, we were
+able to match the quality of the translation output.
+
+\section{Future Work}
+\label{sec:thesisFutureWork}
+
+%hfile:
+%sentence specific grammar
+%parallelize by source sentence
+%parallelize by query
+%generate source pattern instances more quickly
+% real time at the sentence level
+
+The retrieval framework presented in \autoref{chap:hfile}
+can exploit parallelization in two ways for further
+speed improvements. First, source pattern instances
+can be generated for each test set source sentence individually; then
+each source sentence can processed in parallel. Because
+the HFile format does not multithreaded reads, % TODOFINAL check this on the newest versions
+one way to implement this solution is to reuse the multiprocessing
+capability of the MapReduce framework.
+Another opportunity for parallelization similar to the one just described
+is to process queries in parallel. Again, care has to be taken to use
+a multiprocessing approach rather than a multhreading approach.
+Finally, the source pattern instance creation step can be fine-tuned
+in order to approach the speed of a real time system at the sentence
+level.
+
+%posteriors:
+%source constraints
+%alignment constraints
+%target constraints
+%ranking function
+%counting function
+%for all these, explore other models than HMM
+
+In \autoref{chap:extractionFromPosteriors}, the rule extraction
+algorithm was described in a framework involving
+source constraints, alignment constraints, target constraints, a ranking
+function and a counting function. This provides an opportunity
+for future work by investigating alternatives to the definitions
+of these constraints and ranking and counting functions.
+Specifically, other word alignment models may be explored.
+
+% system development
+% scale up 5-gram language model data
+
+In \autoref{chap:wmt}, we recommended to use a two-pass
+decoding strategy and we also concluded that Kneser-Ney
+smoothing was beneficial over Stupid Backoff smoothing
+in 5-gram language model rescoring. These recommendations
+are valid for language models built on a few billion words.
+In the future, we will revise them with language models
+trained on order of magnitude more monolingual data.
+
+% string regeneration
+% investigate the use of overlap and use no unigrams
+% investigate more features
+
+We successfully applied phrase-based models and decoding
+techniques to the task of string regeneration
+in \autoref{chap:gyro}. However, interesting future work may
+be carried out to investigate the effect of using more features
+than simply a language model. In addition, we may study
+how overlapping rules can be used to obtain more chances
+of covering the entire input if no unigram rules are used.
+
+The effect of additional features for the regeneration
+decoder may also be studied in the regeneration of
+translation output setting. If translation quality
+as measured BLEU does not increase, efforts will be
+dedicated to improve fluency while maintaining translation
+quality. Finally, more sophisticated future cost estimates
+may be studied, such as $n$-gram language model with $n > 1$: this
+is possible because when regenerating translation output, the word
+ordering information is legitimately available in the input.
+
+% string regeneration for translation
+% fluency
+% more features
+% TODONEVER mention dependency language model
