@@ -23,12 +23,14 @@ possible future work for each our contributions.
 This thesis demonstrated various refinements in
 hierarchical phrase-based translation systems.
 A scalable infrastructure was developed for generating
-and retrieving from hierarchical grammars. We also
+and retrieving rules from hierarchical grammars. We also
 developed an original training method for hierarchical
-phrase-based models. Other SMT pipeline components
+phrase-based models which leverages computationally
+efficient HMM models usually used for word
+alignment. Other SMT pipeline components
 were refined: we studied the effect of additional
 grammar features for domain adaptation and provided recommendations
-for language model building in first-pass decoding and rescoring.
+for language models to be used in first-pass decoding and rescoring.
 Finally, we developed a string regeneration system from the
 ground up, analysed its competitive performance in
 the string regeneration task and its potential application to
@@ -61,7 +63,7 @@ text~\citep{pino-waite-byrne:2012:PBML}.
 
 In the SMT pipeline, the word alignment module and
 the grammar extraction and estimation module usually
-communicate through a fixed set of alignment links
+interact through a fixed set of alignment links
 produced by the word alignment models. Our contribution
 was to allow for more communication between these two
 modules~\citep{degispert-pino-byrne:2010:EMNLP}.
@@ -77,7 +79,7 @@ link posterior probabilities and allowed to extract
 a greater number of rules more reliably. The phrase pair
 posterior method was based on phrase pair alignment posterior
 probabilities and was shown to provide a better estimated
-translation model. Both methods provided important gains in
+translation model. Both methods provided substantial gains in
 translation quality in
 a medium size Chinese-English translation task.
 Alternative strategies for combining source-to-target
@@ -96,7 +98,7 @@ features to provenance translation features. We demonstrated that,
 when rule filtering thresholds are applied for each provenance and all
 surviving rules are kept, translation gains can be obtained.
 
-We also provided recommendations for language model modelling both
+We also provided recommendations for language modelling both
 in first-pass translation and rescoring. In the context of
 domain adaptation, we found that the best strategy for language modelling
 was off-line linear interpolation of various language models with
@@ -148,7 +150,7 @@ can exploit parallelisation in two ways for further
 speed improvements. First, source pattern instances
 can be generated for each test set source sentence individually; then
 each source sentence can processed in parallel. Because
-the HFile format does not multithreaded reads, % TODOFINAL check this on the newest versions
+the HFile format does not allow multithreaded reads, % TODOFINAL check this on the newest versions
 one way to implement this solution is to reuse the multiprocessing
 capability of the MapReduce framework.
 Another opportunity for parallelisation similar to the one just described
@@ -183,7 +185,7 @@ smoothing was beneficial over Stupid Backoff smoothing
 in 5-gram language model rescoring. These recommendations
 are valid for language models built on a few billion words.
 In the future, we will revise them with language models
-trained on order of magnitude more monolingual data.
+trained on an order of magnitude more monolingual data.
 
 % string regeneration
 % investigate the use of overlap and use no unigrams
