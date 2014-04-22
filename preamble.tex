@@ -23,21 +23,13 @@
 % number subsubsections
 \setcounter{secnumdepth}{3}
 
-\newcommand{\red}[1]{\textcolor{red}{#1}}
+% some macros
 \def \RT [#1][#2][#3]{#1$\rightarrow${\tt $\langle$}#2,#3{\tt $\rangle$}}
 \def \SR [#1]{ {\tt $\langle$}#1}
 \def \TR [#1]{ #1{\tt $\rangle$}}
-\def \RU [#1][#2]{ {\tt $\langle$}#1,#2{\tt $\rangle$}}
 
-%\makeatletter
-%\renewcommand{\ALG@beginalgorithmic}{\footnotesize}
-%\makeatother
-
+% needed when using \Call in an algorithm
 \MakeRobust{\Call}
-
-\renewcommand{\eqref}[1]{Equation~(\ref{#1})}
-
-\newcommand{\secref}[1]{Section~(\ref{#1})}
 
 % Links in pdf
 \definecolor{linkcol}{rgb}{0,0,0.4} 
@@ -45,12 +37,12 @@
 
 \hypersetup
 {
-%bookmarks=true,
+bookmarks=true,
 bookmarksopen=true,
 pdftitle="Refinements in Hierarchical Phrase-Based Translation Systems",
 pdfauthor="Juan Pino", 
 pdfsubject="Refinements in Hierarchical Phrase-Based Translation Systems", %subject of the document
-%pdftoolbar=false, % toolbar active
+pdftoolbar=true, % toolbar active
 pdfmenubar=true, %menubar shown
 pdfhighlight=/O, %effect of clicking on a link
 colorlinks=true, %couleurs sur les liens hypertextes

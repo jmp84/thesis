@@ -1,4 +1,4 @@
-personal_ws-1.1 en 725 
+personal_ws-1.1 en 732 
 TotalOrderPartitioner
 mille
 stupidBackoffSmoothing
@@ -57,6 +57,7 @@ loup
 summarisation
 belz
 ruleextract
+pdftoolbar
 calc
 gyroBaseline
 gyroBiasedLmTest
@@ -180,6 +181,7 @@ gyroEffectNgramOrder
 phraseHmmGeneral
 xshift
 exampleHieroDerivation
+Chao
 Ndayizeye's
 modifiedForwardRecursion
 BLEU
@@ -246,6 +248,7 @@ JCSS
 wang
 gyroPruning
 extractionFromPosteriorsExperimentalSetup
+Gispert
 HFile
 hfile
 lll
@@ -431,6 +434,7 @@ ruleAllFeatures
 alignmentSetDefinition
 gyroVaryNgramLength
 initGrow
+Adrià
 gyroRuleExtraction
 src
 gyroFstBuilding
@@ -443,6 +447,7 @@ ngram
 alignmentTemplateModel
 tillmann
 klein
+Seigel
 pdfpagemode
 toi
 dataset
@@ -559,6 +564,7 @@ modulesToBeImproved
 viterbiAlignment
 ce
 manku
+de
 waite
 BP
 parker
@@ -668,6 +674,7 @@ hopkins
 argmax
 pust
 vo
+Aurelien
 doyoudo
 bojar
 CoNLL
