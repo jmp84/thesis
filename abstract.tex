@@ -1,5 +1,7 @@
 \chapter*{Abstract}
 
+%\vspace*{-1.1cm}
+
 The relatively recently proposed hierarchical phrase-based
 translation model for statistical machine translation (SMT)
 has achieved state-of-the-art performance
@@ -10,25 +12,43 @@ phrase-based model as well as improvements and analyses in various
 modules for hierarchical phrase-based systems.
 
 We took the opportunity of increasing amounts of available training
-data for machine translation as well as existing framework for
+data for machine translation as well as existing frameworks for
 distributed computing in order to build better infrastructure
 for extraction, estimation and retrieval of hierarchical phrase-based
-grammars.
+grammars. We design and implement grammar extraction as a series of
+Hadoop MapReduce jobs. We store the resulting grammar using the HFile
+format, which
+offers competitive trade-offs in terms of efficiency and simplicity.
+We demonstrate improvements over two alternative solutions used in
+machine translation.
 
 The modular nature of the SMT pipeline, while allowing individual
 improvements, has the disadvantage that errors committed by
 one module are propagated to the next. This thesis
 alleviates this issue between the word alignment module and the
 grammar extraction and estimation module by considering richer
-statistics from word alignment models in extraction.
+statistics from word alignment models in extraction. We use
+alignment link and alignment phrase pair posterior probabilities
+for grammar extraction and estimation and demonstrate translation
+improvements in Chinese to English translation.
 
 This thesis also proposes refinements in grammar and language
 modelling both in the context of domain adaptation and in the
 context of the interaction between first-pass decoding and
-lattice rescoring.
+lattice rescoring. We analyse alternative strategies for grammar
+and language model cross-domain adaptation. We also
+study interactions between first-pass and second-pass language
+model in terms of size and $n$-gram order. Finally, we
+analyse two smoothing methods for large 5-gram language model
+rescoring.
 
-Finally, the fluency of machine translation output is studied
-through the string regeneration task. State-of-the-art is achieved
-in the string regeneration task. String regeneration applied
-to the output of a hierarchical phrase-based translation system
-obtains the same level of translation quality.
+The last two chapters are devoted to the application of
+phrase-based grammars to the string regeneration task, which
+we consider as a means to study
+the fluency of machine translation output.
+We design and implement a monolingual phrase-based decoder
+for string regeneration and achieve state-of-the-art
+performance on this task. By applying our decoder
+to the output of a hierarchical phrase-based translation system, we
+are able to recover the same level of translation quality as
+the translation system.

@@ -2,11 +2,12 @@ DOCUMENT=thesis
 #OPEN=acroread
 OPEN=evince
 
-all: check paper open
+#all: check paper open
+all: check paper
 
 open:
 	$(OPEN) $(DOCUMENT).pdf &
-	#cp $(DOCUMENT).pdf ~/PublicWebPages/mytmp/
+	cp $(DOCUMENT).pdf ~/PublicWebPages/fktmp/
 
 check:
 	./spellcheck.sh

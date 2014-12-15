@@ -179,9 +179,7 @@ to use a computing infrastructure that requires minimal maintenance. For example
 HBase\footnote{\url{http://hbase.apache.org}}, the open source non-relational database
 implementation of
 BigTable~\citep{chang-dean-ghemawat-hsieh-wallach-burrows-chandra-fikes-gruber:2008:ACM}, has been applied to the use of distributed language
-models~\citep{yu:2008:mastersthesis}. However, we wish to address the question
-whether we can adapt this infrastructure to our purposes with minimal
-effort and without having to resort to database maintenance.
+models~\citep{yu:2008:mastersthesis}.
 Rule filtering, i.e. the retrieval of rules relevant to the translation
 of a test set or a sentence, is an essential step in our pipeline that can be a
 bottleneck. Our goal is to reduce its processing time from several hours to a
@@ -460,6 +458,14 @@ infrastructure than HBase. In addition, it is also possible to apply our method
 to language model querying~\citep{pino-waite-byrne:2012:PBML}, which
 demonstrates the flexibility of the infrastructure.
 
+Note that there are many alternative solutions to HBase/HFile for storage of a
+large number of key-value pairs, such as Berkeley
+DB\footnote{\url{https://oss.oracle.com/berkeley-db.html}} or
+Cassandra\footnote{\url{http://cassandra.apache.org}}.
+The purpose of this chapter
+is not to compare these alternatives but rather to compare existing solutions
+employed in the machine translation community to one of these solutions.
+
 \section{HFile Description}
 \label{sec:hfile}
 
@@ -686,7 +692,13 @@ The input to the \emph{reduce} function is a key and a list of values. The
 Using this notation, % TODOFINAL refere to background
 we can describe the grammar extraction and estimation
 as a series of MapReduce jobs, summarised in
-\autoref{fig:ruleXtractionPipeline}.
+\autoref{fig:ruleXtractionPipeline}. This architecture is similar
+to the one described in the original
+publication~\citep{dyer-cordova-mont-lin:2008:WMT}. For
+source-to-target and target-to-source probability computation,
+we used Method 3 described in that publication. Keeping each
+feature computation as a separate MapReduce job makes easier
+the integration of a new feature.
 %
 \begin{figure}
   \tikzstyle{MapReduceJob} = [rectangle, draw, fill=blue!20, rounded corners,
@@ -778,7 +790,7 @@ for rule extraction:
   \label{eq:mapIllustrationRuleXtraction}
 \end{equation}
 
-\subsection{Corpus-Level Feature Computation}
+\subsection{Corpus-Level Feature Computation} \label{sec:corpusLevelFeatureComputation}
 Rule extraction is followed by several MapReduce jobs that are run simultaneously
 in order to
 compute \emph{corpus-level} features. Corpus-level features
@@ -1003,15 +1015,13 @@ time and memory measurements.
     optimisation (see \autoref{sec:mert}).
 
     The rule extraction constraints described in \autoref{sec:hfileForHiero}
-    are set as follows:
-%
-\begin{itemize}
-  \item $ s_{\text{max}}= 9$
-  \item $s_{\text{max elements}} = 5$
-  \item $s_{\text{max terminals}} = 5$ % TODOFINAL explain why it's redundant or change value
-  \item $s_{\text{max NT}} = 10$ % TODOFINAL (done ?) harmonize notation with extraction from posteriors and from background
-\end{itemize}
-%
+    are set to a maximum source phrase length $s_{\text{max}}$ of 9, a maximum
+    source element (terminal and nonterminal) length $s_{\text{max elements}}$
+    of 5, a maximum number of source consecutive terminals $s_{\text{max terminals}}$
+    of 5 and a maximum source nonterminal span $s_{\text{max NT}}$ of 10. These
+    settings are standard in all our translation systems and give competitive
+    performance in terms of translation quality.
+
 With these settings, the small grammar contains approximately 60M rules while the 
 larger grammar contains approximately 726M rules. The grammars we obtain are
 converted to the \emph{Joshua} format in order to be able to filter them
@@ -1020,18 +1030,15 @@ with \emph{Joshua} simply because we want to compare the performance of
 rule retrieval from the same grammar.
 %
 \paragraph{Grammar filtering} For \emph{ruleXtract}, we use the following constraints for
-    source pattern instantiation: 
-    \begin{itemize}
-      \item $ s_{\text{max}} = 9$
-      \item $s_{\text{max elements}} = 5$
-      \item $s_{\text{max terminals}} = 5$ % TODOFINAL explain why redundant with max source elements
-      \item $s_{\text{max NT}} = \infty$
-      \item $s_{\text{max span}} = \infty$ % TODOFINAL (done ?) explain diff between hrmaxheight and max nt: max nt is the max span of an X on the rhs whereas hrmaxheight is the max span of the source of a rule, i.e. max span of X on the lhs
-    \end{itemize}
-    %
-    These settings are chosen so that the number of rules obtained after filtering is identical between
+    source pattern instantiation: the maximum source phrase length $s_{\text{max}}$ is set to
+    9, the maximum source element (terminal and nonterminal) length $s_{\text{max elements}}$
+    is set to 5, the maximum number of source consecutive terminals $s_{\text{max terminals}}$
+    is set to 5, the maximum source nonterminal span $s_{\text{max NT}}$ is set to $\infty$
+    and the maximum rule span $s_{\text{max span}}$ is set to $\infty$. The first three
+    constraints are standard in all our translation systems. We use the value $\infty$
+    for $s_{\text{max NT}}$ and $s_{\text{max span}}$ so that the number of rules obtained after filtering is identical between
     \emph{ruleXtract} and \emph{Joshua}. Thus, time and memory measurements
-    are comparable. % TODOFINAL explain better.
+    are comparable.
 %
 \paragraph{Measurements} We report time measurements for query processing and query
     retrieval and the total time used to obtain a set specific rule file for a
@@ -1135,7 +1142,11 @@ in order to reduce the size of the test set specific grammar.
     usage. The \emph{fast} configuration for \emph{Joshua} filters rules
     by matching consecutive terminals to test set $n$-grams, which explains
     that the number of rules obtained is higher than in all other configurations.
-    This also means that some filtered rules are never used in decoding.}
+    This also means that some filtered rules are never used in decoding.
+    Measurements were carried out twice for each condition and the second run
+    was recorded. Thus, measurements reported take advantage of operating
+    system caching.
+  }
   \label{tab:ruleXtract}
   \end{center}
 \end{table}
@@ -1198,12 +1209,11 @@ This takes about 20 minutes for the small corpus and about 5 hours for the large
 corpus. With the suffix array method,
 compiling the small parallel corpus into a suffix array
 data structure takes 2m49s and extracting a grammar for the test set from
-that corpus takes 57m40s as mentioned. Compiling the large parallel corpus
+thato corpus takes 57m40s as mentioned. Compiling the large parallel corpus
 into a suffix array takes 84m29s and extracting a grammar for our test set
 takes 569m54s. This gives an indication of the total
 time needed to extract a grammar for an arbitrary corpus and an arbitrary test
 set.
-% TODOFINAL expand a bit and maybe make a table to compare timings
 
 % TODOFINAL add subsections
 
@@ -1213,6 +1223,34 @@ the HFile is generated, it is possible to quickly extract grammars
 for arbitrary test sets and arbitrary filtering parameters for rapid
 experimentation. This approach favours repeated experimentation
 with varying development and test sets.
+
+\autoref{tab:suffixArrayVsRulextract} compares timings between
+suffix array rule extraction
+and retrieval as implemented by \emph{cdec} and our system. For \emph{cdec}, the
+extraction time corresponds to corpus compilation. For both the small and large
+grammars, \emph{ruleXtract} performs twice as fast.
+%
+\begin{table}
+  \begin{center}
+    \begin{tabular}{*{4}{|l}|}
+      \hline
+      \multicolumn{4}{|c|}{\textbf{Small Grammar}} \\
+      \hline
+      \textbf{System} & \textbf{Extraction Time} & \textbf{Retrieval Time} & \textbf{Total Time} \\
+      \hline
+      \emph{cdec} & 2m49s & 57m40s & 1h29s \\
+      \hline
+      \emph{ruleXtract} & 20m & 11m11s & 31m11s \\
+      \hline
+      \multicolumn{4}{|c|}{\textbf{Large Grammar}} \\
+      \emph{cdec} & 1h24m29s & 9h29m54s & 10h54m23s \\
+      \emph{ruleXtract} & 5h & 23m46s & 5h23m46s \\
+    \end{tabular}
+    \caption{Timings for \emph{cdec} and \emph{ruleXtract} for both
+    rule extraction and retrieval.}
+    \label{tab:suffixArrayVsRulextract}
+  \end{center}
+\end{table}
 
 The \emph{ruleXtract} system works in batch mode and dividing the number of
 words in the test set by the total time in the best configuration

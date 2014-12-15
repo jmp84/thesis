@@ -573,8 +573,10 @@ The second component is modelled using the Markov assumption:
 As in the HMM word alignment model $a_k$ depends only on $a_{k - 1}$, the target
 length $I$ and the binary value $h_k$. $d(h_k)$ is simply controlled by the
 parameter $p_0$ by $d(0) = p_0$. $n(\phi_k \mid e_{a_k})$ is a finite distribution
-on source phrase length that depends on each target word and which plays the role
-of a fertility parameter.
+on source phrase length that depends on each target word. This parameter
+is analogous to the fertility parameter introduced in IBM
+Model 3~\citep{brown-dellapietra-dellapietra-mercer-1993} and
+that controls how many source words are aligned to a given target word.
 
 The third component from \autoref{eq:word2phraseHmmGeneral} is defined in
 \autoref{eq:word2phraseTranslation} and represents the word-to-phrase translation parameter:
@@ -864,12 +866,13 @@ source-channel model with the following settings:
 %
 Log-linear models were originally trained with the maximum likelihood
 criterion, which precisely makes them equivalent to maximum entropy
-models~\citep{berger-dellapietra-dellapietra:1996:CL}. However,
-more effective training techniques such as minimum error rate
-training~\citep{och:2003:ACL} were introduced subsequently, that do
-not require the computation of a normalisation constant
-(see \autoref{sec:mert}).
-Thus, in practice, SMT models are effectively simply linear models, with the objective
+models~\citep{berger-dellapietra-dellapietra:1996:CL}. More
+effective training techniques such as minimum error rate
+training~\citep{och:2003:ACL} were introduced subsequently
+(see \autoref{sec:mert}). An advantage of minimum error rate training
+is that the criterion for optimisation and the evaluation metric are
+consistent. Because minimum error rate training does not require computing
+a normalisation constant, in practice, SMT models effectively become linear models, with the objective
 function presented in \autoref{eq:linearModel}:
 %
 \begin{equation}
@@ -1438,7 +1441,7 @@ by the number of source words covered.
 This allows pruning. Each time a hypothesis expansion produces a hypothesis that
 belongs to a certain stack, that stack is pruned.
 There are two commonly used types of pruning: histogram pruning and threshold
-pruning. Histogram pruning enforces a maximum number
+pruning~\citep{koehn:2010:book}. Histogram pruning enforces a maximum number
 of partial hypotheses in each stack. Threshold pruning
 examines the cost of the best partial hypothesis in a stack
 and discards all partial hypotheses in that stack whose cost
@@ -1732,10 +1735,11 @@ that must be satisfied by the rules in a hierarchical grammar:
   \end{itemize}
 %
 % TODOFINAL: missing constraints: boundary words, at least one alignment link
-More fine-grained constraints can be defined on patterns.
+More fine-grained constraints can be defined on rule patterns, which are obtained
+from rules by replacing terminal sequences by the placeholder $w$.
 For example, we use the configuration described
-in \autoref{tab:patternconfig} for some of the translation experiments in this
-thesis. This grammar was obtained following a greedy strategy of adding
+in \autoref{tab:patternconfig} for all translation experiments in this
+thesis, unless specified otherwise. This grammar was obtained following a greedy strategy of adding
 in turn the most beneficial patterns for Arabic-English translation.
 
   \begin{table}[htbp]
@@ -1784,9 +1788,11 @@ in turn the most beneficial patterns for Arabic-English translation.
         \hline
       \end{tabular}
     \end{center}
-    \caption{Rule patterns included in a baseline hierarchical grammar.
+    \caption{Rule patterns included in a baseline hierarchical grammar. A pattern is obtained
+      from a rule by replacing terminal sequences by the placeholder $w$.
       The decision whether to include each pattern was based on preliminary experiments
-      in Arabic-English. Most beneficial patterns were added incrementally.}
+      in Arabic-English. Most beneficial patterns were added incrementally. Unless specified
+      otherwise, this configuration is used in all subsequent translation experiments.}
     \label{tab:patternconfig}
   \end{table}
   
@@ -1822,7 +1828,9 @@ in turn the most beneficial patterns for Arabic-English translation.
 
     \subsection{Log-linear Model for Hierarchical Phrase-Based Translation} \label{sec:loglinear}
 
-    We now define in more detail the log-linear model for hierarchical translation, which usually makes a maximum (max) approximation.
+    We now define in more detail the log-linear model for hierarchical translation, which usually makes a
+    maximum (max) approximation, i.e.\ replaces a sum by the maximum term in the sum and assumes that the other
+    terms are negligible.
     We follow the original description~\citep{chiang:2007:CL}.
     For a sentence pair $(\bm{f}, \bm{e})$, let us define $\mathcal{D}$ the set of possible derivations $D$ of this sentence pair under 
     a hierarchical grammar. We will use the following notation for a derivation $D$:
@@ -2050,6 +2058,8 @@ model~\citep{chen-goodman:1998:harvard} is presented in \autoref{eq:backoffModel
   \label{eq:backoffModel}
 \end{equation}
 %
+where $c$ is an occurrence count in the monolingual training corpus for
+an $n$-gram.
 The conditions $c(w_{i - n + 1}^i) > 0$ and $c(w_{i - n + 1}^i) = 0$
 can be replaced by $c(w_{i - n + 1}^i) \geq \text{\emph{cutoff}}$ and
 $c(w_{i - n + 1}^i) < \text{\emph{cutoff}}$ respectively when $n$-grams with
@@ -2162,31 +2172,36 @@ $N_1$, $N_2$ and $N_{3+}$ are defined in \autoref{eq:definitionN}.
 \subsection{Stupid Backoff Smoothing}
 \label{sec:stupidBackoffSmoothing}
 
-The Stupid Backoff smoothing scheme is similar to
+The Stupid Backoff smoothing scheme~\citep{brants-popat-xu-och-dean:2007:EMNLP-CoNLL}
+is similar to
 the general backoff smoothing scheme presented in \autoref{eq:backoffModel}
 and presented in \autoref{eq:stupidBackoffScheme}:
 %
 \begin{equation}
-  p_{\text{stupid backoff}}(w_i \mid w_{i - n + 1}^{i - 1}) =
+  s_{\text{stupid backoff}}(w_i \mid w_{i - n + 1}^{i - 1}) =
   \begin{cases}
     \frac{c(w_{i - n + 1}^i)}{c(w_{i - n + 1}^{i - 1})} & \text{if } c(w_{i - n + 1}^i) > 0 \\
-    \alpha \, p_{\text{stupid backoff}}(w_i \mid w_{i - n + 2}^{i - 1}) & \text{if } c(w_{i - n + 1}^i) = 0
+    \alpha \, s_{\text{stupid backoff}}(w_i \mid w_{i - n + 2}^{i - 1}) & \text{if } c(w_{i - n + 1}^i) = 0
   \end{cases}
   \label{eq:stupidBackoffScheme}  
 \end{equation}
 %
+We use the notation $s$ to indicate that that the Stupid Backoff
+Smoothed score is not a probability.
 We note the following differences with respect to the traditional backoff
 scheme:
 %
 \begin{itemize}
   \item The non backed off score uses no discounting and simply uses relative frequency.
-  \item The backed off score scaling parameter is independent of
+  \item The backed off score scaling parameter $\alpha$ is independent of
     the $n$-gram history.
   \item As a result, the Stupid Backoff does not define a probability distribution.
 \end{itemize}
 %
 Stupid Backoff smoothing was designed to fit the MapReduce framework
 and build very large language models (see \autoref{sec:hfileIntro}).
+This scheme will be used in subsequent translation rescoring experiments
+throughout this thesis.
 %\subsection{Good-Turing Smoothing}
 
 %TODONEVER section describing good-turing smoothing (becaused used in biased lm).
@@ -2265,11 +2280,14 @@ and build very large language models (see \autoref{sec:hfileIntro}).
 \section{Decoding with Finite State Transducers}
 \label{sec:hifst}
   
-We use HiFST, a decoder based on finite state transducers~\citep{iglesias-degispert-banga-byrne:2009:NAACL}.
+We use HiFST, a decoder based on finite state transducers~\citep{iglesias-degispert-banga-byrne:2009:NAACL,iglesias:2010:PHD}.
 The decoder solves \autoref{eq:decoding} in three steps. In the first step, the source
 sentence is parsed using a variant of the CYK algorithm~\citep{chappelier-rahman:1998:TAPD}. Each cell in the CYK
 grid contains a nonterminal symbol and a span represented by a start and
-end index and backpointers to other cells in the grid. In the second step, a lattice of the possible translations 
+end index and backpointers to other cells in the grid. In the second step, a
+lattice~\citep{ueffing-och-ney:2002:EMNLP}, i.e.\ a compact representation
+of the possible translations as a directed acyclic graph where edges are
+words, 
 is recursively built by following the backpointers in the grid.
 In the third step, a language model represented as an acceptor is composed
 with the original lattice to give translations a language model score.
@@ -2281,7 +2299,11 @@ An advantage of the HiFST decoder (see \autoref{sec:hifst}) is that it directly 
 generates translation lattices that can be rescored in order to improve translation quality.
 Rescoring methods are used in machine translation when their integration into the decoder
 is challenging in terms of memory use. 5-gram language model rescoring and lattice minimum
-Bayes' risk rescoring are two such methods.
+Bayes' risk rescoring are two such methods. On the other hand, if scalability issues
+can be overcome, integrating complex models into first-pass decoding may provide a simpler
+and easier to use system. Furthermore, because larger parts of the decoding search space
+may be explored, single pass methods may also provide translation quality gains, however this
+is not guaranteed unless there is no pruning during decoding.
 
 \subsection{5-gram Language Model Lattice Rescoring}
 \label{sec:background5gRescoring}
@@ -2378,7 +2400,10 @@ with the MBR objective function. Gains measured by the metric used
 to define the loss function are of course more important.
 
 $n$-best list MBR rescoring requires $O(n)$ sentence-level
-BLEU computations, which restricts the depth of the $n$-best list.
+BLEU computations for each hypothesis, so $O(n^2)$ sentence-level BLEU
+computations for each source sentence. This restricts the depth of the $n$-best list;
+for example \citet{kumar-byrne:2004:NAACL} use a 1000-best list but $n$ could be a very large
+number.
 \citet{tromble-kumar-och-macherey:2008:EMNLP} remedy this issue
 by introducing a
 lattice minimum Bayes' risk decoding technique where $\mathcal{E}$ is a lattice

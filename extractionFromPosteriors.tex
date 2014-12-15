@@ -199,7 +199,7 @@ probability $p_m(j, i)$ is computed in \autoref{eq:matrixLinkPosterior}.
 $\delta(\bm{a_k}, i, j)$ indicates whether there is a link between $i$ and
 $j$ in the alignment $\bm{a_k}$. Given a sentence pair, all phrase
 pairs with a maximum source length and a maximum target length that
-contain a link with a strictly positive posterior are extracted. The
+contain a link with a posterior greater than zero are extracted. The
 fractional counts assigned to these phrase pairs are computed in terms
 of the link posteriors and then used to estimate the translation models
 by relative frequency. The fractional count computation approximates

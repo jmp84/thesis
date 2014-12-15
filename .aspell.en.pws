@@ -1,4 +1,4 @@
-personal_ws-1.1 en 732 
+personal_ws-1.1 en 736 
 TotalOrderPartitioner
 mille
 stupidBackoffSmoothing
@@ -277,6 +277,7 @@ trie
 reduceFunction
 CountriesZh
 phrasePairPosteriorHMMNumerator
+criticizing
 lafferty
 MTTK
 ThatZh
@@ -328,6 +329,7 @@ pauls
 backwardForward
 monolingualStats
 lmInterpolationBestStrategy
+ueffing
 stearns
 franz
 Viterbi
@@ -505,6 +507,7 @@ mtPipeline
 phraseBasedFutureCost
 NorthKoreaZh
 HLTEMNLP
+Fayyad
 burundi's
 toolkits
 rulesPlusS
@@ -681,6 +684,7 @@ CoNLL
 wu
 hierintro
 wX
+Habbash
 xu
 domainAdaptationGrammar
 iglesias

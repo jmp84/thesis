@@ -119,25 +119,33 @@ references.
 %
 We can draw two conclusions from these observations.
 First, this is evidence that many possible translations are
-acceptable and this is why even humans cannot obtain a BLEU
-score close to 100\%. Second, because the automatic
-system performance is only approximately 10 BLEU points below
-human performance, we can conclude that the quality of
-automatic translation is very high. Manual inspection of the
-system output confirms this. We show a few examples of high
-quality output sentences that are relatively long in
+acceptable. Second, because the automatic
+system performance for this particular setting
+is approximately 10 BLEU points below
+human performance, this gives an indication of the quality
+of state-of-the-art automatic translation.
+After manual inspection of the
+system output, we show a few examples of
+output sentences that are relatively long and still have
+reasonable quality in
 \autoref{fig:goodQualityOutput}:
 %
 \begin{figure}
 \begin{quote}
-      minister of agriculture and social affairs, told afp: ``the prime minister submitted his resignation to abbas, chairman of the president, and at the same time asked him to form a new cabinet, responsible for handling daily affairs of the new government.''
+      Minister of agriculture and social affairs, told AFP: ``The prime minister submitted his resignation to Abbas, chairman of the president, and at the same time asked him to form a new cabinet, responsible for handling daily affairs of the new government.''
 
-      chavez has ordered government officials to keep an eye on foreigners visiting venezuela's speech, when a person is found to have publicly criticized him or the venezuelan government, are to be deported.
+      Reference: Minister for Agriculture and Social Affairs Habbash told AFP: ``Prime Minister Fayyad offered his resignation to President Abbas.  The president accepted it and at the same time also asked him to form a new cabinet government to be responsible for routine administration.''
 
-      us-china strategic economic dialogue ``focused on the economic, environmental and other issues, the most important thing is that the issue of the rmb exchange rate, the us congress members are of the view that the value of the renminbi underestimated.
+      Chavez has ordered government officials to keep an eye on foreigners visiting venezuela's speech, when a person is found to have publicly criticized him or the Venezuelan government, are to be deported.
+
+      Reference: Chavez has already ordered government officials to closely monitor the speech of foreigners when they visit Venezuela.  If anyone is found publicly criticizing him or the Venezuelan government, they should be all deported.
+
+      US-China strategic economic dialogue ``focused on the economic, environmental and other issues, the most important thing is that the issue of the RMB exchange rate, the US Congress members are of the view that the value of the Renminbi underestimated.
+
+      Reference: The US-China Strategic Economic Dialogue mainly discusses economic, environmental protection and other issues.  Yet, the most important is the issue of the renminbi exchange rate.  US congressmen believe that the renminbi is excessively undervalued.
 \end{quote}
-\caption{Example of output of a translation system. Even though the sentences are relatively long,
-they are overall fluent and intelligible.}
+\caption{Example of output of a translation system, together with one reference. Even though the sentences are relatively long,
+they are overall fluent and intelligible. True casing is restored manually.}
 \label{fig:goodQualityOutput}
 \end{figure}
 
