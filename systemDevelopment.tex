@@ -1,5 +1,5 @@
-\chapter{Refinements in Hierarchical Phrase-Based Translation System Development}
-\chaptermark{Hiero System Development}
+\chapter{Domain Adaptation for Hierarchical Phrase-Based Translation Systems}
+\chaptermark{Hiero Domain Adaptation}
 \label{chap:wmt}
 
 % TODOFINAL grep for a + space + vowel and replace by an (also reverse)
@@ -562,6 +562,11 @@ becomes unstable with more features~\citep{foster-kuhn:2009:WMT}.
   \end{center}
 \end{table}
 %
+These results are in contrast to those obtained
+previously~\citep{koehn-schroeder:2007:WMT}, where the loglinear interpolation
+was found to provide more benefits over the linear interpolation. In addition,
+more language models are considered (9 vs. 2). Finally,
+both tune and test results are reported here.
 
 %We note that the differences in BLEU between the various configurations are
 %relatively small. Therefore, we perform a statistical significance analysis
@@ -648,6 +653,9 @@ Thresholds involving source-to-target translation scores are applied separately 
 provenance and the union of all surviving rules for each provenance is kept. This 
 configuration is called ``provenance union''. This specific configuration
 was used for submission to the translation task competition at WMT13.
+To our knowledge, this original technique has not been employed previously.
+Results show that it provides additional gains over the simple use
+of provenance features.
 
 The first-pass language model is the linear mixture described
 in \autoref{sec:domainAdaptationLM}. We also compare
@@ -743,6 +751,12 @@ medium data for the first pass language model.
 The ``large 4g'' configuration corresponds to the linear
 configuration from \autoref{tab:lmInterpolationBestStrategy}.
 
+The initial parameter for the MERT optimisation
+step was the same for all configurations. This parameter was obtained
+from a separate Arabic-to-English experiment carried out earlier. Reusing
+already optimised parameters between experiments allows us to do faster
+experimentation since less iterations are needed until convergence.
+
 Results are presented in \autoref{tab:lmSizes}.
 Comparing row 1 and row 3, we can see that for a 4-gram
 language model, more training data is beneficial in first-pass decoding.
@@ -797,6 +811,11 @@ in rescoring experiments.
     \label{tab:lmSizes}
   \end{center}
 \end{table}
+%
+We are not aware of any studies in the machine translation literature on
+interactions between first pass and second pass language models.
+The main conclusion, i.e. that a two-pass decoding approach is beneficial over a single-pass
+approach given the amount of training data, has not been demonstrated experimentally before.
 
 % TODOFINAL if time make the large 5g first pass interpolated by using restricted vocab.
 % TODOFINAL check 1st pass lattice sizes
@@ -833,8 +852,9 @@ of several billion tokens. This confirms conclusions from
 Figure 5 in a previous publication~\citep{brants-popat-xu-och-dean:2007:EMNLP-CoNLL}
 that Kneser-Ney smoothing is superior to Stupid Backoff smoothing
 with amounts of training data in a similar order to the work here. These
-conclusions were made for first pass decoding while here, they hold in 5-gram
-language model lattice rescoring.
+conclusions were made for first pass decoding while here. This is
+the first time these two smoothing strategies are compared
+in the context of 5-gram language model lattice rescoring.
 We also note that we obtain an improvement over the system submitted to the WMT13 translation
 task using the ``provenance union + KN 5g'' configuration (row 15 in bold vs.\ row 14).
 %

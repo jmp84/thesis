@@ -272,6 +272,14 @@ probabilities and a more complex model with translation and distortion
 probabilities. The parameter are trained with an approximate version of the
 expectation-maximisation algorithm~\citep{dempster-laird-rubin:1977:JRSS}.
 Experiments demonstrate translation improvements over IBM Model 4.
+\citet{birch-callisonburch-osborne-koehn:2006:WMT} constrain this model
+in order to be able to apply it to larger parallel corpora. When searching for
+a set of phrase pairs to cover a training sentence pair, phrase pairs that
+are consistent with the intersection of Viterbi
+alignments (see \autoref{sec:symmetrisationHeuristics}) are considered first; other
+phrase pairs are considered only when the sentence pair cannot be covered entirely.
+Results close to standard phrase-based models are obtained.
+
 
 \citet{denero-klein:2008:ACL} prove that phrase alignment is an
 NP-hard problem. Given a sentence pair $(\bm{f}, \bm{e})$, a bijective phrase
@@ -1299,9 +1307,29 @@ for translation quality.
 \subsection{Experimental Setup}
 \label{sec:extractionFromPosteriorsExperimentalSetup}
 
-We report on experiments in Chinese to English translation. Our system is
-trained on a subset of the GALE 2008 evaluation parallel
-text.\footnote{http://projects.ldc.upenn.edu/gale/data/catalog.html} This is
+We report on experiments in Chinese to English translation.
+Parallel training data
+consists of the collection listed in \autoref{tab:subsetGale08}.
+%
+\begin{table}
+\begin{center}
+\end{center}
+\begin{tabular}{|l|l|l|}
+ADSO\_v5   & LDC2006E26 & LDC2007E87 \\
+LDC2002L27 & LDC2006E34 & LDC2008E40 \\
+LDC2003E07 & LDC2006E85 & LDC2008E56 \\
+LDC2003E14 & LDC2006E92 & LDC2008G05 \\
+LDC2005E83 & LDC2006G05 & LDC2009E16 \\
+LDC2005T06 & LDC2007E06 & LDC2009G01 \\
+LDC2005T10 & LDC2007E101 & proj\_syndicate \\
+LDC2005T34 & LDC2007E103 & UMD\_NewsExplorer \\
+LDC2006E24 & LDC2007E46 & Wikipedia \\
+\end{tabular}
+\caption{List of collections used as parallel training data for translation experiments.}
+\label{tab:subsetGale08}
+\end{table}
+%
+This is
 approximately 50M words per language. We report translation results on a
 development set \emph{tune-nw} and a test set \emph{test-nw1}. These contain
 translations produced by the GALE program and portions of the newswire sections
@@ -1329,7 +1357,9 @@ iterative parameter estimation under BLEU is performed on the development set.
 Rules with a source-to-target probability less than 0.01 are discarded. In
 addition, rules that did not occur more than $n_{obs}$ times are discarded. For
 Viterbi extraction, $n_{obs} = 1$. For link posterior extraction, $n_{obs} = 2$
-and for phrase pair posterior extraction, $n_{obs} = 0.2$.
+and for phrase pair posterior extraction, $n_{obs} = 0.2$. These thresholds
+offer were defined experimentally and provide competitive performance for the various
+conditions without giving unreasonably slow decoding times.
 The thresholds introduced in previous sections are defined as follows:
 %
 \begin{itemize}
@@ -1343,6 +1373,12 @@ and slowed down decoding times.
   \item $\lambda$ is set to 0.5.
   \item $s_{\text{hier max}}$ and $t_{\text{hier max}}$ are set to 3.
 \end{itemize}
+%
+The thresholds relating to Viterbi extraction ($s_{\text{max}}$,
+$s_{\text{max elements}}$, $s_{\text{max terminals}}$, $s_{\text{max NT}}$) are standard in our
+translation systems. $\lambda$, $s_{\text{hier max}}$ and $t_{\text{hier max}}$
+were chosen experimentally and provide competitive performance without slowing down decoding
+unreasonably.
 
 \subsection{Grammar Coverage}
 \label{sec:grammarcoverage}
@@ -1431,26 +1467,26 @@ instances of search pruning per input word.
 \begin{table}
   \begin{center}
     %\footnotesize
-    \begin{tabular}{|l|l||c|c|c||c||c|}
+    \begin{tabular}{|l|l|l||c|c|c||c||c|}
       \hline
-      Grammar & Extraction & \multicolumn{3}{c||}{{\em tune-nw}} & {\em test-nw1} & {\em test-nw2} \\  \cline{3-7}
+      Grammar & Extraction & \# Rules & \multicolumn{3}{c||}{{\em tune-nw}} & {\em test-nw1} & {\em test-nw2} \\  \cline{3-7}
       &            & {\em time} & {\em prune} & BLEU & BLEU & BLEU \\ \hline
-      $G_H$ & {\bf V-union} & 3.7 & 0.3 & 35.1 & 35.6 & 37.6  \\
+      $G_H$ & {\bf V-union} & 979149 & 3.7 & 0.3 & 35.1 & 35.6 & 37.6  \\
       \hline
-      & {\bf V-union} & 0.4 & 0.0 & 33.6 & 34.6 & 36.4  \\
-      $G_1$ & {\bf WP-st} & 0.9 & 0.0  & 34.3 & 34.8 & 37.5  \\
-      & {\bf PP-st} & 1.4 & 0.0 & 34.4 & 35.1 & 37.7   \\
+      & {\bf V-union} & 613962 & 0.4 & 0.0 & 33.6 & 34.6 & 36.4  \\
+      $G_1$ & {\bf WP-st} & 920183 & 0.9 & 0.0  & 34.3 & 34.8 & 37.5  \\
+      & {\bf PP-st} & 893542 & 1.4 & 0.0 & 34.4 & 35.1 & 37.7   \\
       \hline
-      & {\bf V-union} & 1.0 & 0.0 & 34.5  & 35.4  & 37.2   \\
-      $G_2$ & {\bf WP-st} & 5.8 & 0.5 & 35.1 & 36.0  & 37.7   \\
-      & {\bf PP-st} & 7.8 & 0.7 & 35.5 & 36.4  & 38.2   \\
+      & {\bf V-union} & 734994 & 1.0 & 0.0 & 34.5  & 35.4  & 37.2   \\
+      $G_2$ & {\bf WP-st} & 1132386 & 5.8 & 0.5 & 35.1 & 36.0  & 37.7   \\
+      & {\bf PP-st} & 1238235 & 7.8 & 0.7 & 35.5 & 36.4  & 38.2   \\
       \hline
-      & {\bf V-union} & 1.2 & 0.0 & 34.9 & 35.3  & 37.0   \\
-      $G_3$ & {\bf WP-st} & 8.3 & 1.1 & 35.1  & 36.2  & 37.9   \\
-      & {\bf PP-st} & 10.7 &  2.6  & 35.5 & 36.4  & 38.5  \\
+      & {\bf V-union} & 966828 & 1.2 & 0.0 & 34.9 & 35.3  & 37.0   \\
+      $G_3$ & {\bf WP-st} & 2680712 & 8.3 & 1.1 & 35.1  & 36.2  & 37.9   \\
+      & {\bf PP-st} & 5002168 & 10.7 &  2.6  & 35.5 & 36.4  & 38.5  \\
       \hline
     \end{tabular}
-    \caption{Chinese to English translation results with alternative grammars and extraction methods (lower-cased BLEU shown). Time (secs/word) and prune (times/word) measurements done on {\em tune-nw} set.}
+    \caption{Chinese to English translation results with alternative grammars and extraction methods (lower-cased BLEU shown). The number of rules and time (secs/word) and prune (times/word) measurements are done on {\em tune-nw} set.}
     \label{tab:extractionFromPosteriorsTranslationResults}
   \end{center}
 \end{table}
