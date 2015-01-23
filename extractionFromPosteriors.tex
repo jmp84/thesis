@@ -1516,14 +1516,15 @@ the MERT parameter optimisation was carried out once. Following
 \citet{clark-dyer-lavie-smith:2011:ACL}, we run the MERT parameter optimisation
 step 10 times from different initial random parameters for the following
 conditions: $G_H$/\textbf{V-union} and $G_2$.\textbf{PP-st}. We report
-the first-pass decoding BLEU score mean, variance and spread for these 10 runs in \autoref{tab:}.
+the first-pass decoding BLEU score mean, variance and spread (i.e. difference between
+minimum and maximum) for these 10 runs in \autoref{tab:mertStability}.
 The results show that the optimisation is relatively stable.
 %
 \begin{table}
   \begin{center}
     \begin{tabular}{*{4}{|l}|}
       Condition & \emph{tune-nw} & \emph{test-nw1} & \emph{test-nw2} \\
-      $G_H$/\textbf{V-union} & 34.52/0.05/ & RUNS & RUNS \\
+      $G_H$/\textbf{V-union} & 34.56/0.02/0.41 & RUNS & RUNS \\
       $G_2$/\textbf{PP-st}   & RUNS & RUNS & RUNS \\
     \end{tabular}
   \end{center}
@@ -1750,13 +1751,13 @@ Results are presented in \autoref{tab:posteriorsResultsRussianEnglish}.
       \hline
     \end{tabular}
     \caption{Russian to English translation results with alternative grammars and extraction methods (lower-cased BLEU shown). Experiments from \autoref{tab:extractionFromPosteriorsTranslationResults} were repeated for the baseline and the phrase-pair posterior extraction method. }
-    \label{tab:extractionFromPosteriorsTranslationResults}
+    \label{tab:posteriorsResultsRussianEnglish}
   \end{center}
 \end{table}
 %
 For this language pair, the translation quality obtained by the Viterbi method and
 the phrase-pair extraction method is comparable, with differences of 0.1 BLEU.
-We hypothesize that because there is less reordering between Russian and English, the
+We hypothesise that because there is less reordering between Russian and English, the
 quality of the Viterbi alignments, therefore the quality of the rules extracted, is
 high enough to already produce relatively high quality translations.
 
