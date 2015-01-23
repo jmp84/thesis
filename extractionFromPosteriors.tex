@@ -1509,6 +1509,30 @@ translation~\citep{iglesias-degispert-banga-byrne:2009:EACL}.
 
 % TODOFINAL change these into paragraphs with \paragraph
 
+\paragraph{MERT stability}
+
+For the results reported in \autoref{tab:extractionFromPosteriorsTranslationResults},
+the MERT parameter optimisation was carried out once. Following
+\citet{clark-dyer-lavie-smith:2011:ACL}, we run the MERT parameter optimisation
+step 10 times from different initial random parameters for the following
+conditions: $G_H$/\textbf{V-union} and $G_2$.\textbf{PP-st}. We report
+the first-pass decoding BLEU score mean, variance and spread for these 10 runs in \autoref{tab:}.
+The results show that the optimisation is relatively stable.
+%
+\begin{table}
+  \begin{center}
+    \begin{tabular}{*{4}{|l}|}
+      Condition & \emph{tune-nw} & \emph{test-nw1} & \emph{test-nw2} \\
+      $G_H$/\textbf{V-union} & 34.52/0.05/ & RUNS & RUNS \\
+      $G_2$/\textbf{PP-st}   & RUNS & RUNS & RUNS \\
+    \end{tabular}
+  \end{center}
+  \caption{Repeated MERT runs with different random parameter initialisations. BLEU
+    score mean, variance and spread (in mean/variance/spread format) are reported for two conditions. The results show that
+    the optimisation is relatively stable.}
+  \label{tab:mertStability}
+\end{table}
+
 \paragraph{Grammar complexity}
 
 As expected, for the standard extraction method (see
@@ -1696,15 +1720,58 @@ LMBR{\bf(PP-st,PP-ts)} & 36.4 & 36.9 & 39.3 \\
 \label{tab:symm}
 \end{table}
 
+\subsection{Additional Language Pair: Russian-English}
+
+We also investigated our proposed method in the context of the Russian-English
+language pair, which presents less reordering challenges than Chinese-English.
+We repeated experiments from \autoref{tab:extractionFromPosteriorsTranslationResults}
+with the Viterbi method as a baseline and the phrase-pair posterior method, which showed
+the best results for Chinese-English. We use the same word alignment models and
+development sets as for the system described in \autoref{sec:wmt13ExperimentalSetup}.
+Results are presented in \autoref{tab:posteriorsResultsRussianEnglish}.
+%
+\begin{table}
+  \begin{center}
+    %\footnotesize
+    \begin{tabular}{|l|l|l||c|c|c||c||c|}
+      \hline
+      Grammar & Extraction & \# Rules & \multicolumn{3}{c||}{{\em tune}} & {\em test1} & {\em test2} \\  \cline{3-7}
+      &            & BLEU & BLEU & BLEU \\ \hline
+      $G_H$ & {\bf V-union} & 885716 & 33.67 & 32.48 & 25.57  \\
+      \hline
+      & {\bf V-union} & 385651 & 33.51 & 32.28 & 25.55 \\
+      $G_1$ & {\bf PP-st} & 457562 & 33.44 & 32.13 & 25.45 \\
+      \hline
+      & {\bf V-union} & 500128 & 33.31  & 32.20 & 25.48 \\
+      $G_2$& {\bf PP-st} & 711741 & 33.65 & 32.21 & 25.57 \\
+      \hline
+      & {\bf V-union} & 900695 & 33.68 & 32.40 & RUNS \\
+      $G_3$ & {\bf PP-st} & 2786990 & 33.68 & 32.27 & 25.76 \\
+      \hline
+    \end{tabular}
+    \caption{Russian to English translation results with alternative grammars and extraction methods (lower-cased BLEU shown). Experiments from \autoref{tab:extractionFromPosteriorsTranslationResults} were repeated for the baseline and the phrase-pair posterior extraction method. }
+    \label{tab:extractionFromPosteriorsTranslationResults}
+  \end{center}
+\end{table}
+%
+For this language pair, the translation quality obtained by the Viterbi method and
+the phrase-pair extraction method is comparable, with differences of 0.1 BLEU.
+We hypothesize that because there is less reordering between Russian and English, the
+quality of the Viterbi alignments, therefore the quality of the rules extracted, is
+high enough to already produce relatively high quality translations.
+
 \section{Conclusion}
 \label{sec:extractionFromPosteriorsConclusion}
 
 We have presented new rule extraction methods that lead to larger rule sets as
-well as better estimated translation models. A simple grammar estimated with
+well as better estimated translation models. In Chinese-English translation experiments,
+a simple grammar estimated with
 these methods was shown to outperform a baseline hierarchical grammar extracted
 from Viterbi alignments. A fine-grained analysis was provided to explain the
 advantages of the phrase-pair posterior extraction method. Finally, it was shown
 that the best way to exploit both alignment directions is to train separate
 models for each direction, translate separately and combine the lattice outputs.
+In addition, the same techniques were explored in the context of Russian-English
+translation and provided the same translation quality as the baseline technique.
 
 % TODOFINAL expand conclusions
