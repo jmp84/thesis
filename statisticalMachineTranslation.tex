@@ -704,19 +704,7 @@ alignments~\citep{och-ney:2003:CL}.
 We now present the \emph{grow} heuristic and its variants, which are based
 on the initial \emph{intersection} and \emph{union} heuristics.
 The \emph{grow} heuristic algorithm is presented in
-\autoref{alg:growHeuristic}. The input is a sentence
-pair $(f_1^J, e_1^I)$, a source-to-target
-alignment $\bm{a}_{f2e}$ and a target-to-source alignment
-$\bm{a}_{e2f}$. The resulting alignment $\bm{a}$ is initialised
-with the
-intersection (\hyperlink{alg:line:initGrow}{line \ref{alg:line:initGrow}}).
-Then alignment links that are in the union and that are neighbours of already existing
-alignment links (\hyperlink{alg:line:neighbours}{line \ref{alg:line:neighbours}})
-are considered. If the source or the target word is not already
-aligned (\hyperlink{alg:line:notAlreadyAligned}{line \ref{alg:line:notAlreadyAligned}}),
-then the link is added to the resulting
-alignment (\hyperlink{alg:line:addLink}{line \ref{alg:line:addLink}}).
-This is repeated until no more links are added.
+\autoref{alg:growHeuristic}.
 %
 \begin{figure}
   %\begin{footnotesize}
@@ -752,6 +740,20 @@ This is repeated until no more links are added.
     or the target is not already aligned.}
   \label{alg:growHeuristic}
 \end{figure}
+%
+The input is a sentence
+pair $(f_1^J, e_1^I)$, a source-to-target
+alignment $\bm{a}_{f2e}$ and a target-to-source alignment
+$\bm{a}_{e2f}$. The resulting alignment $\bm{a}$ is initialised
+with the
+intersection (\hyperlink{alg:line:initGrow}{line \ref{alg:line:initGrow}}).
+Then alignment links that are in the union and that are neighbours of already existing
+alignment links (\hyperlink{alg:line:neighbours}{line \ref{alg:line:neighbours}})
+are considered. If the source or the target word is not already
+aligned (\hyperlink{alg:line:notAlreadyAligned}{line \ref{alg:line:notAlreadyAligned}}),
+then the link is added to the resulting
+alignment (\hyperlink{alg:line:addLink}{line \ref{alg:line:addLink}}).
+This is repeated until no more links are added.
 
 In the \emph{grow} heuristic, neighbours are defined as horizontal or
 vertical neighbours. If diagonal neighbours are also considered, then
