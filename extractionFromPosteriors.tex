@@ -1309,7 +1309,7 @@ for translation quality.
 
 We report on experiments in Chinese to English translation.
 Parallel training data
-consists of the collection listed in \autoref{tab:subsetGale08}.
+consists of the collections listed in \autoref{tab:subsetGale08}.
 %
 \begin{table}
 \begin{center}
@@ -1518,7 +1518,7 @@ For the results reported in \autoref{tab:extractionFromPosteriorsTranslationResu
 the MERT parameter optimisation was carried out once. Following
 \citet{clark-dyer-lavie-smith:2011:ACL}, we run the MERT parameter optimisation
 step 10 times from different initial random parameters for the following
-conditions: $G_H$/\textbf{V-union} and $G_2$.\textbf{PP-st}. We report
+conditions: $G_H$/\textbf{V-union} and $G_2$/\textbf{PP-st}. We report
 the original first-pass decoding BLEU score and
 the first-pass decoding BLEU score mean, variance and spread (i.e. difference between
 minimum and maximum) for the additional 10 runs on the
@@ -1541,7 +1541,7 @@ the original run and for the average of the additional 10 runs.
   \end{center}
   \caption{Repeated MERT runs with different random parameter initialisations. Original first-pass
     BLEU score, BLEU
-    score mean, variance and spread (in mean/variance/spread format) are reported for two conditions. The results show that
+    score mean, variance and spread (in original/mean/variance/spread format) are reported for two conditions. The results show that
     the optimisation is relatively stable.}
   \label{tab:mertStability}
 \end{table}
