@@ -347,7 +347,7 @@ They first use a standard Bloom filter to define a binary feature that
 indicates whether an $n$-gram was seen in a monolingual corpus. They
 also use a Bloom filter to encode $n$-grams together with quantised counts
 in order to define a multinomial feature, that is a feature
-with a finite set of possible values---in this case the quantised values. Both these data structure can
+with a finite set of possible values---in this case the quantised values. Both these data structures can
 substantially reduce the disk space and memory usage with respect to lossless
 representations of language models. However, they allow
 false positives for $n$-gram
@@ -443,7 +443,7 @@ Finally, some approaches store language models in a distributed fashion.
 We saw in \autoref{sec:applicationsMapReduceSMT} how a Stupid Backoff language
 model can be built. After relative frequencies have been computed, another
 partition function that hashes on the last two words of an $n$-gram is applied
-so that backoff operations can be done withing the same partition.
+so that backoff operations can be done within the same partition.
 At decoding time, the decoder architecture is modified in order
 to request a batch of $n$-grams rather than a single $n$-gram.
 The Stupid Backoff language model building can be scaled
@@ -472,7 +472,7 @@ employed in the machine translation community to one of these solutions.
 We now describe the data structure we use to store models and we review relevant
 features to the design of our system. To store a model represented as key-value
 pairs, we use the HFile file format,\footnote{\url{http://hbase.apache.org}} which is
-a open source reimplementation of the SSTable file
+an open source reimplementation of the SSTable file
 format~\citep{chang-dean-ghemawat-hsieh-wallach-burrows-chandra-fikes-gruber:2008:ACM}.
 The HFile format is a lookup table with key and value columns. The entries are free
 to be an arbitrary string of bytes of any length. The table is sorted
@@ -621,7 +621,7 @@ existence of a key, a binary search is conducted on the Bloom index, the
 relevant Bloom block is loaded, and the membership test performed.
 
 Unlike work on Bloom filter language
-model~\citep{talbot-osborne:2007:ACL,talbot-osborne:2007:EMNLP-CoNLL}, this
+models~\citep{talbot-osborne:2007:ACL,talbot-osborne:2007:EMNLP-CoNLL}, this
 filter only tests the existence of a key and does not return any statistics from
 the value. If a membership test is positive, a usual key search will
 still be carried out. During the execution of a query, two keys may
@@ -696,9 +696,10 @@ as a series of MapReduce jobs, summarised in
 to the one described in the original
 publication~\citep{dyer-cordova-mont-lin:2008:WMT}. For
 source-to-target and target-to-source probability computation,
-we used Method 3 described in that publication. Keeping each
-feature computation as a separate MapReduce job makes easier
-the integration of a new feature.
+we used Method 3 described in that publication, which was
+reported to be faster than other methods. Keeping each
+feature computation as a separate MapReduce job makes
+the integration of a new feature more convenient.
 %
 \begin{figure}
   \tikzstyle{MapReduceJob} = [rectangle, draw, fill=blue!20, rounded corners,
@@ -1243,8 +1244,10 @@ grammars, \emph{ruleXtract} performs twice as fast.
       \emph{ruleXtract} & 20m & 11m11s & 31m11s \\
       \hline
       \multicolumn{4}{|c|}{\textbf{Large Grammar}} \\
+      \hline
       \emph{cdec} & 1h24m29s & 9h29m54s & 10h54m23s \\
       \emph{ruleXtract} & 5h & 23m46s & 5h23m46s \\
+      \hline
     \end{tabular}
     \caption{Timings for \emph{cdec} and \emph{ruleXtract} for both
     rule extraction and retrieval.}

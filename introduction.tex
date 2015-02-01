@@ -40,7 +40,7 @@ For a computer, or rather a statistical model, such a situation will represent
 an outlier in terms of the ratio of the number of words that are translation of each other.
 Self-referential sentences can also present challenges for translation.
 For example, the sentence \emph{This sentence has five words}
-has at least two acceptable translation into Russian from the syntactic and
+has at least two acceptable translations into Russian from the syntactic and
 semantic point of view: \emph{В этом предложении пять слов} and
 \emph{Это предложение состоит из пяти слов}. However, the second translation
 has six words and therefore cannot be accepted.
@@ -109,7 +109,7 @@ references.
     \end{tabular}
     \caption{BLEU score obtained by the Cambridge University Engineering Department
     system and by human translators on the MT08 test set. 4 references are
-    provided. The BLEU score is measured against various subset of references: all
+    provided. The BLEU score is measured against various subsets of references: all
     references (1-2-3-4), all but the first (2-3-4), etc. The BLEU score for
     a human reference when the set of reference contains the human reference is
     not computed and is simply 100.}
@@ -144,7 +144,7 @@ reasonable quality in
 
       Reference: The US-China Strategic Economic Dialogue mainly discusses economic, environmental protection and other issues.  Yet, the most important is the issue of the renminbi exchange rate.  US congressmen believe that the renminbi is excessively undervalued.
 \end{quote}
-\caption{Example of output of a translation system, together with one reference. Even though the sentences are relatively long,
+\caption{Example output of a translation system, together with one reference. Even though the sentences are relatively long,
 they are overall fluent and intelligible. True casing is restored manually.}
 \label{fig:goodQualityOutput}
 \end{figure}
@@ -159,7 +159,7 @@ criterion, such as the most likely translation under a
 probabilistic model of translation. The data
 used to estimate the parameters for such a model consists
 of a \emph{parallel corpus}, which is a set of sentence
-pairs in two different natural language that are
+pairs in two different natural languages that are
 translation of each other, and a monolingual corpus
 which is a set of sentences in the language we would like
 to translate into.
@@ -331,7 +331,7 @@ text and retrieval of translation rules
 from very large translation grammars.
 In \autoref{chap:extractionFromPosteriors}, we
 present our novel grammar extraction procedure that makes use of
-posterior probabilities from word alignment models
+posterior probabilities from word alignment models.
 We then provide hierarchical phrase-based system building recommendations
 about what decisions to make in terms of language modelling
 and grammar design to obtain the best possible systems

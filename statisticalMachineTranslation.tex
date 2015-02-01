@@ -1093,7 +1093,7 @@ model framework and which are instances of word-based models.
 % TODOFINAL motivation for phrase based: word based a:[1,J]->[1,I] so many to one mapping only
 In the phrase-based translation paradigm, the minimal unit of translation consists
 of phrases. Phrases are sequences of consecutive words, that need not be syntactically
-or semantically motivated, but nevertheless are used as translation unit.
+or semantically motivated, but nevertheless are used as translation units.
 Benefits of phrase-based models include:
 %
 \begin{itemize}
@@ -1446,7 +1446,7 @@ of partial hypotheses in each stack. Threshold pruning
 examines the cost of the best partial hypothesis in a stack
 and discards all partial hypotheses in that stack whose cost
 is greater than the best cost plus a threshold.
-Histogram pruning provides a simple guaranty in terms
+Histogram pruning provides a simple guarantee in terms
 of computational complexity. On the other hand, because it relies
 on cost, threshold pruning ensures a consistent quality for partial
 hypotheses that survive the pruning threshold.
@@ -1487,7 +1487,7 @@ and a reordering model may be
 beneficial~\citep{huck-EtAl:2013:WMT}.
 A closely related formalism, inversion
 transduction grammars, was previously
-introduced~\citep{wu:1995:IJCAI,wu:1997:CL}, however, because hierarchical
+introduced~\citep{wu:1995:IJCAI,wu:1997:CL}. However, because hierarchical
 phrase-based grammar only contain lexicalised rules, translation decoding
 is more practical.
 An alternative to hierarchical phrase-based
@@ -1974,7 +1974,7 @@ $n$-gram language models are typically used because they are
 robust, can be easily trained on large amounts of data and model local grammatical relationships.
 Since they do not model the language structure nor long distance relationships between words, work
 has been conducted~\citep{shen-xu-weischedel:2008:ACL} to overcome this issue. % TODONEVER move this or expand
-We first review $n$-gram language models, then review different smoothing techniques, we finally
+We first review $n$-gram language models, then review different smoothing techniques and we finally
 describe in more detail two smoothing techniques
 that are used for experiments in this thesis: Kneser-Ney smoothing
 and Stupid Backoff smoothing.
@@ -2118,8 +2118,8 @@ In this section, we present interpolated modified Kneser-Ney
 smoothing~\citep{chen-goodman:1998:harvard}, which is the most popular smoothing
 strategy used for machine translation. The motivation for Kneser-Ney
 smoothing~\citep{kneser-ney:1995:ICASSP} as given by
-\citet{chen-goodman:1998:harvard} is the use of lower order distribution for
-smoothing needs to take into account information form the higher order
+\citet{chen-goodman:1998:harvard} is that the use of lower order distributions for
+smoothing needs to take into account information from the higher order
 distribution. For example, let us consider a bigram model. We want to assign a
 probability to the word \emph{Francisco} given its previous word, say
 \emph{hello}. If we have not seen the bigram \emph{hello Francisco} in the

@@ -98,7 +98,7 @@ in \autoref{sec:rulextractMapReduce}.
 
 We build a first-pass language model using the target side
 of the parallel text and the AFP and Xinhua agencies of the
-Gigaword~\citep{parker-graff-kong-chen-maeda:2009:LDC}. % TODOFINAL review bibtex entry
+Gigaword corpus~\citep{parker-graff-kong-chen-maeda:2009:LDC}. % TODOFINAL review bibtex entry
 We first build separate modified Kneser-Ney smoothed 4-gram language
 models (see \autoref{sec:StatisticalMachineTranslationKneserNey})
 on each of these three corpora. The language models built on AFP
@@ -216,7 +216,7 @@ We measured the performance of the oracle hypothesis % TODOFINAL explain how to 
 for the translation system and the regeneration systems on the Tune set.
 Again, regeneration oracle BLEU scores are substantially
 lower than the translation oracle BLEU.
-However, it interesting to observe that
+However, it is interesting to observe that
 the oracle hypothesis obtained from the union configuration is
 around 9 BLEU points above the MT baseline. This indicates that
 there is a possible reordering of the 10-best hypotheses obtained by
@@ -572,7 +572,7 @@ decoder to the output of a translation system in a 10-best hypothesis
 rescoring setting. Because the regeneration decoder only uses
 a language model as single feature and throws away word order
 information obtained from the translation system except for splitting
-the input bag-of-word, by simply
+the input bag of words, by simply
 applying the NgramGen decoder to the output of the translation system, translation
 performance is degraded.
 
@@ -585,7 +585,7 @@ model between the original language model and a language model built on the MT
 posteriors. The second
 solution simply takes advantage of the hypothesis combination paradigm.
 In addition, both solutions were used in conjunction by combining the output
-of the MT system with the output of regeneration system where the language model
+of the MT system with the output of the regeneration system where the language model
 was biased.
 
 One possible avenue for future work is to design and implement additional
