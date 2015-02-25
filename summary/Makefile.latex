@@ -1,0 +1,14 @@
+all: abstract summary
+
+abstract:
+	latex abstract.tex
+	latex abstract.tex
+	dvipdfm -p a4 -o abstract.pdf abstract.dvi
+
+summary:
+	latex summary.tex
+	latex summary.tex
+	dvipdfm -p a4 -o summary.pdf summary.dvi
+
+clean:
+	rm -f *.bbl *.blg *.log *.aux *.toc *~
